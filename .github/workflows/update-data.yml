@@ -16,9 +16,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
-        run: |
-          pip install requests feedparser suncalc  # suncalc via npm? Wait, use pure Python equiv
+       - name: Install dependencies
+   run: pip install suntime ephem feedparser requests
 
       - name: Run update script
         env:
