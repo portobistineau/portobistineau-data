@@ -1,12 +1,19 @@
 {
   "date": "Nov 2, 2025",
-  "first": "6:06:28 AM",
-  "sunrise": "6:30:35 AM",
-  "sunset": "5:22:50 PM",
-  "last": "5:46:57 PM",
-  "major": "9:50 AM – 12:50 PM",
-  "minor": "3:35 PM – 4:35 PM",
+  "first_light": "6:58 AM",
+  "sunrise": "7:32 AM",
+  "sunset": "6:28 PM",
+  "last_light": "6:59 PM",
+  "major1": "9:45 AM – 12:45 PM",
+  "minor": "3:30 PM – 4:30 PM",
+  "major2": "10:15 PM – 1:15 AM",
   "moon": "Waxing Gibbous",
-  "illum": "88%",
-  "temp": "~71°F"
+  "illum": "72%",
+  "wind_speed": "8",
+  "wind_dir": "SSE",
+  "gust": "14",
+  "pressure": "30.12",
+  "trend": "steady",
+  "temp": "~71°F",
+  "updated": "12:01 AM"
 }
