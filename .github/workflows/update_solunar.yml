@@ -1,0 +1,25 @@
+name: Auto-Update Solunar & Lake Report
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install suntime ephem feedparser requests
+      - name: Run script
+        run: python update_data.py
+      - name: Commit
+        run: |
+          git config user.name "Captain"
+          git config user.email "portobistineau@gmail.com"
+          git add data.json
+          git commit -m "Auto-update $(date +%F)" || exit 0
+          git push
