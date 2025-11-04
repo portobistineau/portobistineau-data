@@ -3,7 +3,14 @@ import requests
 from datetime import datetime, timedelta
 import feedparser  # For YouTube RSS
 from suntime import Sun  # pip install suntime (for sunrise/sunset)
-from moonphase import phase  # pip install ephem or similar; fallback to simple calc
+import ephem
+observer = ephem.Moon()
+observer.compute(TODAY)
+moon_illum = observer.phase  # 0 to 100
+moon_phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+               'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent']
+moon_idx = int((moon_illum / 100) * 8) % 8
+moon_name = moon_phases[moon_idx]
 
 # Config
 LAT = float(os.environ.get('LAT', '32.4619'))
@@ -24,9 +31,7 @@ sunrise_str = format_time(sunrise)
 sunset_str = format_time(sunset)
 
 # Moon Phase (Simple calc - % illum, phase name)
-moon_illum = phase(TODAY) * 100  # 0-100%
 moon_phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent']
-moon_idx = int((moon_illum / 100) * 8) % 8
 moon_name = moon_phases[moon_idx]
 
 # Majors/Minors (Approx: Major ~ moon overhead, Minor ~ 3h offset)
