@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import feedparser  # For YouTube RSS
 from suntime import Sun  # pip install suntime (for sunrise/sunset)
 import ephem
+from ephem import Moon
 observer = ephem.Moon()
 observer.compute(TODAY)
 moon_illum = observer.phase  # 0 to 100
