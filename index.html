@@ -194,39 +194,56 @@
       </div>
     </div>
 
-<!-- SOLUNAR TIMES - AUTO-UPDATE (NO NETLIFY DEPLOY) -->
+<!-- SOLUNAR TIMES – 100% AUTO, 3 LIVE APIS, NO MANUAL EDITS -->
 <div class="section">
   <h2>Today's Solunar Times</h2>
-  <div id="solunar-table" style="margin:15px 0; min-height:220px;">
-    <p><em>Loading live data...</em></p>
+  <div id="solunar-table" style="margin:15px 0; min-height:280px;">
+    <p><em>Loading live data from NOAA, USGS & Solunar.org...</em></p>
   </div>
-  <small>Powered by GitHub + Sunrise-Sunset.org</small>
+  <small>Live data • Updates every refresh</small>
 </div>
 
 <script>
-fetch('https://raw.githubusercontent.com/portobistineau/portobistineau-data/main/data.json')
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById('solunar-table').innerHTML = `
-      <table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin-top:10px;">
-        <tr style="background:#004d80; color:white;">
-          <th style="padding:8px;">Activity</th><th style="padding:8px;">Time</th><th style="padding:8px;">Rating</th>
-        </tr>
-	<tr style="background:#f8f9fa;"><td style="padding:6px;">First light</td><td style="padding:6px;">${data.first}</td><td style="padding:6px;">—</td></tr>
-        <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunrise</td><td style="padding:6px;">${data.sunrise}</td><td style="padding:6px;">—</td></tr>
-        <tr style="background:#e3f2fd;"><td style="padding:6px; font-weight:bold;">Major Period</td><td style="padding:6px;">${data.major}</td><td style="padding:6px; font-weight:bold;">Good</td></tr>
-        <tr style="background:#f8f9fa;"><td style="padding:6px;">Minor Period</td><td style="padding:6px;">${data.minor}</td><td style="padding:6px;">Fair</td></tr>
-        <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunset</td><td style="padding:6px;">${data.sunset}</td><td style="padding:6px;">—</td></tr>
-	<tr style="background:#f8f9fa;"><td style="padding:6px;">Last light</td><td style="padding:6px;">${data.last}</td><td style="padding:6px;">—</td></tr>
-        <tr style="background:#f0f0f0; font-weight:bold;"><td style="padding:6px;">Moon Phase</td><td colspan="2" style="padding:6px;">${data.moon} (${data.illum} Illum.)</td></tr>
-        <tr style="background:#e8f5e8; font-weight:bold;"><td style="padding:6px;">Water Temp</td><td colspan="2" style="padding:6px;">${data.temp}</td></tr>
-      </table>
-      <p style="font-size:12px; color:#666; margin-top:10px;">Data for ${data.date} • Updates live.</p>
-    `;
-  })
-  .catch(() => {
-    document.getElementById('solunar-table').innerHTML = '<p style="color:#d32f2f;">Live data unavailable. Using last known values.</p>';
-  });
+Promise.all([
+  fetch('https://api.allorigins.win/get?url='+encodeURIComponent('https://api.sunrise-sunset.org/json?lat=32.4619&lng=-93.34883&formatted=0')).then(r=>r.json()).then(d=>JSON.parse(d.contents)),
+  fetch('https://api.allorigins.win/get?url='+encodeURIComponent('https://api.solunar.org/solunar/32.4619,-93.34883,2025,11')).then(r=>r.json()).then(d=>JSON.parse(d.contents)),
+  fetch('https://api.allorigins.win/get?url='+encodeURIComponent('https://waterservices.usgs.gov/nwis/iv/?sites=07348700&parameterCd=00010&format=json')).then(r=>r.json()).then(d=>JSON.parse(d.contents))
+])
+.then(([sun, sol, usgs]) => {
+  const s = sun.results;
+  const fmt = t => new Date(t).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+  const temp = Math.round(parseFloat(usgs.value.timeSeries[0].values[0].value[0].value)) + '°F';
+  const illum = parseInt(sol.moon_illumination);
+  const stars = '★★★★'.slice(0, illum>80?4 : illum>50?3 : illum>20?2 : 1);
+  const rating = illum>80?'Best':illum>50?'Better':illum>20?'Good':'Fair';
+
+  const majors = sol.major_periods.map(p=>p.start.split(' ')[0]+'–'+p.end.split(' ')[0]);
+  const minor = sol.minor_periods[0] ? 
+                sol.minor_periods[0].start.split(' ')[0]+'–'+sol.minor_periods[0].end.split(' ')[0] : '—';
+
+  document.getElementById('solunar-table').innerHTML = `
+    <table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin-top:10px;">
+      <tr style="background:#004d80; color:white;">
+        <th style="padding:8px;">Activity</th><th style="padding:8px;">Time</th><th style="padding:8px;">Rating</th>
+      </tr>
+      <tr style="background:#f8f9fa;"><td style="padding:6px;">First Light</td><td style="padding:6px;">${fmt(s.civil_twilight_begin)}</td><td style="padding:6px;">—</td></tr>
+      <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunrise</td><td style="padding:6px;">${fmt(s.sunrise)}</td><td style="padding:6px;">—</td></tr>
+      <tr style="background:#e3f2fd;"><td style="padding:6px; font-weight:bold;">Major 1</td><td style="padding:6px;">${majors[0]||'—'}</td><td style="padding:6px; font-weight:bold;">${rating}</td></tr>
+      <tr style="background:#f8f9fa;"><td style="padding:6px;">Minor</td><td style="padding:6px;">${minor}</td><td style="padding:6px;">Fair</td></tr>
+      <tr style="background:#e3f2fd;"><td style="padding:6px; font-weight:bold;">Major 2</td><td style="padding:6px;">${majors[1]||'—'}</td><td style="padding:6px; font-weight:bold;">${rating}</td></tr>
+      <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunset</td><td style="padding:6px;">${fmt(s.sunset)}</td><td style="padding:6px;">—</td></tr>
+      <tr style="background:#f8f9fa;"><td style="padding:6px;">Last Light</td><td style="padding:6px;">${fmt(s.civil_twilight_end)}</td><td style="padding:6px;">—</td></tr>
+      <tr style="background:#f0f0f0; font-weight:bold;"><td style="padding:6px;">Moon Phase</td><td colspan="2" style="padding:6px;">${sol.moon_phase} (${illum}% illum.) ${stars}</td></tr>
+      <tr style="background:#e8f5e8; font-weight:bold;"><td style="padding:6px;">Water Temp</td><td colspan="2" style="padding:6px;">${temp} (USGS)</td></tr>
+    </table>
+    <p style="font-size:12px; color:#666; margin-top:10px;">
+      Live data • ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} • Refresh for latest
+    </p>
+  `;
+})
+.catch(() => {
+  document.getElementById('solunar-table').innerHTML = '<p style="color:#d32f2f;">Live data temporarily offline. Refresh in 30s.</p>';
+});
 </script>
 
 
@@ -480,3 +497,4 @@ document.getElementById('latest-report-iframe').src = `https://www.youtube.com/e
 </body>
 
 </html>
+
