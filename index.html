@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <!-- ============================================= -->
+  <!-- SEO & YouTube Growth Meta Tags -->
+  <!-- ============================================= -->
+  <title>Port O Bistineau Marina | Lake Bistineau Live Cams, Water Level, Fishing Report</title>
+  <meta name="description" content="Real-time Lake Bistineau water level (MSL), solunar fishing times, live marina cams, tournament schedule, and 7-day weather. Best fishing intel for bass, crappie, bream, and catfish in Sibley, LA.">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Port O Bistineau Marina - Live Lake Bistineau Fishing Report">
+  <meta property="og:description" content="Live cams, water level, solunar times, tournaments + weekly fishing tips. Subscribe to our YouTube!">
+  <meta property="og:image" content="https://portobistineau.netlify.app/banner.jpg">
+  <meta property="og:url" content="https://portobistineau.com">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Live Bistineau Fishing Report - Port O Bistineau">
+  <meta name="twitter:description" content="Water level, best fishing times, live cams + tournaments">
+  <meta name="twitter:image" content="https://portobistineau.netlify.app/banner.jpg">
+
+  <!-- Structured Data (Google Rich Results) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LakeBodyOfWater",
+    "name": "Lake Bistineau",
+    "description": "Popular fishing lake in Louisiana with bass, crappie, bream, and catfish. Managed by Barry Holland.",
+    "url": "https://portobistineau.com",
+    "image": "https://portobistineau.netlify.app/banner.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "1788 Yellow Pine Road",
+      "addressLocality": "Sibley",
+      "addressRegion": "LA",
+      "postalCode": "71073"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 32.4619,
+      "longitude": -93.34883
+    },
+    "openingHours": "Mo-Su 05:00-22:00",
+    "telephone": "(318) 393-5214",
+    "hasMap": "https://maps.google.com/?q=Port+O+Bistineau+Marina"
+  }
+  </script>
+
+  <!-- YouTube Publisher Link -->
+  <link rel="publisher" href="https://www.youtube.com/@PortOBistineau">
+
+  <!-- ============================================= -->
+  <!-- Your Existing Styles -->
+  <!-- ============================================= -->
+  <style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
+    color: #333;
+    line-height: 1.6;
+    text-align: center;
+  }
+  .container { max-width: 1000px; margin: auto; padding: 0 10px; }
+
+/* PERFECT BANNER — FULL BLEED, NO CUTOFF, NO BLOW-UP */
+.banner {
+  width: 100vw;
+  height: 200px;
+  margin-left: calc(-50vw + 50%);
+  position: relative;
+  overflow: hidden;
+  background: #004d80; /* fallback */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* MOBILE HEIGHT */
+@media (max-width: 768px) {
+  .banner { height: 160px; }
+}
+@media (max-width: 480px) {
+  .banner { height: 130px; }
+}
+
+  .tagline { background:rgba(0,77,128,0.8); color:white; padding:10px; font-style:italic; }
+  .section { background:white; margin:20px 0; padding:18px; border-radius:10px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
+
+  .social-block { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 20px; 
+    justify-content: space-between; 
+  }
+  .videos-col { 
+    flex: 1; 
+    min-width: 300px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+  }
+  .fb-col { 
+    flex: 1; 
+    min-width: 300px; 
+    text-align: left; 
+  }
+  .videos-col .cam { background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+  .videos-col .cam iframe { width: 100%; height: 200px; border: none; }
+  .cam-label { background: #004d80; color: white; padding: 8px; font-weight: bold; }
+  .map { height: 300px; width: 100%; border: none; border-radius: 8px; }
+
+  /* FIXED FAQ ARROWS - Real Symbols */
+  .faq { margin-top: 20px; text-align: left; }
+  .faq details { margin-bottom: 8px; cursor: pointer; }
+  .faq summary {
+    font-weight: 600; color: #004d80; list-style: none; position: relative;
+    padding-right: 20px;
+  }
+  .faq summary::after {
+    content: "▼"; /* Down arrow */
+    position: absolute; right: 0; top: 0; font-size: 1.2em;
+    transition: transform .2s;
+  }
+  .faq details[open] summary::after {
+    content: "▲"; /* Up arrow */
+    transform: rotate(180deg);
+  }
+  .faq p { margin: 8px 0 0 0; color: #555; }
+
+  /* MOBILE RESPONSIVE */
+  @media (max-width: 768px) {
+    .banner { height: 160px; }
+    .social-block { flex-direction: column; gap: 15px; }
+    .fb-col { min-width: 100%; order: 2; }
+    .videos-col { order: 1; }
+    .videos-col .cam iframe { height: 180px; }
+    .map { height: 250px; }
+  }
+  @media (max-width: 480px) {
+    .banner { height: 140px; }
+    .videos-col .cam iframe { height: 160px; }
+  }
+</style>
+
+  <!-- Facebook SDK -->
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0"></script>
+</head>
+<body>
+  <div class="container">
+
+    <!-- BANNER — FULL WIDTH, PERFECT ON MOBILE -->
+<div class="banner">
+  <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img">
+</div>
+    <p class="tagline">Your Gateway to Lake Bistineau – Live Views & Best Fishing Times</p>
+
+    <!-- YOUTUBE HERO CTA (After Banner) -->
+    <div style="text-align:center; margin:20px 0; padding:15px; background:#f0f8ff; border-radius:8px;">
+      <p style="margin:5px 0; font-size:18px; font-weight:bold; color:#004d80;">
+        Weekly Fishing Tips, Live Lake Conditions & Tournament Updates
+      </p>
+      <a href="https://www.youtube.com/@PortOBistineau?sub_confirmation=1"
+         target="_blank"
+         style="background:#ff0000; color:white; padding:12px 30px; text-decoration:none; border-radius:50px; font-weight:bold; display:inline-block; margin:10px;">
+         SUBSCRIBE ON YOUTUBE
+      </a>
+      <p style="margin:5px 0; font-size:14px; color:#666;">
+        Get lake reports, bait tips, and more!
+      </p>
+    </div>
+
+    <!-- Weather -->
+    <div class="section">
+      <h2>7-Day Weather Forecast (Sibley, LA)</h2>
+      <div class="weather-widget">
+        <a class="weatherwidget-io" href="https://forecast7.com/en/32d54n93d30/sibley/?unit=us" data-label_1="SIBLEY" data-label_2="WEATHER" data-icons="Climacons Animated" data-theme="original">SIBLEY WEATHER</a>
+        <script>
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+        </script>
+      </div>
+    </div>
+
+<!-- SOLUNAR TIMES - AUTO-UPDATE (NO NETLIFY DEPLOY) -->
+<div class="section">
+  <h2>Today's Solunar Times</h2>
+  <div id="solunar-table" style="margin:15px 0; min-height:220px;">
+    <p><em>Loading live data...</em></p>
+  </div>
+  <small>Powered by GitHub + Sunrise-Sunset.org</small>
+</div>
+
+<script>
+fetch('https://raw.githubusercontent.com/portobistineau/portobistineau-data/main/data.json')
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('solunar-table').innerHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin-top:10px;">
+        <tr style="background:#004d80; color:white;">
+          <th style="padding:8px;">Activity</th><th style="padding:8px;">Time</th><th style="padding:8px;">Rating</th>
+        </tr>
+	<tr style="background:#f8f9fa;"><td style="padding:6px;">First light</td><td style="padding:6px;">${data.first}</td><td style="padding:6px;">—</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunrise</td><td style="padding:6px;">${data.sunrise}</td><td style="padding:6px;">—</td></tr>
+        <tr style="background:#e3f2fd;"><td style="padding:6px; font-weight:bold;">Major Period</td><td style="padding:6px;">${data.major}</td><td style="padding:6px; font-weight:bold;">Good</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:6px;">Minor Period</td><td style="padding:6px;">${data.minor}</td><td style="padding:6px;">Fair</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunset</td><td style="padding:6px;">${data.sunset}</td><td style="padding:6px;">—</td></tr>
+	<tr style="background:#f8f9fa;"><td style="padding:6px;">Last light</td><td style="padding:6px;">${data.last}</td><td style="padding:6px;">—</td></tr>
+        <tr style="background:#f0f0f0; font-weight:bold;"><td style="padding:6px;">Moon Phase</td><td colspan="2" style="padding:6px;">${data.moon} (${data.illum} Illum.)</td></tr>
+        <tr style="background:#e8f5e8; font-weight:bold;"><td style="padding:6px;">Water Temp</td><td colspan="2" style="padding:6px;">${data.temp}</td></tr>
+      </table>
+      <p style="font-size:12px; color:#666; margin-top:10px;">Data for ${data.date} • Updates live.</p>
+    `;
+  })
+  .catch(() => {
+    document.getElementById('solunar-table').innerHTML = '<p style="color:#d32f2f;">Live data unavailable. Using last known values.</p>';
+  });
+</script>
+
+
+    <!-- Water Level Graph -->
+    <div class="section">
+      <h2>Lake Bistineau Water Level (MSL Elevation)</h2>
+      <canvas id="water-chart" width="100%" height="300" style="max-height:300px;"></canvas>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 14px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 24px; height: 3px; background: #28a745; border-radius: 1px; border: 1px dashed #28a745; opacity: 0.9;"></div>
+          <span style="color: #28a745; font-weight: bold;">Normal Pool: 141 ft MSL</span>
+        </div>
+        <div id="current-level" style="font-weight: bold; color: #004d80; text-align: right;">
+          <p>Loading current level...</p>
+        </div>
+      </div>
+
+      <small style="display: block; margin-top: 8px; text-align: right;">
+        <a href="https://water.noaa.gov/gauges/07349250" target="_blank">NOAA Gauge</a> | 
+        <a href="https://waterdata.usgs.gov/nwis/uv?site_no=07349250" target="_blank">USGS Data</a>
+      </small>
+    </div>
+
+<!-- ==================================== -->
+<!-- LATEST VIDEO - 100% WORKING (Non-Live) -->
+<!-- ==================================== -->
+<div class="section">
+  <h2>Latest Lake Report</h2>
+  <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px;">
+    <iframe id="latest-report-iframe" 
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" 
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0" 
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen></iframe>
+  </div>
+</div>
+
+<script>
+// Hardcoded to your last night's video ID (replace with real ID)
+const LATEST_VIDEO_ID = "SouMRMEWgy4"; // ← CHANGE THIS TO YOUR REAL VIDEO ID
+document.getElementById('latest-report-iframe').src = `https://www.youtube.com/embed/${LATEST_VIDEO_ID}?rel=0`;
+</script>
+
+
+    <!-- Tournament Calendar -->
+    <div class="section">
+      <h2>Tournament Schedule</h2>
+      <div style="border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <iframe 
+          src="https://calendar.google.com/calendar/embed?src=a3ac3e31957eebb61f0a38db32b5f80b160a9c881d2897507ae0edd4552c633c%40group.calendar.google.com&ctz=America%2FChicago"
+          style="border:0; width:100%; height:400px;" 
+          frameborder="0" 
+          scrolling="no">
+        </iframe>
+      </div>
+
+      <div style="margin-top:15px; text-align:center;">
+        <a href="mailto:portobistineau@gmail.com?subject=Tournament%20Schedule%20Request&body=Hi,%0A%0AI'd%20like%20to%20schedule%20a%20tournament%20on%20[DATE].%0A%0ADetails:%0A-%20Expected%20boats:%0A-%20Launch%20location:%0A-%20Weigh-in%20location:%0A%0AThanks!" 
+           style="background:#004d80; color:white; padding:12px 24px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+          Schedule a Tournament (Email Us)
+        </a>
+      </div>
+
+      <small style="display:block; margin-top:10px; color:#666;">
+        Know of a tournament? <a href="mailto:portobistineau@gmail.com">Let us know</a> to avoid conflicts!
+      </small>
+    </div>
+
+    <!-- Social Block -->
+    <div class="section">
+      <h2>Live Views & Social Feed</h2>
+      <div class="social-block">
+        <div class="videos-col">
+          <div class="cam">
+            <div class="cam-label">Camera 1 – Looking North</div>
+            <iframe src="https://www.youtube.com/embed/79hxzuJ0r70?si=zadDm3-q2iT8ZiOV" title="Looking North" allowfullscreen></iframe>
+          </div>
+          <div class="cam">
+            <div class="cam-label">Camera 2 – Looking South</div>
+            <iframe src="https://www.youtube.com/embed/2J_SJFgSPOg?si=0f5vOGFBvEFqo1Hc" title="Looking South" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="fb-col">
+          <div class="fb-page" data-href="https://www.facebook.com/PortOBistineau"
+               data-tabs="timeline" data-width="" data-height="510"
+               data-small-header="false" data-adapt-container-width="true"
+               data-hide-cover="false" data-show-facepile="true">
+            <blockquote cite="https://www.facebook.com/PortOBistineau" class="fb-xfbml-parse-ignore">
+              <a href="https://www.facebook.com/PortOBistineau">Port O' Bistineau</a>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Map -->
+    <div class="section">
+      <h2>Location Map</h2>
+      <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4084.590!2d-93.34883!3d32.4619!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDI3JzQyLjgiTiA5M8KwMjAnNTIuNSciVw!5e0!3m2!1sen!2sus!4v1690000000000" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+
+    <!-- Contact + FAQ -->
+    <div class="section contact">
+      <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:space-between;">
+        <div style="flex:1; min-width:280px;">
+          <h2>Contact Us</h2>
+          <p><strong>Port O' Bistineau</strong></p>
+          <p>Address: 1788 Yellow Pine Road, Sibley, LA 71073</p>
+          <p>Phone: (318) 393-5214</p>
+          <p>Hours: Open daily for launches (Store closed; stalls available for rent when water is at normal levels)</p>
+          <p><a href="https://www.google.com/maps/dir/?api=1&destination=32.4619,-93.34883" target="_blank">Get Directions</a></p>
+        </div>
+
+        <div style="flex:1; min-width:280px;" class="faq">
+          <h3 style="margin-bottom:10px; color:#004d80;">FAQ</h3>
+
+          <details>
+            <summary>Do you sell minnows (or any other item)?</summary>
+            <p>Unfortunately, our store is currently closed. We do have some crappie jigs available by appointment only, however. Please call or text for information.</p>
+          </details>
+
+          <details>
+            <summary>Do you have cabins for rent?</summary>
+            <p>Unfortunately, we do not. The Louisiana State Park has some cabins, please check their website for availability. Also, we are located 20 minutes from Minden, Louisiana, where several hotels are available.</p>
+          </details>
+
+          <details>
+            <summary>Do you rent boats?</summary>
+            <p>We do not. Sorry.</p>
+          </details>
+
+          <details>
+            <summary>Can I launch during the drawdown periods?</summary>
+            <p>Yes! We have our primary concrete launch on the north side and a gentler sloping gravel one on the south side. However, during full drawdown, you have to be more careful on the south end due to dropoffs. Contact me directly for more information on that.</p>
+          </details>
+
+          <details>
+            <summary>How much is the launch fee?</summary>
+            <p>The launch fee is $5.00. We have pay boxes at each of our launches. We also have electronic payment options with Venmo or Paypal. See the signs at the boxes.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="social">
+      <a href="https://www.facebook.com/PortOBistineau" target="_blank">Follow on Facebook</a>
+      <a href="https://www.youtube.com/@PortOBistineau" target="_blank" class="youtube">Watch on YouTube</a>
+    </div>
+
+    <!-- Footer with YouTube CTA -->
+    <footer>
+      <p>
+        Follow us on 
+        <a href="https://www.youtube.com/@PortOBistineau" target="_blank" style="color:#ff0000; font-weight:bold;">
+          YouTube
+        </a> 
+        for live lake conditions, fishing tips, and tournament recaps!
+      </p>
+      <p style="margin-top:10px; font-size:12px;">
+        &copy; 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
+      </p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
+  <script>
+    // Water Graph Script (unchanged)
+    async function loadWaterGraph() {
+      const canvas = document.getElementById('water-chart');
+      const currentDiv = document.getElementById('current-level');
+      const ctx = canvas.getContext('2d');
+      const DATUM_MSL = 129.84;
+
+      try {
+        const res = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active');
+        const data = await res.json();
+        if (!data.value?.timeSeries?.[0]) throw new Error('No data');
+
+        const ts = data.value.timeSeries[0];
+        const labels = [];
+        const mslLevels = [];
+        let currentMSL = null;
+        let firstDate = null;
+        let lastDate = null;
+
+        const values = ts.values[0].value;
+        values.slice(0, 168).forEach(val => {
+          if (val.value !== '-999999') {
+            const gageHeight = parseFloat(val.value);
+            const mslElevation = gageHeight + DATUM_MSL;
+            const tsDate = new Date(val.dateTime);
+            const label = tsDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric' });
+            labels.push(label);
+            mslLevels.push(mslElevation);
+            if (!firstDate) firstDate = tsDate;
+            lastDate = tsDate;
+            currentMSL = mslElevation;
+          }
+        });
+
+        if (mslLevels.length === 0) throw new Error('No valid data');
+
+        const formatDate = (date) => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
+        const dateRange = `${formatDate(firstDate)} – ${formatDate(lastDate)}`;
+
+        currentDiv.innerHTML = `
+          <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
+          <span style="font-weight: normal; color: #666; font-size: 13px;">${dateRange}</span>
+        `;
+
+        if (window.waterChart) window.waterChart.destroy();
+
+        window.waterChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Elevation (ft MSL)', data: mslLevels, borderColor: '#1e90ff', backgroundColor: 'rgba(30, 144, 255, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0, pointHoverRadius: 5 }] },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+              x: { title: { display: true, text: 'Date / Time (CST)' }, grid: { color: 'rgba(0,0,0,0.1)' } }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: context => ` ${context.parsed.y.toFixed(2)} ft MSL` } },
+              annotation: { annotations: { poolLine: { type: 'line', yMin: 141, yMax: 141, borderColor: '#28a745', borderWidth: 3, borderDash: [6, 6] } } }
+            },
+            animation: { duration: 1000 }
+          }
+        });
+
+        const lastIdx = mslLevels.length - 1;
+        window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
+        window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
+        window.waterChart.data.datasets[0].pointRadius = Array(mslLevels.length).fill(0);
+        window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
+        window.waterChart.update();
+
+      } catch (err) {
+        console.error('Water Graph Error:', err);
+        currentDiv.innerHTML = '<p style="color:#d32f2f;">Level unavailable. <a href="https://water.noaa.gov/gauges/07349250">Check NOAA</a></p>';
+        canvas.style.display = 'none';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadWaterGraph);
+  </script>
+</body>
+</html>
