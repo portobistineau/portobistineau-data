@@ -393,7 +393,12 @@ document.getElementById('latest-report-iframe').src = `https://www.youtube.com/e
       </p>
     </footer>
   </div>
-
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#003366;background:#003366;" id="hits">0 views</div>
+<script>
+fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
+  .then(r=>r.json())
+  .then(d=>document.getElementById('hits').textContent = d.value + ' views');
+</script>
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
@@ -480,5 +485,6 @@ document.getElementById('latest-report-iframe').src = `https://www.youtube.com/e
 </body>
 
 </html>
+
 
 
