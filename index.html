@@ -395,18 +395,16 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
       <p style="margin-top:10px; font-size:12px;">
         &copy; 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
       </p>
-		<!-- SECRET COUNTER – 1 blank line, only visible when YOU highlight all -->
-<div style="text-align:center; line-height:1.8; color:#e6f3ff; background:#e6f3ff; user-select:text;">
+		<!-- SECRET COUNTER – works 100% -->
+<div style="text-align:center;line-height:1.8;color:#e6f3ff;background:#e6f3ff;font-size:14px;">
   <span id="hits">0</span> views
 </div>
 
 <script>
 fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
   .then(r=>r.json())
-  .then(d=>document.getElementById('hits').textContent = d.value);
+  .then(d=>document.getElementById('hits').textContent=d.value);
 </script>
-    </footer>
-  </div>
 
 	
   <!-- Scripts -->
@@ -495,6 +493,7 @@ fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
 </body>
 
 </html>
+
 
 
 
