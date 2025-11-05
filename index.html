@@ -263,15 +263,15 @@ fetch('https://raw.githubusercontent.com/portobistineau/portobistineau-data/main
 </div>
 
 <script>
-const CHANNEL = 'g-udKvya42o1Sw1XvhgpnQ';
-const UPLOADS = 'UU' + CHANNEL.substring(2);  // UU = uploads only
+const CHANNEL_ID = 'UCg-udKvya42o1Sw1XvhgpnQ';
+const UPLOADS_PLAYLIST = 'UU' + CHANNEL_ID.slice(2);  // ← SLICE, NOT substring
 
-fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://youtube.com/feeds/videos.xml?playlist_id=${UPLOADS}`)
-  .then(r=>r.json())
-  .then(data=>{
+fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?playlist_id=${UPLOADS_PLAYLIST}`)
+  .then(r => r.json())
+  .then(data => {
     const video = data.items.find(v => v.title.toUpperCase().includes('UPDATE'));
-    const id = video ? video.link.split('v=')[1] : '79hxzuJ0r70';  // fallback
-    document.getElementById('latest-video').src = `https://www.youtube.com/embed/${id}?rel=0`;
+    const videoId = video ? video.link.split('v=')[1].split('&')[0] : '79hxzuJ0r70';
+    document.getElementById('latest-video').src = `https://www.youtube.com/embed/${videoId}?rel=0`;
   });
 </script>
 
@@ -495,6 +495,7 @@ fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
 </body>
 
 </html>
+
 
 
 
