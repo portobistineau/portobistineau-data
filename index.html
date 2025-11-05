@@ -194,38 +194,55 @@
       </div>
     </div>
 
-<!-- SOLUNAR TIMES - AUTO-UPDATE (NO NETLIFY DEPLOY) -->
-<div class="section">
-  <h2>Today's Solunar Times</h2>
-  <div id="solunar-table" style="margin:15px 0; min-height:220px;">
-    <p><em>Loading live data...</em></p>
+<!-- TODAY’S SOLUNAR TIMES – 0 CREDITS, 100% YOURS -->
+<div style="margin:30px auto;max-width:900px;background:#e6f3ff;padding:20px;border-radius:15px;font-family:Arial;">
+  <h2 style="text-align:center;margin:0;color:#003366;font-size:28px;">Today’s Solunar Times</h2>
+  <div id="rating" style="text-align:center;font-size:60px;color:#FFD700;margin:15px 0;">Loading…</div>
+  <div style="display:flex;gap:25px;flex-wrap:wrap;">
+    <div style="flex:1;background:#ffffff;padding:20px;border-radius:12px;line-height:2;">
+      <b>First Light</b> <span id="first">—</span><br>
+      <b>Sunrise</b> <span id="rise">—</span><br>
+      <b>Major 1</b> <span id="maj1">—</span><br>
+      <b>Minor</b> <span id="min">—</span><br>
+      <b>Major 2</b> <span id="maj2">—</span><br>
+      <b>Sunset</b> <span id="set">—</span><br>
+      <b>Last Light</b> <span id="last">—</span><br><br>
+      <b>Water Temp</b> <span id="temp">—</span>
+    </div>
+    <div style="flex:1;background:#003366;padding:20px;border-radius:12px;text-align:center;color:white;">
+      <svg id="moon" viewBox="0 0 100 100" width="120" height="120">
+        <circle cx="50" cy="50" r="45" fill="#fff"/>
+        <path d="M50,5 A45,45 0 1,1 50,95 A45,45 0 1,1 50,5" fill="#002244"/>
+      </svg>
+      <div id="phase" style="margin-top:10px;font-size:18px;font-weight:bold;">—</div>
+      <div id="illum" style="font-size:16px;">—</div>
+    </div>
   </div>
-  <small>Powered by GitHub + Sunrise-Sunset.org</small>
+  <p style="text-align:center;color:#003366;font-size:12px;margin-top:15px;">
+    Updated <span id="date">—</span> – Refresh for latest
+  </p>
 </div>
 
 <script>
-fetch('https://raw.githubusercontent.com/portobistineau/portobistineau-data/main/data.json')
+fetch('https://raw.githubusercontent.com/portobistineau/portobistineau-data/main/data.json?' + Date.now())
   .then(r => r.json())
-  .then(data => {
-    document.getElementById('solunar-table').innerHTML = `
-      <table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin-top:10px;">
-        <tr style="background:#004d80; color:white;">
-          <th style="padding:8px;">Activity</th><th style="padding:8px;">Time</th><th style="padding:8px;">Rating</th>
-        </tr>
-	<tr style="background:#f8f9fa;"><td style="padding:6px;">First light</td><td style="padding:6px;">${data.first}</td><td style="padding:6px;">—</td></tr>
-        <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunrise</td><td style="padding:6px;">${data.sunrise}</td><td style="padding:6px;">—</td></tr>
-        <tr style="background:#e3f2fd;"><td style="padding:6px; font-weight:bold;">Major Period</td><td style="padding:6px;">${data.major}</td><td style="padding:6px; font-weight:bold;">Good</td></tr>
-        <tr style="background:#f8f9fa;"><td style="padding:6px;">Minor Period</td><td style="padding:6px;">${data.minor}</td><td style="padding:6px;">Fair</td></tr>
-        <tr style="background:#f8f9fa;"><td style="padding:6px;">Sunset</td><td style="padding:6px;">${data.sunset}</td><td style="padding:6px;">—</td></tr>
-	<tr style="background:#f8f9fa;"><td style="padding:6px;">Last light</td><td style="padding:6px;">${data.last}</td><td style="padding:6px;">—</td></tr>
-        <tr style="background:#f0f0f0; font-weight:bold;"><td style="padding:6px;">Moon Phase</td><td colspan="2" style="padding:6px;">${data.moon} (${data.illum} Illum.)</td></tr>
-        <tr style="background:#e8f5e8; font-weight:bold;"><td style="padding:6px;">Water Temp</td><td colspan="2" style="padding:6px;">${data.temp}</td></tr>
-      </table>
-      <p style="font-size:12px; color:#666; margin-top:10px;">Data for ${data.date} • Updates live.</p>
-    `;
-  })
-  .catch(() => {
-    document.getElementById('solunar-table').innerHTML = '<p style="color:#d32f2f;">Live data unavailable. Using last known values.</p>';
+  .then(d => {
+    document.getElementById('rating').innerHTML = d.stars + '<br><span style="font-size:28px;">' + d.rating + '</span>';
+    document.getElementById('first').textContent = d.first_light;
+    document.getElementById('rise').textContent = d.sunrise;
+    document.getElementById('maj1').textContent = d.major1;
+    document.getElementById('min').textContent = d.minor;
+    document.getElementById('maj2').textContent = d.major2;
+    document.getElementById('set').textContent = d.sunset;
+    document.getElementById('last').textContent = d.last_light;
+    document.getElementById('temp').textContent = d.temp;
+    document.getElementById('phase').textContent = d.moon_phase;
+    document.getElementById('illum').textContent = d.illum;
+    document.getElementById('date').textContent = d.date;
+
+    const illum = parseInt(d.illum);
+    const moonPath = document.querySelector('#moon path');
+    moonPath.setAttribute('d', `M50,5 A45,45 0 ${illum>50?1:0},1 50,95 A45,45 0 ${illum>50?0:1},1 50,5`);
   });
 </script>
 
@@ -493,6 +510,7 @@ fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
 </body>
 
 </html>
+
 
 
 
