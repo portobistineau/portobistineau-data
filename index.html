@@ -194,29 +194,41 @@
       </div>
     </div>
 
-<!-- TODAY’S SOLUNAR TIMES – 2 MAJORS + 2 MINORS + PNG MOON -->
-<div style="margin:30px auto;max-width:900px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
+Here is your FINAL, 1-commit, 0-credit, pixel-perfect block.
+Fixes EVERYTHING you asked for:
+
+Full-width like weather & water level
+“Waxing Gibbous” + “73% Illumination” under moon
+Uses your exact PNG names (fullmoon.png, newmoon.png, firstquart.png, lastquart.png)
+Labels left-justified, times right-justified
+Still 100% automatic via your phone
+
+COPY → PASTE → COMMIT → DONE FOREVER
+html<!-- TODAY’S SOLUNAR TIMES – FULL-WIDTH, PERFECT TEXT, YOUR PNGs -->
+<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#003366;font-size:28px;">Today’s Solunar Times</h2>
 
-  <div style="display:flex;gap:25px;flex-wrap:wrap;">
-    <!-- LEFT: TIMES -->
-    <div style="flex:1;background:#f8fdff;padding:22px;border-radius:12px;line-height:2.1;">
-      <b>First Light</b> <span id="first">—</span><br>
-      <b>Sunrise</b> <span id="rise">—</span><br>
-      <b>Major Period 1</b> <span id="maj1">—</span><br>
-      <b>Major Period 2</b> <span id="maj2">—</span><br>
-      <b>Minor Period 1</b> <span id="min1">—</span><br>
-      <b>Minor Period 2</b> <span id="min2">—</span><br>
-      <b>Sunset</b> <span id="set">—</span><br>
-      <b>Last Light</b> <span id="last">—</span>
+  <div style="display:flex;gap:30px;flex-wrap:wrap;">
+    <!-- LEFT: TIMES – LABEL LEFT, TIME RIGHT -->
+    <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;font-size:16px;line-height:1.9;">
+        <b>First Light</b>     <div id="first"  style="text-align:right;">—</div>
+        <b>Sunrise</b>         <div id="rise"   style="text-align:right;">—</div>
+        <b>Major Period 1</b>  <div id="maj1"   style="text-align:right;">—</div>
+        <b>Major Period 2</b>  <div id="maj2"   style="text-align:right;">—</div>
+        <b>Minor Period 1</b>  <div id="min1"   style="text-align:right;">—</div>
+        <b>Minor Period 2</b>  <div id="min2"   style="text-align:right;">—</div>
+        <b>Sunset</b>          <div id="set"    style="text-align:right;">—</div>
+        <b>Last Light</b>      <div id="last"   style="text-align:right;">—</div>
+      </div>
     </div>
 
-    <!-- RIGHT: STARS + RATING + YOUR PNG MOON -->
-    <div style="flex:1;background:white;padding:22px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+    <!-- RIGHT: MOON + TEXT -->
+    <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
       <div id="rating" style="font-size:56px;color:#FFD700;line-height:1;">Loading…</div>
-      <img id="moon-img" src="" width="135" height="135" style="margin:12px 0;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-      <div id="phase" style="font-weight:bold;font-size:19px;color:#003366;margin:8px 0 4px;">—</div>
-      <div id="illum" style="color:#555;font-size:16px;">—</div>
+      <img id="moon-img" src="" width="140" height="140" style="margin:15px 0;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.25);">
+      <div id="phase" style="font-weight:bold;font-size:20px;color:#003366;margin:10px 0 5px;">—</div>
+      <div id="illum" style="color:#555;font-size:17px;">—</div>
     </div>
   </div>
 
@@ -230,23 +242,25 @@ fetch('/data.json?' + Date.now())
   .then(r => r.json())
   .then(d => {
     document.getElementById('first').textContent = d.first_light;
-    document.getElementById('rise').textContent = d.sunrise;
-    document.getElementById('maj1').textContent = d.major1;
-    document.getElementById('maj2').textContent = d.major2;
-    document.getElementById('min1').textContent = d.minor1;
-    document.getElementById('min2').textContent = d.minor2;
-    document.getElementById('set').textContent = d.sunset;
-    document.getElementById('last').textContent = d.last_light;
-    document.getElementById('date').textContent = d.date;
+    document.getElementById('rise').textContent  = d.sunrise;
+    document.getElementById('maj1').textContent  = d.major1;
+    document.getElementById('maj2').textContent  = d.major2;
+    document.getElementById('min1').textContent  = d.minor1;
+    document.getElementById('min2').textContent  = d.minor2;
+    document.getElementById('set').textContent   = d.sunset;
+    document.getElementById('last').textContent  = d.last_light;
+    document.getElementById('date').textContent  = d.date;
 
-    document.getElementById('rating').innerHTML = d.stars + '<br><span style="font-size:30px;color:#003366;">' + d.rating + '</span>';
+    document.getElementById('rating').innerHTML = 
+      d.stars + '<br><span style="font-size:30px;color:#003366;">' + d.rating + '</span>';
 
+    // MOON PNG LOGIC – uses YOUR exact filenames
     const illum = parseInt(d.illum);
     let moonFile = '';
-    if (illum === 0) moonFile = 'newmoon.png';
+    if (illum === 0)  moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
     else if (illum === 50 && d.moon_phase.includes('First')) moonFile = 'firstquart.png';
-    else if (illum === 50 && d.moon_phase.includes('Last')) moonFile = 'lastquart.png';
+    else if (illum === 50 && d.moon_phase.includes('Last'))  moonFile = 'lastquart.png';
     else {
       const phase = d.moon_phase.includes('Waxing') ? 'wax' : 'wan';
       const pct = Math.round(illum / 5) * 5;
@@ -255,7 +269,7 @@ fetch('/data.json?' + Date.now())
 
     document.getElementById('moon-img').src = `/images/${moonFile}`;
     document.getElementById('phase').textContent = d.moon_phase;
-    document.getElementById('illum').textContent = d.illum;
+    document.getElementById('illum').textContent = `${illum}% Illumination`;
   });
 </script>
 
@@ -425,16 +439,6 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
       <p style="margin-top:10px; font-size:12px;">
         &copy; 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
       </p>
-		<!-- SECRET COUNTER – works 100% -->
-<div style="text-align:center;line-height:1.8;color:#e6f3ff;background:#e6f3ff;font-size:14px;">
-  <span id="hits">0</span> views
-</div>
-
-<script>
-fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
-  .then(r=>r.json())
-  .then(d=>document.getElementById('hits').textContent=d.value);
-</script>
 
 	
   <!-- Scripts -->
@@ -523,6 +527,7 @@ fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
 </body>
 
 </html>
+
 
 
 
