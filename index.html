@@ -194,55 +194,68 @@
       </div>
     </div>
 
-<!-- TODAY’S SOLUNAR TIMES – 0 CREDITS, 100% YOURS -->
-<div style="margin:30px auto;max-width:900px;padding:20px;border-radius:15px;font-family:Arial;">
-  <h2 style="text-align:center;margin:0;font-size:28px;">Today’s Solunar Times</h2>
-  <div id="rating" style="text-align:center;font-size:60px;color:#FFD700;margin:15px 0;">Loading…</div>
+<!-- TODAY’S SOLUNAR TIMES – 2 MAJORS + 2 MINORS + PNG MOON -->
+<div style="margin:30px auto;max-width:900px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
+  <h2 style="text-align:center;margin:0 0 20px;color:#003366;font-size:28px;">Today’s Solunar Times</h2>
+
   <div style="display:flex;gap:25px;flex-wrap:wrap;">
-    <div style="flex:1;padding:20px;border-radius:12px;line-height:2;">
+    <!-- LEFT: TIMES -->
+    <div style="flex:1;background:#f8fdff;padding:22px;border-radius:12px;line-height:2.1;">
       <b>First Light</b> <span id="first">—</span><br>
       <b>Sunrise</b> <span id="rise">—</span><br>
-      <b>Major 1</b> <span id="maj1">—</span><br>
-      <b>Minor</b> <span id="min">—</span><br>
-      <b>Major 2</b> <span id="maj2">—</span><br>
+      <b>Major Period 1</b> <span id="maj1">—</span><br>
+      <b>Major Period 2</b> <span id="maj2">—</span><br>
+      <b>Minor Period 1</b> <span id="min1">—</span><br>
+      <b>Minor Period 2</b> <span id="min2">—</span><br>
       <b>Sunset</b> <span id="set">—</span><br>
-      <b>Last Light</b> <span id="last">—</span><br><br>
-      <b>Water Temp</b> <span id="temp">—</span>
+      <b>Last Light</b> <span id="last">—</span>
     </div>
-    <div style="flex:1;padding:20px;border-radius:12px;text-align:center;color:white;">
-      <svg id="moon" viewBox="0 0 100 100" width="120" height="120">
-        <circle cx="50" cy="50" r="45" fill="#fff"/>
-        <path d="M50,5 A45,45 0 1,1 50,95 A45,45 0 1,1 50,5" fill="#002244"/>
-      </svg>
-      <div id="phase" style="margin-top:10px;font-size:18px;font-weight:bold;">—</div>
-      <div id="illum" style="font-size:16px;">—</div>
+
+    <!-- RIGHT: STARS + RATING + YOUR PNG MOON -->
+    <div style="flex:1;background:white;padding:22px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+      <div id="rating" style="font-size:56px;color:#FFD700;line-height:1;">Loading…</div>
+      <img id="moon-img" src="" width="135" height="135" style="margin:12px 0;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+      <div id="phase" style="font-weight:bold;font-size:19px;color:#003366;margin:8px 0 4px;">—</div>
+      <div id="illum" style="color:#555;font-size:16px;">—</div>
     </div>
   </div>
-  <p style="text-align:center;color:#003366;font-size:12px;margin-top:15px;">
+
+  <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
     Updated <span id="date">—</span> – Refresh for latest
   </p>
 </div>
 
 <script>
-fetch('https://raw.githubusercontent.com/portobistineau/portobistineau-data/main/data.json?' + Date.now())
+fetch('/data.json?' + Date.now())
   .then(r => r.json())
   .then(d => {
-    document.getElementById('rating').innerHTML = d.stars + '<br><span style="font-size:28px;">' + d.rating + '</span>';
     document.getElementById('first').textContent = d.first_light;
     document.getElementById('rise').textContent = d.sunrise;
     document.getElementById('maj1').textContent = d.major1;
-    document.getElementById('min').textContent = d.minor;
     document.getElementById('maj2').textContent = d.major2;
+    document.getElementById('min1').textContent = d.minor1;
+    document.getElementById('min2').textContent = d.minor2;
     document.getElementById('set').textContent = d.sunset;
     document.getElementById('last').textContent = d.last_light;
-    document.getElementById('temp').textContent = d.temp;
-    document.getElementById('phase').textContent = d.moon_phase;
-    document.getElementById('illum').textContent = d.illum;
     document.getElementById('date').textContent = d.date;
 
+    document.getElementById('rating').innerHTML = d.stars + '<br><span style="font-size:30px;color:#003366;">' + d.rating + '</span>';
+
     const illum = parseInt(d.illum);
-    const moonPath = document.querySelector('#moon path');
-    moonPath.setAttribute('d', `M50,5 A45,45 0 ${illum>50?1:0},1 50,95 A45,45 0 ${illum>50?0:1},1 50,5`);
+    let moonFile = '';
+    if (illum === 0) moonFile = 'newmoon.png';
+    else if (illum === 100) moonFile = 'fullmoon.png';
+    else if (illum === 50 && d.moon_phase.includes('First')) moonFile = 'firstquart.png';
+    else if (illum === 50 && d.moon_phase.includes('Last')) moonFile = 'lastquart.png';
+    else {
+      const phase = d.moon_phase.includes('Waxing') ? 'wax' : 'wan';
+      const pct = Math.round(illum / 5) * 5;
+      moonFile = `${phase}${pct}.png`;
+    }
+
+    document.getElementById('moon-img').src = `/images/${moonFile}`;
+    document.getElementById('phase').textContent = d.moon_phase;
+    document.getElementById('illum').textContent = d.illum;
   });
 </script>
 
@@ -510,6 +523,7 @@ fetch('https://api.countapi.xyz/hit/portobistineau.com/secret')
 </body>
 
 </html>
+
 
 
 
