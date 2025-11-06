@@ -243,14 +243,15 @@
     const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
 
     const toAMPM = t => {
-      const [h, m] = t.split(':');
+      if (t === null || t === undefined || t < 0) return '—';
+      const [h, m] = t.toString().split(':');
       const hr = parseInt(h);
       const ampm = hr >= 12 ? 'PM' : 'AM';
       const hr12 = hr % 12 || 12;
-      return `${hr12}:${m} ${ampm}`;
+      return `${hr12}:${m.padStart(2,'0')} ${ampm}`;
     };
 
-    // CHECK ALL 4 PERIODS — SHOW "—" IF NEGATIVE
+    // FORMAT EACH PERIOD — CHECK NEGATIVE FIRST
     const formatPeriod = (start, stop) => {
       if (start < 0 || stop < 0) return '—';
       return `${toAMPM(start)}–${toAMPM(stop)}`;
@@ -272,7 +273,7 @@
     document.getElementById('illum').textContent = `${illum}% Illumination`;
     document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
-    // YOUR PNG: wane98.png (FIXED)
+    // YOUR PNG: wane98.png
     let moonFile = '';
     if (illum === 0) moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
@@ -547,6 +548,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
