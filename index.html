@@ -242,27 +242,28 @@
     const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
 
-    // Convert decimal hours to HH:MM AM/PM safely
-    const toAMPM = (decimalHours) => {
-      if (decimalHours == null || decimalHours < 0 || decimalHours >= 24) return '—'; // invalid
-      const hr = Math.floor(decimalHours);
-      const min = Math.floor((decimalHours - hr) * 60);
-      const hr12 = hr % 12 || 12;
+    // SAFE TIME FORMATTER — ONLY FOR VALID TIMES
+    const toAMPM = (timeStr) => {
+      if (!timeStr || timeStr.includes('-')) return '—';
+      const [h, m] = timeStr.split(':');
+      const hr = parseInt(h);
       const ampm = hr >= 12 ? 'PM' : 'AM';
-      return `${hr12}:${min.toString().padStart(2,'0')} ${ampm}`;
+      const hr12 = hr % 12 || 12;
+      return `${hr12}:${m} ${ampm}`;
     };
 
-    // Format period: if either start or stop invalid, return "—"
-    const format = (start, stop) => {
-      if (start == null || start < 0 || start >= 24 || stop == null || stop < 0 || stop >= 24) return '—';
-      return `${toAMPM(start)}–${toAMPM(stop)}`;
-    };
+    // CHECK DECIMAL FIRST — IF < 0 → "—"
+    const isValid = (dec) => dec !== null && dec !== undefined && dec >= 0;
 
-    // Set solunar periods
-    document.getElementById('maj1').textContent = format(sol.major1Start, sol.major1Stop);
-    document.getElementById('maj2').textContent = format(sol.major2Start, sol.major2Stop);
-    document.getElementById('min1').textContent = format(sol.minor1Start, sol.minor1Stop);
-    document.getElementById('min2').textContent = format(sol.minor2Start, sol.minor2Stop);
+    const maj1 = isValid(sol.major1StartDec) ? `${toAMPM(sol.major1Start)}–${toAMPM(sol.major1Stop)}` : '—';
+    const maj2 = isValid(sol.major2StartDec) ? `${toAMPM(sol.major2Start)}–${toAMPM(sol.major2Stop)}` : '—';
+    const min1 = isValid(sol.minor1StartDec) ? `${toAMPM(sol.minor1Start)}–${toAMPM(sol.minor1Stop)}` : '—';
+    const min2 = isValid(sol.minor2StartDec) ? `${toAMPM(sol.minor2Start)}–${toAMPM(sol.minor2Stop)}` : '—';
+
+    document.getElementById('maj1').textContent = maj1;
+    document.getElementById('maj2').textContent = maj2;
+    document.getElementById('min1').textContent = min1;
+    document.getElementById('min2').textContent = min2;
 
     // 3. MOON + RATING
     const illum = Math.round(sol.moonIllumination * 100);
@@ -275,12 +276,12 @@
     document.getElementById('illum').textContent = `${illum}% Illumination`;
     document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
-    // Moon PNG
+    // YOUR PNG: wane98.png
     let moonFile = '';
     if (illum === 0) moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
-    else if (illum >= 45 && illum <= 55 && phase.includes('First')) moonFile = 'firstquart.png';
-    else if (illum >= 45 && illum <= 55 && phase.includes('Last')) moonFile = 'lastquart.png';
+    else if (illum === 50 && phase.includes('First')) moonFile = 'firstquart.png';
+    else if (illum === 50 && phase.includes('Last')) moonFile = 'lastquart.png';
     else {
       const p = phase.includes('Waxing') ? 'wax' : 'wane';
       const pct = Math.round(illum / 5) * 5;
@@ -289,7 +290,6 @@
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
   } catch (e) {
-    console.error(e);
     document.getElementById('rating').innerHTML = 'Offline<br><span style="font-size:30px;">Try again</span>';
   }
 })();
@@ -552,6 +552,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
