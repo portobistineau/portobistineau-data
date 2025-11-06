@@ -242,25 +242,26 @@
     const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
 
-    const toAMPM = t => {
-      if (t === null || t === undefined || t < 0) return '—';
-      const [h, m] = t.toString().split(':');
+    // SAFE TIME FORMATTER — ONLY RUNS ON VALID POSITIVE TIMES
+    const toAMPM = (raw) => {
+      if (raw === null || raw === undefined || raw < 0) return '—';
+      const [h, m] = raw.toString().split(':');
       const hr = parseInt(h);
       const ampm = hr >= 12 ? 'PM' : 'AM';
       const hr12 = hr % 12 || 12;
       return `${hr12}:${m.padStart(2,'0')} ${ampm}`;
     };
 
-    // FORMAT EACH PERIOD — CHECK NEGATIVE FIRST
-    const formatPeriod = (start, stop) => {
+    // FORMAT EACH PERIOD — NEGATIVE = "—"
+    const format = (start, stop) => {
       if (start < 0 || stop < 0) return '—';
       return `${toAMPM(start)}–${toAMPM(stop)}`;
     };
 
-    document.getElementById('maj1').textContent = formatPeriod(sol.major1Start, sol.major1Stop);
-    document.getElementById('maj2').textContent = formatPeriod(sol.major2Start, sol.major2Stop);
-    document.getElementById('min1').textContent = formatPeriod(sol.minor1Start, sol.minor1Stop);
-    document.getElementById('min2').textContent = formatPeriod(sol.minor2Start, sol.minor2Stop);
+    document.getElementById('maj1').textContent = format(sol.major1Start, sol.major1Stop);
+    document.getElementById('maj2').textContent = format(sol.major2Start, sol.major2Stop);
+    document.getElementById('min1').textContent = format(sol.minor1Start, sol.minor1Stop);
+    document.getElementById('min2').textContent = format(sol.minor2Start, sol.minor2Stop);
 
     // 3. MOON + RATING
     const illum = Math.round(sol.moonIllumination * 100);
@@ -291,7 +292,7 @@
   }
 })();
 </script>
-
+	  
     <!-- Water Level Graph -->
     <div class="section">
       <h2>Lake Bistineau Water Level (MSL Elevation)</h2>
@@ -548,6 +549,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
