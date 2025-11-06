@@ -229,97 +229,67 @@
   </p>
 </div>
 
-<!-- Include SunCalc.js from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
-
 <script>
-(async () => {
-  try {
-    const lat = 32.4619;
-    const lon = -93.34883;
-    const timeZone = 'America/Chicago';
-    const now = new Date();
+(function(){
+  const lat = 32.4619, lon = -93.34883;
+  const timeZone = 'America/Chicago';
+  const now = new Date();
 
-    // ---------- 1. SUN TIMES ----------
-    const sunApi = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`).then(r => r.json());
-    const fmt = t => new Date(t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone });
+  function addHours(dt,h){return new Date(dt.getTime()+h*3600000);}
+  function fmt(dt){return new Date(dt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone});}
 
-    document.getElementById('first').textContent = fmt(sunApi.results.civil_twilight_begin);
-    document.getElementById('rise').textContent  = fmt(sunApi.results.sunrise);
-    document.getElementById('set').textContent   = fmt(sunApi.results.sunset);
-    document.getElementById('last').textContent  = fmt(sunApi.results.civil_twilight_end);
+  // 1. SUN TIMES
+  fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`)
+    .then(r=>r.json())
+    .then(sun=>{
+      document.getElementById('first').textContent = fmt(sun.results.civil_twilight_begin);
+      document.getElementById('rise').textContent  = fmt(sun.results.sunrise);
+      document.getElementById('set').textContent   = fmt(sun.results.sunset);
+      document.getElementById('last').textContent  = fmt(sun.results.civil_twilight_end);
 
-    // ---------- 2. MOON TIMES using SunCalc ----------
-    const moonTimes = SunCalc.getMoonTimes(now, lat, lon);
-    const moonIllum = SunCalc.getMoonIllumination(now); // fraction 0..1
-    const moonPhase = moonIllum.phase; // 0=new, 0.25=first quarter, 0.5=full, etc.
+      // 2. MOON TIMES
+      const mt = SunCalc.getMoonTimes(now,lat,lon);
+      const moonRise = mt.rise || new Date(sun.results.sunrise);
+      const moonSet = mt.set || new Date(sun.results.sunset);
 
-    const moonRise = moonTimes.rise || sunApi.results.sunrise;
-    const moonSet = moonTimes.set || sunApi.results.sunset;
+      // Approximate overhead/underfoot
+      const overhead = addHours(moonRise,6); 
+      const underfoot = addHours(overhead,12);
 
-    // Moon transit (overhead / underfoot)
-    const moonPos = SunCalc.getMoonPosition(now, lat, lon);
-    const moonTransit = SunCalc.getMoonTimes(now, lat, lon).transit; // approximate overhead
-    const overhead = moonTransit || moonRise; // fallback
-    const underfoot = addHours(overhead, 12); // ~12h later for underfoot
+      // 3. SOLUNAR PERIODS
+      document.getElementById('maj1').textContent = `${fmt(addHours(overhead,-1))}–${fmt(addHours(overhead,1))}`;
+      document.getElementById('maj2').textContent = `${fmt(addHours(underfoot,-1))}–${fmt(addHours(underfoot,1))}`;
+      document.getElementById('min1').textContent = `${fmt(addHours(moonRise,-0.5))}–${fmt(addHours(moonRise,0.5))}`;
+      document.getElementById('min2').textContent = `${fmt(addHours(moonSet,-0.5))}–${fmt(addHours(moonSet,0.5))}`;
 
-    // ---------- 3. SOLUNAR PERIODS ----------
-    const addHours = (dt, h) => new Date(dt.getTime() + h*3600*1000);
+      // 4. MOON PHASE
+      const mi = SunCalc.getMoonIllumination(now);
+      const illumPct = Math.round(mi.fraction*100);
+      const phaseName = mi.phase<0.25?'Waxing Crescent':mi.phase===0.25?'First Quarter':mi.phase<0.5?'Waxing Gibbous':mi.phase===0.5?'Full Moon':mi.phase<0.75?'Waning Gibbous':mi.phase===0.75?'Last Quarter':'Waning Crescent';
+      document.getElementById('phase').textContent = phaseName;
+      document.getElementById('illum').textContent = `${illumPct}% Illumination`;
 
-    const maj1 = `${fmt(addHours(overhead, -1))}–${fmt(addHours(overhead, 1))}`;
-    const maj2 = `${fmt(addHours(underfoot, -1))}–${fmt(addHours(underfoot, 1))}`;
-    const min1 = `${fmt(addHours(moonRise, -0.5))}–${fmt(addHours(moonRise, 0.5))}`;
-    const min2 = `${fmt(addHours(moonSet, -0.5))}–${fmt(addHours(moonSet, 0.5))}`;
+      // 5. MOON IMAGE
+      let moonFile='';
+      if(illumPct===0) moonFile='newmoon.png';
+      else if(illumPct===100) moonFile='fullmoon.png';
+      else if(illumPct>=45 && illumPct<=55 && mi.phase<0.5) moonFile='firstquart.png';
+      else if(illumPct>=45 && illumPct<=55 && mi.phase>0.5) moonFile='lastquart.png';
+      else{const p=mi.phase<0.5?'wax':'wan'; const pct=Math.round(illumPct/5)*5; moonFile=`${p}${pct}.png`;}
+      document.getElementById('moon-img').src=`/images/${moonFile}`;
 
-    document.getElementById('maj1').textContent = maj1;
-    document.getElementById('maj2').textContent = maj2;
-    document.getElementById('min1').textContent = min1;
-    document.getElementById('min2').textContent = min2;
+      // 6. STARS
+      const stars='★★★★'.slice(0,illumPct>80?4:illumPct>50?3:illumPct>20?2:1);
+      const rating=illumPct>80?'Best':illumPct>50?'Better':illumPct>20?'Good':'Fair';
+      document.getElementById('rating').innerHTML=stars+`<br><span style="font-size:30px;color:#003366;">${rating}</span>`;
 
-    // ---------- 4. MOON PHASE & IMAGE ----------
-    const illumPct = Math.round(moonIllum.fraction * 100);
-    const phaseName = getMoonPhaseName(moonPhase);
-    document.getElementById('phase').textContent = phaseName;
-    document.getElementById('illum').textContent = `${illumPct}% Illumination`;
-
-    // Choose PNG
-    let moonFile = '';
-    if (illumPct === 0) moonFile = 'newmoon.png';
-    else if (illumPct === 100) moonFile = 'fullmoon.png';
-    else if (illumPct >= 45 && illumPct <= 55 && moonPhase < 0.5) moonFile = 'firstquart.png';
-    else if (illumPct >= 45 && illumPct <= 55 && moonPhase > 0.5) moonFile = 'lastquart.png';
-    else {
-      const p = moonPhase < 0.5 ? 'wax' : 'wan';
-      const pct = Math.round(illumPct / 5) * 5;
-      moonFile = `${p}${pct}.png`;
-    }
-    document.getElementById('moon-img').src = `/images/${moonFile}`;
-
-    // ---------- 5. STARS + RATING ----------
-    const stars = '★★★★'.slice(0, illumPct > 80 ? 4 : illumPct > 50 ? 3 : illumPct > 20 ? 2 : 1);
-    const rating = illumPct > 80 ? 'Best' : illumPct > 50 ? 'Better' : illumPct > 20 ? 'Good' : 'Fair';
-    document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + rating + '</span>';
-
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-
-    // ---------- 6. Helper Function ----------
-    function getMoonPhaseName(phase) {
-      if (phase === 0) return 'New Moon';
-      if (phase < 0.25) return 'Waxing Crescent';
-      if (phase === 0.25) return 'First Quarter';
-      if (phase < 0.5) return 'Waxing Gibbous';
-      if (phase === 0.5) return 'Full Moon';
-      if (phase < 0.75) return 'Waning Gibbous';
-      if (phase === 0.75) return 'Last Quarter';
-      return 'Waning Crescent';
-    }
-
-  } catch (e) {
-    console.error(e);
-    document.getElementById('rating').innerHTML = 'Offline<br><span style="font-size:30px;">Try again</span>';
-  }
+      document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    })
+    .catch(e=>console.error(e));
 })();
 </script>
+
 
     <!-- Water Level Graph -->
     <div class="section">
@@ -577,6 +547,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
