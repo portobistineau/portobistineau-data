@@ -242,19 +242,19 @@
     const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
 
-    // SAFE TIME FORMATTER — ONLY RUNS ON VALID POSITIVE TIMES
-    const toAMPM = (raw) => {
-      if (raw === null || raw === undefined || raw < 0) return '—';
-      const [h, m] = raw.toString().split(':');
-      const hr = parseInt(h);
+    // SAFE TIME FORMATTER — decimal hours to AM/PM, only positive
+    const toAMPM = (decimalHours) => {
+      if (decimalHours == null || decimalHours < 0) return '—';
+      const hr = Math.floor(decimalHours);
+      const min = Math.round((decimalHours - hr) * 60);
       const ampm = hr >= 12 ? 'PM' : 'AM';
       const hr12 = hr % 12 || 12;
-      return `${hr12}:${m.padStart(2,'0')} ${ampm}`;
+      return `${hr12}:${min.toString().padStart(2,'0')} ${ampm}`;
     };
 
-    // FORMAT EACH PERIOD — NEGATIVE = "—"
+    // FORMAT EACH PERIOD — negative = "—"
     const format = (start, stop) => {
-      if (start < 0 || stop < 0) return '—';
+      if (start == null || start < 0 || stop == null || stop < 0) return '—';
       return `${toAMPM(start)}–${toAMPM(stop)}`;
     };
 
@@ -288,6 +288,7 @@
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
   } catch (e) {
+    console.error(e);
     document.getElementById('rating').innerHTML = 'Offline<br><span style="font-size:30px;">Try again</span>';
   }
 })();
@@ -549,6 +550,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
