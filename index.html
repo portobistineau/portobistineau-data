@@ -230,56 +230,70 @@
 </div>
 
 <script>
-// LIVE SUN TIMES
-fetch('https://api.sunrise-sunset.org/json?lat=32.4619&lng=-93.34883&formatted=0')
-  .then(r => r.json())
-  .then(d => {
-    const fmt = t => new Date(t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
-    document.getElementById('first').textContent = fmt(d.results.civil_twilight_begin);
-    document.getElementById('rise').textContent  = fmt(d.results.sunrise);
-    document.getElementById('set').textContent   = fmt(d.results.sunset);
-    document.getElementById('last').textContent  = fmt(d.results.civil_twilight_end);
+(async () => {
+  // 1. LIVE SUN TIMES
+  const sun = await (await fetch('https://api.sunrise-sunset.org/json?lat=32.4619&lng=-93.34883&formatted=0')).json();
+  const fmt = t => new Date(t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  document.getElementById('first').textContent = fmt(sun.results.civil_twilight_begin);
+  document.getElementById('rise').textContent  = fmt(sun.results.sunrise);
+  document.getElementById('set').textContent   = fmt(sun.results.sunset);
+  document.getElementById('last').textContent  = fmt(sun.results.civil_twilight_end);
+
+  // 2. LIVE MOON + SOLUNAR (FREE API)
+  const today = new Date().toISOString().slice(0,10);
+  const moonUrl = `https://api.astronomyapi.com/api/v2/studio/moon-phase?latitude=32.4619&longitude=-93.34883&date=${today}`;
+  const moonResp = await fetch(moonUrl, {
+    headers: { 'Authorization': 'Basic ' + btoa('APPLICATION_ID:APPLICATION_SECRET') }
   });
+  const moon = await moonResp.json();
 
-// LIVE MOON + SOLUNAR (2 majors, 2 minors, your PNGs)
-fetch('https://api.astronomyapi.com/api/v2/studio/moon-phase?latitude=32.4619&longitude=-93.34883&date=' + new Date().toISOString().slice(0,10))
-  .then(r => r.json())
-  .then(moon => {
-    const illum = moon.data.table.rows[0].cells[0].phase.illumination;
-    const phase = moon.data.table.rows[0].cells[0].phase.name;
-    const stars = '★★★★'.slice(0, illum>80?4:illum>50?3:illum>20?2:1);
-    const rating = illum>80?'Best':illum>50?'Better':illum>20?'Good':'Fair';
+  // FALLBACK: Use free moon phase API (no key)
+  const freeMoon = await (await fetch(`https://www.icalendar37.net/lunar/api/?lang=en&month=${new Date().getMonth()+1}&year=${new Date().getFullYear()}&size=100&lightColor=%23ffffff&shadeColor=%23000000&textur=false`)).json();
+  const day = new Date().getDate();
+  const illum = Math.round(freeMoon.phase[day].lighting);
+  const phaseName = freeMoon.phase[day].phaseName;
 
-    // 2 Majors (moon overhead/underfoot ±1h)
-    const overhead = 12 + (lon / 15);
-    const underfoot = overhead + 12;
-    const maj1 = `${fmt(overhead-1)}–${fmt(overhead+1)}`;
-    const maj2 = `${fmt(underfoot-1)}–${fmt(underfoot+1)}`;
-    const min1 = `${fmt(overhead-0.5)}–${fmt(overhead+0.5)}`;
-    const min2 = `${fmt(underfoot-0.5)}–${fmt(underfoot+0.5)}`;
+  // 3. SOLUNAR TIMES (SolunarForecast formula)
+  const lon = -93.34883;
+  const moonTransit = 12 + (lon / 15); // overhead
+  const moonUnder = moonTransit + 12;
+  const fmtH = h => {
+    const d = new Date();
+    d.setHours(Math.floor(h), (h % 1) * 60);
+    return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  };
+  const maj1 = `${fmtH(moonTransit-1)}–${fmtH(moonTransit+1)}`;
+  const maj2 = `${fmtH(moonUnder-1)}–${fmtH(moonUnder+1)}`;
+  const min1 = `${fmtH(moonTransit-0.5)}–${fmtH(moonTransit+0.5)}`;
+  const min2 = `${fmtH(moonUnder-0.5)}–${fmtH(moonUnder+0.5)}`;
 
-    document.getElementById('maj1').textContent = maj1;
-    document.getElementById('maj2').textContent = maj2;
-    document.getElementById('min1').textContent = min1;
-    document.getElementById('min2').textContent = min2;
-    document.getElementById('phase').textContent = phase;
-    document.getElementById('illum').textContent = `${illum}% Illumination`;
-    document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + rating + '</span>';
-    document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  // 4. UPDATE PAGE
+  document.getElementById('maj1').textContent = maj1;
+  document.getElementById('maj2').textContent = maj2;
+  document.getElementById('min1').textContent = min1;
+  document.getElementById('min2').textContent = min2;
+  document.getElementById('phase').textContent = phaseName;
+  document.getElementById('illum').textContent = `${illum}% Illumination`;
+  document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
 
-    // YOUR PNG
-    let moonFile = '';
-    if (illum === 0) moonFile = 'newmoon.png';
-    else if (illum === 100) moonFile = 'fullmoon.png';
-    else if (illum === 50 && phase.includes('First')) moonFile = 'firstquart.png';
-    else if (illum === 50 && phase.includes('Last')) moonFile = 'lastquart.png';
-    else {
-      const p = phase.includes('Waxing') ? 'wax' : 'wan';
-      const pct = Math.round(illum / 5) * 5;
-      moonFile = `${p}${pct}.png`;
-    }
-    document.getElementById('moon-img').src = `/images/${moonFile}`;
-  });
+  // 5. STARS + RATING
+  const stars = '★★★★'.slice(0, illum>80?4:illum>50?3:illum>20?2:1);
+  const rating = illum>80?'Best':illum>50?'Better':illum>20?'Good':'Fair';
+  document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + rating + '</span>';
+
+  // 6. YOUR PNG MOON
+  let moonFile = '';
+  if (illum === 0) moonFile = 'newmoon.png';
+  else if (illum === 100) moonFile = 'fullmoon.png';
+  else if (illum === 50 && phaseName.includes('First')) moonFile = 'firstquart.png';
+  else if (illum === 50 && phaseName.includes('Last')) moonFile = 'lastquart.png';
+  else {
+    const p = phaseName.includes('Waxing') ? 'wax' : 'wan';
+    const pct = Math.round(illum / 5) * 5;
+    moonFile = `${p}${pct}.png`;
+  }
+  document.getElementById('moon-img').src = `/images/${moonFile}`;
+})();
 </script>
 
     <!-- Water Level Graph -->
@@ -538,6 +552,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
