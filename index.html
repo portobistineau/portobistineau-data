@@ -194,15 +194,7 @@
       </div>
     </div>
 
-PERFECT — 100% FIXED IN 15 SECONDS
-Here’s your FINAL, FLAWLESS, 0-credit block with:
-
-Major 1 = — when negative
-Moon PNG = wane98.png (not wan98)
-Everything else 100% live
-
-COPY → PASTE → COMMIT → DONE FOREVER
-html<!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
+<!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">Today’s Solunar Times</h2>
 
@@ -258,16 +250,16 @@ html<!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
       return `${hr12}:${m} ${ampm}`;
     };
 
-    // MAJOR 1: Show "—" if negative
-    const maj1 = sol.major1Start < 0 ? '—' : `${toAMPM(sol.major1Start)}–${toAMPM(sol.major1Stop)}`;
-    const maj2 = sol.major2Start < 0 ? '—' : `${toAMPM(sol.major2Start)}–${toAMPM(sol.major2Stop)}`;
-    const min1 = sol.minor1Start < 0 ? '—' : `${toAMPM(sol.minor1Start)}–${toAMPM(sol.minor1Stop)}`;
-    const min2 = sol.minor2Start < 0 ? '—' : `${toAMPM(sol.minor2Start)}–${toAMPM(sol.minor2Stop)}`;
+    // CHECK ALL 4 PERIODS — SHOW "—" IF NEGATIVE
+    const formatPeriod = (start, stop) => {
+      if (start < 0 || stop < 0) return '—';
+      return `${toAMPM(start)}–${toAMPM(stop)}`;
+    };
 
-    document.getElementById('maj1').textContent = maj1;
-    document.getElementById('maj2').textContent = maj2;
-    document.getElementById('min1').textContent = min1;
-    document.getElementById('min2').textContent = min2;
+    document.getElementById('maj1').textContent = formatPeriod(sol.major1Start, sol.major1Stop);
+    document.getElementById('maj2').textContent = formatPeriod(sol.major2Start, sol.major2Stop);
+    document.getElementById('min1').textContent = formatPeriod(sol.minor1Start, sol.minor1Stop);
+    document.getElementById('min2').textContent = formatPeriod(sol.minor2Start, sol.minor2Stop);
 
     // 3. MOON + RATING
     const illum = Math.round(sol.moonIllumination * 100);
@@ -280,7 +272,7 @@ html<!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
     document.getElementById('illum').textContent = `${illum}% Illumination`;
     document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
-    // YOUR PNG: wane98.png (not wan98)
+    // YOUR PNG: wane98.png (FIXED)
     let moonFile = '';
     if (illum === 0) moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
@@ -555,6 +547,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
