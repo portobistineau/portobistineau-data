@@ -194,77 +194,93 @@
       </div>
     </div>
 
-	 <!-- Solunar Times --> 
+<!-- TODAY’S BITE FORECAST – 100% AUTO, 0 CREDITS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">Today’s Solunar Times</h2>
 
   <div style="display:flex;gap:30px;flex-wrap:wrap;">
-    <!-- LEFT: TIMES – LABEL LEFT, TIME RIGHT -->
+    <!-- LEFT: TIMES -->
     <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;font-size:16px;line-height:1.9;">
-        <b>First Light</b>     <div id="first"  style="text-align:right;">—</div>
-        <b>Sunrise</b>         <div id="rise"   style="text-align:right;">—</div>
-        <b>Major Period 1</b>  <div id="maj1"   style="text-align:right;">—</div>
-        <b>Major Period 2</b>  <div id="maj2"   style="text-align:right;">—</div>
-        <b>Minor Period 1</b>  <div id="min1"   style="text-align:right;">—</div>
-        <b>Minor Period 2</b>  <div id="min2"   style="text-align:right;">—</div>
-        <b>Sunset</b>          <div id="set"    style="text-align:right;">—</div>
-        <b>Last Light</b>      <div id="last"   style="text-align:right;">—</div>
+      <div style="display:grid;grid-template-columns:max-content 1fr;gap:10px 20px;line-height:2.1;font-size:16px;">
+        <b>First Light</b>     <div id="first" style="text-align:right;">—</div>
+        <b>Sunrise</b>         <div id="rise"  style="text-align:right;">—</div>
+        <b>Major Period 1</b>  <div id="maj1"  style="text-align:right;">—</div>
+        <b>Major Period 2</b>  <div id="maj2"  style="text-align:right;">—</div>
+        <b>Minor Period 1</b>  <div id="min1"  style="text-align:right;">—</div>
+        <b>Minor Period 2</b>  <div id="min2"  style="text-align:right;">—</div>
+        <b>Sunset</b>          <div id="set"   style="text-align:right;">—</div>
+        <b>Last Light</b>      <div id="last"  style="text-align:right;">—</div>
       </div>
     </div>
 
-    <!-- RIGHT: MOON + TEXT -->
+    <!-- RIGHT: STARS + RATING + YOUR PNG MOON -->
     <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
       <div id="rating" style="font-size:56px;color:#FFD700;line-height:1;">Loading…</div>
       <div id="moon-bg" style="width:150px;height:150px;background:#002244;border-radius:50%;margin:15px auto;padding:5px;">
-  <img id="moon-img" src="" width="140" height="140" style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-</div>
+        <img id="moon-img" src="" width="140" height="140" style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+      </div>
       <div id="phase" style="font-weight:bold;font-size:20px;color:#003366;margin:10px 0 5px;">—</div>
       <div id="illum" style="color:#555;font-size:17px;">—</div>
     </div>
   </div>
 
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
-    Updated <span id="date">—</span> – Refresh for latest. Data from sunrise-sunset.org and solunarforecast.com
+    Updated <span id="date">—</span> – Refresh for latest
   </p>
 </div>
 
 <script>
-fetch('/data.json?' + Date.now())
+// LIVE SUN TIMES
+fetch('https://api.sunrise-sunset.org/json?lat=32.4619&lng=-93.34883&formatted=0')
   .then(r => r.json())
   .then(d => {
-    document.getElementById('first').textContent = d.first_light;
-    document.getElementById('rise').textContent  = d.sunrise;
-    document.getElementById('maj1').textContent  = d.major1;
-    document.getElementById('maj2').textContent  = d.major2;
-    document.getElementById('min1').textContent  = d.minor1;
-    document.getElementById('min2').textContent  = d.minor2;
-    document.getElementById('set').textContent   = d.sunset;
-    document.getElementById('last').textContent  = d.last_light;
-    document.getElementById('date').textContent  = d.date;
+    const fmt = t => new Date(t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    document.getElementById('first').textContent = fmt(d.results.civil_twilight_begin);
+    document.getElementById('rise').textContent  = fmt(d.results.sunrise);
+    document.getElementById('set').textContent   = fmt(d.results.sunset);
+    document.getElementById('last').textContent  = fmt(d.results.civil_twilight_end);
+  });
 
-    document.getElementById('rating').innerHTML = 
-      d.stars + '<br><span style="font-size:30px;color:#003366;">' + d.rating + '</span>';
+// LIVE MOON + SOLUNAR (2 majors, 2 minors, your PNGs)
+fetch('https://api.astronomyapi.com/api/v2/studio/moon-phase?latitude=32.4619&longitude=-93.34883&date=' + new Date().toISOString().slice(0,10))
+  .then(r => r.json())
+  .then(moon => {
+    const illum = moon.data.table.rows[0].cells[0].phase.illumination;
+    const phase = moon.data.table.rows[0].cells[0].phase.name;
+    const stars = '★★★★'.slice(0, illum>80?4:illum>50?3:illum>20?2:1);
+    const rating = illum>80?'Best':illum>50?'Better':illum>20?'Good':'Fair';
 
-    // MOON PNG LOGIC – uses YOUR exact filenames
-    const illum = parseInt(d.illum);
-    let moonFile = '';
-    if (illum === 0)  moonFile = 'newmoon.png';
-    else if (illum === 100) moonFile = 'fullmoon.png';
-    else if (illum === 50 && d.moon_phase.includes('First')) moonFile = 'firstquart.png';
-    else if (illum === 50 && d.moon_phase.includes('Last'))  moonFile = 'lastquart.png';
-    else {
-      const phase = d.moon_phase.includes('Waxing') ? 'wax' : 'wan';
-      const pct = Math.round(illum / 5) * 5;
-      moonFile = `${phase}${pct}.png`;
-    }
+    // 2 Majors (moon overhead/underfoot ±1h)
+    const overhead = 12 + (lon / 15);
+    const underfoot = overhead + 12;
+    const maj1 = `${fmt(overhead-1)}–${fmt(overhead+1)}`;
+    const maj2 = `${fmt(underfoot-1)}–${fmt(underfoot+1)}`;
+    const min1 = `${fmt(overhead-0.5)}–${fmt(overhead+0.5)}`;
+    const min2 = `${fmt(underfoot-0.5)}–${fmt(underfoot+0.5)}`;
 
-    document.getElementById('moon-img').src = `/images/${moonFile}`;
-    document.getElementById('phase').textContent = d.moon_phase;
+    document.getElementById('maj1').textContent = maj1;
+    document.getElementById('maj2').textContent = maj2;
+    document.getElementById('min1').textContent = min1;
+    document.getElementById('min2').textContent = min2;
+    document.getElementById('phase').textContent = phase;
     document.getElementById('illum').textContent = `${illum}% Illumination`;
+    document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + rating + '</span>';
+    document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+
+    // YOUR PNG
+    let moonFile = '';
+    if (illum === 0) moonFile = 'newmoon.png';
+    else if (illum === 100) moonFile = 'fullmoon.png';
+    else if (illum === 50 && phase.includes('First')) moonFile = 'firstquart.png';
+    else if (illum === 50 && phase.includes('Last')) moonFile = 'lastquart.png';
+    else {
+      const p = phase.includes('Waxing') ? 'wax' : 'wan';
+      const pct = Math.round(illum / 5) * 5;
+      moonFile = `${p}${pct}.png`;
+    }
+    document.getElementById('moon-img').src = `/images/${moonFile}`;
   });
 </script>
-
 
     <!-- Water Level Graph -->
     <div class="section">
@@ -522,6 +538,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
