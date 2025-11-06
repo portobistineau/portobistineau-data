@@ -242,17 +242,18 @@
     const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
 
-    // SAFE TIME FORMATTER — decimal hours to AM/PM, only positive
+    // Convert decimal hours to HH:MM AM/PM
     const toAMPM = (decimalHours) => {
       if (decimalHours == null || decimalHours < 0) return '—';
-      const hr = Math.floor(decimalHours);
-      const min = Math.round((decimalHours - hr) * 60);
+      let hr = Math.floor(decimalHours);
+      let min = Math.floor((decimalHours - hr) * 60);
+      if (min === 60) { hr += 1; min = 0; } // handle rounding edge case
       const ampm = hr >= 12 ? 'PM' : 'AM';
       const hr12 = hr % 12 || 12;
       return `${hr12}:${min.toString().padStart(2,'0')} ${ampm}`;
     };
 
-    // FORMAT EACH PERIOD — negative = "—"
+    // Format start/stop times
     const format = (start, stop) => {
       if (start == null || start < 0 || stop == null || stop < 0) return '—';
       return `${toAMPM(start)}–${toAMPM(stop)}`;
@@ -274,12 +275,12 @@
     document.getElementById('illum').textContent = `${illum}% Illumination`;
     document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
-    // YOUR PNG: wane98.png
+    // Moon PNG
     let moonFile = '';
     if (illum === 0) moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
-    else if (illum === 50 && phase.includes('First')) moonFile = 'firstquart.png';
-    else if (illum === 50 && phase.includes('Last')) moonFile = 'lastquart.png';
+    else if (illum >= 45 && illum <= 55 && phase.includes('First')) moonFile = 'firstquart.png';
+    else if (illum >= 45 && illum <= 55 && phase.includes('Last')) moonFile = 'lastquart.png';
     else {
       const p = phase.includes('Waxing') ? 'wax' : 'wane';
       const pct = Math.round(illum / 5) * 5;
@@ -293,6 +294,7 @@
   }
 })();
 </script>
+
 	  
     <!-- Water Level Graph -->
     <div class="section">
@@ -550,6 +552,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
