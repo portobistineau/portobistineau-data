@@ -242,23 +242,23 @@
     const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
 
-    // Convert decimal hours to HH:MM AM/PM
+    // Convert decimal hours to HH:MM AM/PM safely
     const toAMPM = (decimalHours) => {
-      if (decimalHours == null || decimalHours < 0) return '—';
-      let hr = Math.floor(decimalHours);
-      let min = Math.floor((decimalHours - hr) * 60);
-      if (min === 60) { hr += 1; min = 0; } // handle rounding edge case
-      const ampm = hr >= 12 ? 'PM' : 'AM';
+      if (decimalHours == null || decimalHours < 0 || decimalHours >= 24) return '—'; // invalid
+      const hr = Math.floor(decimalHours);
+      const min = Math.floor((decimalHours - hr) * 60);
       const hr12 = hr % 12 || 12;
+      const ampm = hr >= 12 ? 'PM' : 'AM';
       return `${hr12}:${min.toString().padStart(2,'0')} ${ampm}`;
     };
 
-    // Format start/stop times
+    // Format period: if either start or stop invalid, return "—"
     const format = (start, stop) => {
-      if (start == null || start < 0 || stop == null || stop < 0) return '—';
+      if (start == null || start < 0 || start >= 24 || stop == null || stop < 0 || stop >= 24) return '—';
       return `${toAMPM(start)}–${toAMPM(stop)}`;
     };
 
+    // Set solunar periods
     document.getElementById('maj1').textContent = format(sol.major1Start, sol.major1Stop);
     document.getElementById('maj2').textContent = format(sol.major2Start, sol.major2Stop);
     document.getElementById('min1').textContent = format(sol.minor1Start, sol.minor1Stop);
@@ -552,6 +552,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
