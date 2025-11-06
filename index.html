@@ -254,7 +254,7 @@ fetch('/data.json?' + Date.now())
     else if (illum === 50 && d.moon_phase.includes('First')) moonFile = 'firstquart.png';
     else if (illum === 50 && d.moon_phase.includes('Last'))  moonFile = 'lastquart.png';
     else {
-      const phase = d.moon_phase.includes('Waxing') ? 'wax' : 'wan';
+      const phase = d.moon_phase.includes('Waxing') ? 'wax' : 'wane';
       const pct = Math.round(illum / 5) * 5;
       moonFile = `${phase}${pct}.png`;
     }
@@ -521,6 +521,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
