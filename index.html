@@ -333,14 +333,27 @@
 
 <script>
 const CHANNEL_ID = 'UCg-udKvya42o1Sw1XvhgpnQ';
-const UPLOADS_PLAYLIST = 'UU' + CHANNEL_ID.slice(2);  // ← SLICE, NOT substring
+const UPLOADS_PLAYLIST = 'UU' + CHANNEL_ID.slice(2); // correct YouTube uploads playlist ID
 
-fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?playlist_id=${UPLOADS_PLAYLIST}`)
-  .then(r => r.json())
+// Fetch the YouTube uploads RSS feed directly (no caching)
+fetch(`https://www.youtube.com/feeds/videos.xml?playlist_id=${UPLOADS_PLAYLIST}`)
+  .then(response => response.text())
+  .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
   .then(data => {
-    const video = data.items.find(v => v.title.toUpperCase().includes('UPDATE'));
-    const videoId = video ? video.link.split('v=')[1].split('&')[0] : '79hxzuJ0r70';
-    document.getElementById('latest-video').src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+    const firstEntry = data.querySelector("entry");
+    if (!firstEntry) throw new Error("No videos found in feed");
+
+    const link = firstEntry.querySelector("link").getAttribute("href");
+    const videoId = new URL(link).searchParams.get("v");
+
+    document.getElementById('latest-video').src =
+      `https://www.youtube.com/embed/${videoId}?rel=0`;
+  })
+  .catch(err => {
+    console.error('Error fetching latest video:', err);
+    // Fallback video if something fails
+    document.getElementById('latest-video').src =
+      `https://www.youtube.com/embed/79hxzuJ0r70?rel=0`;
   });
 </script>
 
@@ -552,6 +565,7 @@ fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feed
 </body>
 
 </html>
+
 
 
 
