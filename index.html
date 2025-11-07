@@ -196,7 +196,9 @@
 
 <!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
-  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">Today’s Solunar Times</h2>
+  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
+  <span id="header-date">Today’s</span> Solunar Times
+</h2>
 
   <div style="display:flex;gap:30px;flex-wrap:wrap;">
     <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
@@ -230,7 +232,7 @@
 <script>
 (async () => {
   try {
-    // 1. SUN TIMES — LIVE
+    // 1. SUN TIMES
     const sun = await fetch('https://api.sunrise-sunset.org/json?lat=32.4619&lng=-93.34883&formatted=0').then(r => r.json());
     const fmt = t => new Date(t).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
     document.getElementById('first').textContent = fmt(sun.results.civil_twilight_begin);
@@ -238,40 +240,43 @@
     document.getElementById('set').textContent   = fmt(sun.results.sunset);
     document.getElementById('last').textContent  = fmt(sun.results.civil_twilight_end);
 
-    // 2. SOLUNAR — LIVE (CST, not UTC)
+    // 2. SOLUNAR — CST, TODAY
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${year}${month}${day},-6`).then(r => r.json());
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${y}${m}${d},-6`).then(r => r.json());
 
-    // 3. ORDER MAJORS & MINORS (early → late)
+    // 3. SAFE TIME FORMATTER
+    const toAMPM = (dec) => {
+      if (dec === null || dec < 0) return '—';
+      const hrs = Math.floor(dec);
+      const mins = Math.round((dec - hrs) * 60);
+      const hr12 = hrs % 12 || 12;
+      const ampm = hrs >= 12 ? 'PM' : 'AM';
+      return `${hr12}:${mins.toString().padStart(2,'0')} ${ampm}`;
+    };
+
+    // 4. SORT + FULLY HIDE NEGATIVE PERIODS
     const majors = [
       { start: sol.major1StartDec, stop: sol.major1StopDec },
       { start: sol.major2StartDec, stop: sol.major2StopDec }
-    ].sort((a, b) => a.start - b.start);
+    ].filter(p => p.start >= 0 && p.stop >= 0)  // KILL NEGATIVE
+      .sort((a,b) => a.start - b.start);
 
     const minors = [
       { start: sol.minor1StartDec, stop: sol.minor1StopDec },
       { start: sol.minor2StartDec, stop: sol.minor2StopDec }
-    ].sort((a, b) => a.start - b.start);
+    ].filter(p => p.start >= 0 && p.stop >= 0)
+      .sort((a,b) => a.start - b.start);
 
-    const toAMPM = t => {
-      if (t < 0) return '—';
-      const [h, m] = t.toString().split('.');
-      const hr = parseInt(h);
-      const min = m ? (parseFloat('0.' + m) * 60).toFixed(0).padStart(2, '0') : '00';
-      const ampm = hr >= 12 ? 'PM' : 'AM';
-      const hr12 = hr % 12 || 12;
-      return `${hr12}:${min} ${ampm}`;
-    };
+    // 5. DISPLAY (early → late)
+    document.getElementById('maj1').textContent = majors[0] ? `${toAMPM(majors[0].start)}–${toAMPM(majors[0].stop)}` : '—';
+    document.getElementById('maj2').textContent = majors[1] ? `${toAMPM(majors[1].start)}–${toAMPM(majors[1].stop)}` : '—';
+    document.getElementById('min1').textContent = minors[0] ? `${toAMPM(minors[0].start)}–${toAMPM(minors[0].stop)}` : '—';
+    document.getElementById('min2').textContent = minors[1] ? `${toAMPM(minors[1].start)}–${toAMPM(minors[1].stop)}` : '—';
 
-    document.getElementById('maj1').textContent = `${toAMPM(majors[0].start)}–${toAMPM(majors[0].stop)}`;
-    document.getElementById('maj2').textContent = `${toAMPM(majors[1].start)}–${toAMPM(majors[1].stop)}`;
-    document.getElementById('min1').textContent = `${toAMPM(minors[0].start)}–${toAMPM(minors[0].stop)}`;
-    document.getElementById('min2').textContent = `${toAMPM(minors[1].start)}–${toAMPM(minors[1].stop)}`;
-
-    // 4. MOON + RATING
+    // 6. MOON + RATING
     const illum = Math.round(sol.moonIllumination * 100);
     const phase = sol.moonPhase;
     const stars = '★★★★'.slice(0, sol.dayRating);
@@ -282,7 +287,7 @@
     document.getElementById('illum').textContent = `${illum}% Illumination`;
     document.getElementById('date').textContent = today.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
-    // 5. YOUR PNG MOON
+    // 7. YOUR PNG
     let moonFile = '';
     if (illum === 0) moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
@@ -295,12 +300,14 @@
     }
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
+    // 8. HEADER: Today / Tomorrow
+    document.getElementById('header-date').textContent = today.getHours() >= 18 ? 'Tomorrow’s' : 'Today’s';
+
   } catch (e) {
     document.getElementById('rating').innerHTML = 'Offline<br><span style="font-size:30px;">Try again</span>';
   }
 })();
 </script>
-
 	  
     <!-- Water Level Graph -->
     <div class="section">
@@ -547,6 +554,7 @@
 </body>
 
 </html>
+
 
 
 
