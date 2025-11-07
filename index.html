@@ -238,34 +238,40 @@
     document.getElementById('set').textContent   = fmt(sun.results.sunset);
     document.getElementById('last').textContent  = fmt(sun.results.civil_twilight_end);
 
-    // 2. SOLUNAR — LIVE
-    const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
-    const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${today},-6`).then(r => r.json());
+    // 2. SOLUNAR — LIVE (CST, not UTC)
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const sol = await fetch(`https://api.solunar.org/solunar/32.4619,-93.34883,${year}${month}${day},-6`).then(r => r.json());
 
-    // SAFE TIME FORMATTER — ONLY FOR VALID TIMES
-    const toAMPM = (timeStr) => {
-      if (!timeStr || timeStr.includes('-')) return '—';
-      const [h, m] = timeStr.split(':');
+    // 3. ORDER MAJORS & MINORS (early → late)
+    const majors = [
+      { start: sol.major1StartDec, stop: sol.major1StopDec },
+      { start: sol.major2StartDec, stop: sol.major2StopDec }
+    ].sort((a, b) => a.start - b.start);
+
+    const minors = [
+      { start: sol.minor1StartDec, stop: sol.minor1StopDec },
+      { start: sol.minor2StartDec, stop: sol.minor2StopDec }
+    ].sort((a, b) => a.start - b.start);
+
+    const toAMPM = t => {
+      if (t < 0) return '—';
+      const [h, m] = t.toString().split('.');
       const hr = parseInt(h);
+      const min = m ? (parseFloat('0.' + m) * 60).toFixed(0).padStart(2, '0') : '00';
       const ampm = hr >= 12 ? 'PM' : 'AM';
       const hr12 = hr % 12 || 12;
-      return `${hr12}:${m} ${ampm}`;
+      return `${hr12}:${min} ${ampm}`;
     };
 
-    // CHECK DECIMAL FIRST — IF < 0 → "—"
-    const isValid = (dec) => dec !== null && dec !== undefined && dec >= 0;
+    document.getElementById('maj1').textContent = `${toAMPM(majors[0].start)}–${toAMPM(majors[0].stop)}`;
+    document.getElementById('maj2').textContent = `${toAMPM(majors[1].start)}–${toAMPM(majors[1].stop)}`;
+    document.getElementById('min1').textContent = `${toAMPM(minors[0].start)}–${toAMPM(minors[0].stop)}`;
+    document.getElementById('min2').textContent = `${toAMPM(minors[1].start)}–${toAMPM(minors[1].stop)}`;
 
-    const maj1 = isValid(sol.major1StartDec) ? `${toAMPM(sol.major1Start)}–${toAMPM(sol.major1Stop)}` : '—';
-    const maj2 = isValid(sol.major2StartDec) ? `${toAMPM(sol.major2Start)}–${toAMPM(sol.major2Stop)}` : '—';
-    const min1 = isValid(sol.minor1StartDec) ? `${toAMPM(sol.minor1Start)}–${toAMPM(sol.minor1Stop)}` : '—';
-    const min2 = isValid(sol.minor2StartDec) ? `${toAMPM(sol.minor2Start)}–${toAMPM(sol.minor2Stop)}` : '—';
-
-    document.getElementById('maj1').textContent = maj1;
-    document.getElementById('maj2').textContent = maj2;
-    document.getElementById('min1').textContent = min1;
-    document.getElementById('min2').textContent = min2;
-
-    // 3. MOON + RATING
+    // 4. MOON + RATING
     const illum = Math.round(sol.moonIllumination * 100);
     const phase = sol.moonPhase;
     const stars = '★★★★'.slice(0, sol.dayRating);
@@ -274,9 +280,9 @@
     document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + rating + '</span>';
     document.getElementById('phase').textContent = phase;
     document.getElementById('illum').textContent = `${illum}% Illumination`;
-    document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+    document.getElementById('date').textContent = today.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
-    // YOUR PNG: wane98.png
+    // 5. YOUR PNG MOON
     let moonFile = '';
     if (illum === 0) moonFile = 'newmoon.png';
     else if (illum === 100) moonFile = 'fullmoon.png';
@@ -541,6 +547,7 @@
 </body>
 
 </html>
+
 
 
 
