@@ -184,45 +184,15 @@
     </div>
 
     <!-- Weather -->
-<div class="section">
-  <h2>Lake Bistineau 7-Day Forecast</h2>
-  <div id="lakeWeather"></div>
-  <script>
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=32.4066&longitude=-93.3906&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_probability_max,relative_humidity_2m_max,pressure_msl&forecast_days=7&timezone=America%2FChicago')
-  .then(r=>r.json())
-  .then(w=>{
-    const days = w.daily;
-    let html = '';
-    for(let i=0; i<7; i++){
-      const hi = Math.round(days.temperature_2m_max[i]);
-      const lo = Math.round(days.temperature_2m_min[i]);
-      const wind = Math.round(days.wind_speed_10m_max[i]);
-      const rain = days.precipitation_probability_max[i]||0;
-      const hum = Math.round(days.relative_humidity_2m_max[i]);
-      const inhg = (days.pressure_msl[i]/33.8639).toFixed(2);
-      const prev = i>0 ? days.pressure_msl[i-24]/33.8639 : inhg;
-      const arrow = inhg>prev+.02?'up':inhg<prev-.02?'down':'right';
-      const day = i===0?'Today':new Date(days.time[i]).toLocaleDateString('en-US',{weekday:'short'});
-      html += `
-        <div style="display:inline-block;width:125px;margin:6px;vertical-align:top;background:#fff;padding:10px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);font-family:Arial;text-align:center;">
-          <div style="font-weight:bold;color:#003366;margin-bottom:4px;">${day}</div>
-          <div style="font-size:22px;color:#000;">${hi}°<span style="font-size:16px;color:#666;">/${lo}°</span></div>
-          <div style="margin:4px 0;font-size:13px;">
-            Wind ${wind} mph<br>
-            Humidity ${hum}%<br>
-            Rain ${rain}%
-          </div>
-          <div style="color:#003366;font-weight:bold;font-size:14px;">
-            ${inhg} inHg ${arrow==='up'?'up':arrow==='down'?'down':'right'}
-          </div>
-        </div>`;
-    }
-    document.getElementById('lakeWeather').innerHTML = 
-      `<div style="background:#f0f8ff;padding:15px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${html}</div>`;
-  })
-  .catch(e=>document.getElementById('lakeWeather').innerHTML='Weather offline – try refresh');
-  </script>
-</div>
+    <div class="section">
+      <h2>7-Day Weather Forecast (Sibley, LA)</h2>
+      <div class="weather-widget">
+        <a class="weatherwidget-io" href="https://forecast7.com/en/32d54n93d30/sibley/?unit=us" data-label_1="SIBLEY" data-label_2="WEATHER" data-icons="Climacons Animated" data-theme="original">SIBLEY WEATHER</a>
+        <script>
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+        </script>
+      </div>
+    </div>
 
 <!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
@@ -585,6 +555,7 @@
 </body>
 
 </html>
+
 
 
 
