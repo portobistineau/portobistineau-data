@@ -184,15 +184,56 @@
     </div>
 
     <!-- Weather -->
-    <div class="section">
-      <h2>7-Day Weather Forecast (Sibley, LA)</h2>
-      <div class="weather-widget">
-        <a class="weatherwidget-io" href="https://forecast7.com/en/32d54n93d30/sibley/?unit=us" data-label_1="SIBLEY" data-label_2="WEATHER" data-icons="Climacons Animated" data-theme="original">SIBLEY WEATHER</a>
-        <script>
-        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-        </script>
-      </div>
-    </div>
+<div class="section">
+  <h2>Lake Bistineau Weather</h2>
+  <div id="bistineauWeather"></div>
+  <script>
+  const lat = 32.4066, lon = -93.3906;
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl,cloud_cover&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,cloud_cover_max&forecast_days=7&timezone=America%2FChicago`)
+  .then(r=>r.json())
+  .then(w=>{
+    // Current
+    const c = w.current;
+    const inhg = (c.pressure_msl/33.8639).toFixed(2);
+    const arrow = '→'; // Open-Meteo doesn't give previous hour pressure for arrow
+    const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(c.wind_direction_10m/22.5)%16];
+    const currentHTML = `
+      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+        <div style="font-size:28px;font-weight:bold;">${Math.round(c.temperature_2m)}°F</div>
+        <div style="color:#666;">Feels ${Math.round(c.apparent_temperature)}°F</div>
+        <div style="margin:8px 0;font-size:14px;">
+          Wind ${Math.round(c.wind_speed_10m)} mph ${dir}<br>
+          Precip ${c.precipitation.toFixed(1)} in/hr<br>
+          Pressure ${inhg} inHg ${arrow}<br>
+          Cloud cover ${c.cloud_cover}%
+        </div>
+      </div>`;
+
+    // 7-day
+    const days = w.daily;
+    let forecastHTML = '';
+    for(let i=0;i<7;i++){
+      const day = i===0?'Today':new Date(days.time[i]).toLocaleDateString('en-US',{weekday:'short'});
+      const hi = Math.round(days.temperature_2m_max[i]);
+      const lo = Math.round(days.temperature_2m_min[i]);
+      const rain = days.precipitation_probability_max[i]||0;
+      const cloud = days.cloud_cover_max[i];
+      const icon = cloud<20?'☀️':cloud<50?'⛅':cloud<80?'☁️':'🌧';
+      forecastHTML += `
+        <div style="display:inline-block;width:120px;margin:6px;vertical-align:top;background:#fff;padding:10px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;">
+          <div style="font-weight:bold;color:#003366;">${day}</div>
+          <div style="font-size:24px;margin:4px 0;">${icon}</div>
+          <div style="font-size:18px;">${hi}°<span style="font-size:14px;color:#666;">/${lo}°</span></div>
+          <div style="font-size:13px;margin-top:4px;">${rain}% rain</div>
+        </div>`;
+    }
+
+    document.getElementById('bistineauWeather').innerHTML = currentHTML + 
+      `<div style="background:#f0f8ff;padding:15px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${forecastHTML}</div>`;
+  })
+  .catch(()=>document.getElementById('bistineauWeather').innerHTML='Weather offline – refresh');
+  </script>
+</div>
 
 <!-- TODAY’S BITE FORECAST – 100% LIVE, 0 CREDITS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
@@ -555,6 +596,7 @@
 </body>
 
 </html>
+
 
 
 
