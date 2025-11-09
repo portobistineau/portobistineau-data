@@ -189,7 +189,7 @@
   <div id="bistineauWeather"></div>
   <script>
   const lat = 32.4066, lon = -93.3906;
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl,cloud_cover,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=7&timezone=America%2FChicago&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&pressure_unit=inhg`)
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl,cloud_cover,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=7&timezone=America%2FChicago&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch`)
   .then(r=>r.json())
   .then(w=>{
     const now = new Date();
@@ -202,8 +202,8 @@
     const wind = Math.round(c.wind_speed_10m[hourIndex]);
     const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(c.wind_direction_10m[hourIndex]/22.5)%16];
     const precip = c.precipitation[hourIndex].toFixed(2);
-    const pressureNow = c.pressure_msl[hourIndex];
-    const pressurePrev = prevIndex >= 0 ? c.pressure_msl[prevIndex] : pressureNow;
+    const pressureNow = (c.pressure_msl[hourIndex] / 33.8639).toFixed(2);
+    const pressurePrev = prevIndex >= 0 ? c.pressure_msl[prevIndex] / 33.8639 : pressureNow;
     const diff = pressureNow - pressurePrev;
     const trend = diff > 0.03 ? 'Rising' : diff < -0.03 ? 'Falling' : 'Steady';
     const arrow = diff > 0.03 ? 'up' : diff < -0.03 ? 'down' : 'right';
@@ -216,7 +216,7 @@
         <div style="font-size:14px;line-height:1.6;">
           Wind ${wind} mph ${dir}<br>
           Precip ${precip} in/hr<br>
-          Pressure ${pressureNow.toFixed(2)} inHg <strong>${trend}</strong> ${arrow}<br>
+          Pressure ${pressureNow} inHg <strong>${trend}</strong> ${arrow}<br>
           Cloud cover ${c.cloud_cover[hourIndex]}%
         </div>
       </div>`;
@@ -606,6 +606,7 @@
 </body>
 
 </html>
+
 
 
 
