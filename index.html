@@ -202,15 +202,12 @@
     const wind = Math.round(c.wind_speed_10m[hourIndex]);
     const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(c.wind_direction_10m[hourIndex]/22.5)%16];
     const precip = c.precipitation[hourIndex].toFixed(2);
-    const cloud = c.cloud_cover[hourIndex];
     const pressureNow = c.pressure_msl[hourIndex];
     const pressurePrev = prevIndex >= 0 ? c.pressure_msl[prevIndex] : pressureNow;
     const diff = pressureNow - pressurePrev;
     const trend = diff > 0.03 ? 'Rising' : diff < -0.03 ? 'Falling' : 'Steady';
     const arrow = diff > 0.03 ? 'up' : diff < -0.03 ? 'down' : 'right';
     const timeStr = now.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-
-    const iconURL = code => `https://open-meteo.com/images/weather/${code}.svg`;
 
     const currentHTML = `
       <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
@@ -220,7 +217,7 @@
           Wind ${wind} mph ${dir}<br>
           Precip ${precip} in/hr<br>
           Pressure ${pressureNow.toFixed(2)} inHg <strong>${trend}</strong> ${arrow}<br>
-          Cloud cover ${cloud}%
+          Cloud cover ${c.cloud_cover[hourIndex]}%
         </div>
       </div>`;
 
@@ -234,7 +231,7 @@
       forecastHTML += `
         <div style="display:inline-block;width:105px;margin:4px;vertical-align:top;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;font-size:13px;">
           <div style="font-weight:bold;color:#003366;">${dayName}</div>
-          <img src="${iconURL(code)}" width="48" height="48" style="margin:4px 0;">
+          <img src="/images/${code}.svg" width="48" height="48" style="margin:4px 0;" onerror="this.src='/images/3.svg'">
           <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
           <div>${rain}% rain</div>
         </div>`;
@@ -609,6 +606,7 @@
 </body>
 
 </html>
+
 
 
 
