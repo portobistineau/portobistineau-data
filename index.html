@@ -215,23 +215,15 @@
       </div>
     </div>
 
-    <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);position:relative;">
-  <!-- Wrapper to fix layering -->
-  <div style="position:relative;width:90px;height:110px;margin:0 auto;">
-    <!-- Dark blue circle background -->
-    <div style="position:absolute;top:0;left:0;width:90px;height:90px;background:#001f3f;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);"></div>
-    
-    <!-- Moon image with crisp white border -->
-    <img id="moon-img" src="" width="80" height="80" style="position:absolute;top:5px;left:5px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-    
-    <!-- Star rating — now guaranteed visible -->
-    <div id="rating" style="position:absolute;top:92px;left:0;width:90px;text-align:center;font-size:30px;color:#000;line-height:1;">Loading…</div>
+    <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+      <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Loading…</div>
+      <div id="moon-bg" style="width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
+        <img id="moon-img" src="" width="80" height="80" style="border-radius:50%;border:2px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+      </div>
+      <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
+      <div id="illum" style="color:#000;font-size:16px;">—</div>
+    </div>
   </div>
-
-  <!-- Phase name and illumination -->
-  <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
-  <div id="illum" style="color:#000;font-size:16px;">—</div>
-</div>
 
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
     Updated <span id="date">—</span> – Refresh for latest
@@ -564,6 +556,7 @@
 </body>
 
 </html>
+
 
 
 
