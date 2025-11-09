@@ -192,17 +192,17 @@
 
   <script>
   const lat = 32.4066, lon = -93.3906;
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_direction_10m,weather_code,pressure_msl&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=8&timezone=America%2FChicago&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch`)
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_direction_10m,weather_code,pressure_msl&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=9&timezone=America%2FChicago&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch`)
   .then(r=>r.json())
   .then(w=>{
     const now = new Date();
-    const todayISO = now.toISOString().slice(0,10); // 2025-11-09
+    const todayISO = now.toISOString().slice(0,10); // e.g. 2025-11-09
 
-    // Find which daily index is ACTUALLY today
+    // FORCE today to be the REAL today
     let todayIndex = w.daily.time.findIndex(d => d === todayISO);
-    if (todayIndex === -1) todayIndex = 0;
+    if (todayIndex === -1) todayIndex = 1; // safety fallback
 
-    // Current conditions (real local hour)
+    // Current conditions (exact local hour)
     const currentHourStr = now.toISOString().slice(0,13) + ':00';
     const hourIndex = w.hourly.time.indexOf(currentHourStr);
     const prevIndex = hourIndex - 1;
@@ -231,7 +231,7 @@
         </div>
       </div>`;
 
-    // 7-day cards — starting with REAL today
+    // 7-day cards — locked to real today
     let forecastHTML = '';
     for(let i = 0; i < 7; i++){
       const idx = todayIndex + i;
@@ -254,7 +254,7 @@
     document.getElementById('bistineauWeather').innerHTML = currentHTML + 
       `<div style="background:#f0f8ff;padding:10px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${forecastHTML}</div>`;
 
-    // Popup — uses exact local ISO date
+    // Popup
     window.showDetail = function(isoDate){
       const date = new Date(isoDate);
       const startHour = w.hourly.time.findIndex(t => t.startsWith(isoDate));
@@ -648,6 +648,7 @@
 </body>
 
 </html>
+
 
 
 
