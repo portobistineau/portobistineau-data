@@ -236,7 +236,7 @@
     let forecastHTML = '';
     for(let i = 0; i < 7; i++){
       const idx = todayIndex + i;
-      const thisDate = new Date(w.daily.time[idx]);
+      const thisDate = new Date(w.daily.time[idx] + 'T12:00:00'); // Force noon local
       const dayName = i === 0 ? 'Today' : thisDate.toLocaleDateString('en-US', {weekday: 'short'});
       const hi = Math.round(w.daily.temperature_2m_max[idx]);
       const lo = Math.round(w.daily.temperature_2m_min[idx]);
@@ -653,6 +653,7 @@
 </body>
 
 </html>
+
 
 
 
