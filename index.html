@@ -223,10 +223,11 @@
 
     let forecastHTML = '';
     for(let i=0; i<7; i++){
-      const dayName = i===0 ? 'Today' : new Date(w.daily.time[i]).toLocaleDateString('en-US',{weekday:'short'});
+      const thisDate = new Date(w.daily.time[i]);
+      const dayName = i === 0 ? 'Today' : thisDate.toLocaleDateString('en-US', {weekday: 'short'});
       const hi = Math.round(w.daily.temperature_2m_max[i]);
       const lo = Math.round(w.daily.temperature_2m_min[i]);
-      const rain = w.daily.precipitation_probability_max[i]||0;
+      const rain = w.daily.precipitation_probability_max[i] || 0;
       const code = w.daily.weather_code[i];
       forecastHTML += `
         <div style="display:inline-block;width:105px;margin:4px;vertical-align:top;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;font-size:13px;">
@@ -606,6 +607,7 @@
 </body>
 
 </html>
+
 
 
 
