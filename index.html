@@ -183,7 +183,7 @@
       </p>
     </div>
 
-    <!-- Weather -->
+   <!-- Weather -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather"></div>
@@ -206,7 +206,7 @@
     const pressurePrev = prevIndex >= 0 ? c.pressure_msl[prevIndex] / 33.8639 : pressureNow;
     const diff = pressureNow - pressurePrev;
     const trend = diff > 0.03 ? 'Rising' : diff < -0.03 ? 'Falling' : 'Steady';
-    const arrow = diff > 0.03 ? 'up' : diff < -0.03 ? 'down' : 'right';
+
     const timeStr = now.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 
     const currentHTML = `
@@ -216,7 +216,7 @@
         <div style="font-size:14px;line-height:1.6;">
           Wind ${wind} mph ${dir}<br>
           Precip ${precip} in/hr<br>
-          Pressure ${pressureNow} inHg <strong>${trend}</strong> ${arrow}<br>
+          Pressure ${pressureNow} inHg <strong>${trend}</strong><br>
           Cloud cover ${c.cloud_cover[hourIndex]}%
         </div>
       </div>`;
@@ -606,6 +606,7 @@
 </body>
 
 </html>
+
 
 
 
