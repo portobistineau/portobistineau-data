@@ -385,8 +385,8 @@
     document.getElementById('illum').textContent = `${illum}% Illumination`;
 
     // 7. DATE — ALWAYS TODAY
-    document.getElementById('header-date').textContent = today.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
-    document.getElementById('date').textContent = today.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+    document.getElementById('header-date').textContent = today.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+    document.getElementById('date').textContent = today.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
 
     // 8. YOUR PNG
     let moonFile = '';
@@ -653,6 +653,7 @@
 </body>
 
 </html>
+
 
 
 
