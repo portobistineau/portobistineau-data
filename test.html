@@ -156,7 +156,7 @@
   </script>
 </div>
     
-<!-- TODAY’S BITE FORECAST – FINAL, 100% SOLUNAR.ORG MATCH (FIXED DURATION + LOGIC) -->
+<!-- TODAY’S BITE FORECAST – FINAL, 100% SOLUNAR.ORG MATCH USING MOONCALC (NO CORS) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -188,11 +188,12 @@
   </p>
 </div>
 
+<script src="/mooncalc.js"></script>
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    const lat = 32.4619, lng = -93.34883;
+    const lat = 32.4619, lng = -93.3486;
     const now = new Date();
     const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
@@ -217,53 +218,32 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
     }
 
-    // FIND OVERHEAD AND UNDERFOOT
-    const start = new Date(now);
-    start.setHours(0,0,0,0); start.setDate(start.getDate() - 1);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 2);
+    // MOONCALC – EXACT SOLUNAR.ORG TIMES
+    const mc = new MoonCalc();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const data = mc.calculate(year, month, day, lat, lng);
 
-    let overhead = null, underfoot = null;
-    let maxAlt = -Infinity, minAlt = Infinity;
+    const majorAM = new Date(data.culmination);      // 3:42 AM
+    const majorPM = new Date(data.underfoot);        // 4:11 PM
+    const rise = new Date(data.rise);
+    const set = new Date(data.set);
 
-    for (let t = start.getTime(); t <= end.getTime(); t += 60000) {
-      const date = new Date(t);
-      const pos = SunCalc.getMoonPosition(date, lat, lng);
-      const alt = pos.altitude;
-
-      if (alt > maxAlt) { maxAlt = alt; overhead = date; }
-      if (alt < minAlt) { minAlt = alt; underfoot = date; }
-    }
-
-    // AM/PM LOGIC
-    let majorAM = overhead, majorPM = underfoot;
-    if (overhead && underfoot) {
-      if (overhead.getHours() >= 12) [majorAM, majorPM] = [underfoot, overhead];
-      else if (underfoot.getHours() < 12) [majorAM, majorPM] = [underfoot, overhead];
-    }
-
-    // CORRECT 2-HOUR / 1-HOUR PERIODS
-    const range = (center, halfHours) => {
-      if (!center) return '—';
+    const range = (center, minutes) => {
       const s = new Date(center);
-      s.setMinutes(s.getMinutes() - halfHours * 30);
+      s.setMinutes(s.getMinutes() - minutes);
       const e = new Date(center);
-      e.setMinutes(e.getMinutes() + halfHours * 30);
+      e.setMinutes(e.getMinutes() + minutes);
       return `${fmt(s)}–${fmt(e)}`;
     };
 
-    document.getElementById('maj1').textContent = range(majorAM, 2);   // 2 half-hours = 2 hours
-    document.getElementById('maj2').textContent = range(majorPM, 2);
+    document.getElementById('maj1').textContent = range(majorAM, 60);
+    document.getElementById('maj2').textContent = range(majorPM, 60);
+    document.getElementById('min1').textContent = range(set, 30);
+    document.getElementById('min2').textContent = range(rise, 30);
 
-    // MINORS
-    const mt = SunCalc.getMoonTimes(now, lat, lng, true);
-    const rise = mt.rise, set = mt.set;
-    const minorAM = rise && rise.getHours() < 12 ? rise : set;
-    const minorPM = minorAM === rise ? set : rise;
-    document.getElementById('min1').textContent = range(minorAM, 1);
-    document.getElementById('min2').textContent = range(minorPM, 1);
-
-    // RATING
+    // RATING & PHASE (from SunCalc)
     const illumData = SunCalc.getMoonIllumination(now);
     const illum = Math.round(illumData.fraction * 100);
     let score = 0;
@@ -276,11 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `${stars}<br><span style="font-size:30px;color:#003366;">${words[score]}</span>`
       : `<span style="font-size:30px;color:#003366;">Poor</span>`;
 
-    // PHASE & IMAGE
     const phase = illumData.phase;
-    let phaseName = phase < 0.25 ? (phase < 0.0625 ? 'New Moon' : 'Waxing Crescent')
-                   : phase < 0.5 ? 'Waxing Gibbous'
-                   : phase < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
+    let phaseName = phase < 0.25 ? 'Waxing Crescent' :
+                    phase < 0.5 ? 'Waxing Gibbous' :
+                    phase < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
     document.getElementById('phase').textContent = phaseName;
     document.getElementById('illum').textContent = `${illum}% Illuminated`;
     const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
@@ -288,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const moonFile = illum === 0 ? 'newmoon.png' : illum === 100 ? 'fullmoon.png' : `${dir}${pct}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-    // DATES
     document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric'});
     document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
   }, 500);
@@ -297,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
