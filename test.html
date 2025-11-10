@@ -37,7 +37,7 @@
   });
 </script>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (FINAL: FULLY CACHED, NO RATE LIMIT, PERFECT) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (PERFECT: TALLER + CENTERED ICONS) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -48,7 +48,7 @@
     const lat = 32.4066, lon = -93.3906;
     const today = new Date().toISOString().slice(0,10);
 
-    // === LOAD OR FETCH ALL DATA ONCE PER DAY ===
+    // === FULLY CACHED – ONE FETCH PER DAY ===
     let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
     if (!data || data.date !== today) {
       document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
@@ -103,7 +103,7 @@
         </div>
       </div>`;
 
-    // === 7-DAY CARDS (100×150, wrap, no scroll) ===
+    // === 7-DAY CARDS – 100×170px, ICON CENTERED, TEXT WRAPS PERFECTLY ===
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
     const dailyPeriods = data.daily.periods.slice(0,14);
     for (let i = 0; i < 7; i++) {
@@ -114,11 +114,13 @@
       const dayName = i === 0 ? 'Today' : new Date(day.startTime).toLocaleDateString('en-US', {weekday: 'short'});
       const icon = day.icon.replace('large', 'medium');
       forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:150px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
+        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
           <div style="font-weight:bold;color:#003366;">${dayName}</div>
-          <img src="${icon}" width="48" height="48">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+            <img src="${icon}" width="48" height="48">
+          </div>
           <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
-          <div style="font-size:11px;line-height:1.2;height:33px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+          <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
             ${day.shortForecast}
           </div>
         </div>`;
@@ -278,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
