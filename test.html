@@ -162,178 +162,102 @@
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   const lat = 32.4619;
   const lng = -93.34883;
-  const now  = new Date();
-  const fmt  = d => d ? d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '—';
+  const now = new Date();
 
-  // Cache keys
-  const cacheSunKey  = 'sunData_'  + now.toISOString().split('T')[0];
-  const cacheUSNOKey = 'usnoData_' + now.toISOString().split('T')[0];
+  const fmt = d => d ? d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '—';
 
-  // Load sunrise-sunset.org data (or your API) for first light / last light / sunrise / sunset
-  let sunData = null;
-  try {
-    const stored = localStorage.getItem(cacheSunKey);
-    if (stored) {
-      sunData = JSON.parse(stored);
-    } else {
-      const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`;
-      const resp = await fetch(url);
-      const obj  = await resp.json();
-      if (obj.status === "OK") {
-        sunData = obj.results;
-        localStorage.setItem(cacheSunKey, JSON.stringify(sunData));
-      }
-    }
-  } catch(e) {
-    console.error("Sun data fetch error:", e);
-  }
-  if (sunData) {
-    document.getElementById('first').textContent = fmt(new Date(sunData.civil_twilight_begin));
-    document.getElementById('rise' ).textContent = fmt(new Date(sunData.sunrise));
-    document.getElementById('set'  ).textContent = fmt(new Date(sunData.sunset ));
-    document.getElementById('last' ).textContent = fmt(new Date(sunData.civil_twilight_end));
-  } else {
-    ['first','rise','set','last'].forEach(id=>document.getElementById(id).textContent='—');
-  }
+  // SUN TIMES
+  const times = SunCalc.getTimes(now, lat, lng);
+  const civil = SunCalc.getTimes(now, lat, lng);
+  document.getElementById('first').textContent = fmt(civil.civilDawn || civil.nauticalDawn || times.sunrise);
+  document.getElementById('rise' ).textContent = fmt(times.sunrise);
+  document.getElementById('set'  ).textContent = fmt(times.sunset);
+  document.getElementById('last' ).textContent = fmt(civil.civilDusk || civil.nauticalDusk || times.sunset);
 
-  // Load USNO data for moon
-  let usnoData = null;
-  try {
-    const stored = localStorage.getItem(cacheUSNOKey);
-    if (stored) {
-      usnoData = JSON.parse(stored);
-    } else {
-      const dateStr = now.toISOString().split('T')[0];
-      const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${dateStr}&coords=${lat},${lng}&tz=0`;
-      const resp = await fetch(url);
-      const obj  = await resp.json();
-      if (!obj.error) {
-        usnoData = obj;
-        localStorage.setItem(cacheUSNOKey, JSON.stringify(usnoData));
-      }
-    }
-  } catch(e) {
-    console.error("USNO data fetch error:", e);
-  }
+  // MOON
+  const moonTimes = SunCalc.getMoonTimes(now, lat, lng, true);
+  const moonIll = SunCalc.getMoonIllumination(now);
+  const illum = Math.round(moonIll.fraction*100);
 
-  // Compute moonrise, moonset, transit times (overhead)
-  let moonRise   = null;
-  let moonSet    = null;
-  let moonTransit= null;
+  let moonRise = moonTimes.rise;
+  let moonSet  = moonTimes.set;
+  let transit  = moonTimes.rise && moonTimes.set
+                  ? new Date(moonTimes.rise.getTime() + (moonTimes.set.getTime() - moonTimes.rise.getTime())/2)
+                  : null;
+  let underfoot = transit ? new Date(transit.getTime() + 12*3600000) : null;
 
-  if (usnoData && usnoData.properties && usnoData.properties.moondata) {
-    usnoData.properties.moondata.forEach(item => {
-      if (item.phen === "R") moonRise    = new Date(item.time);
-      if (item.phen === "S") moonSet     = new Date(item.time);
-      if (item.phen === "U") moonTransit = new Date(item.time);
-    });
-  }
-
-  // Fallback to SunCalc if USNO transit missing
-  if (!moonTransit && moonRise && moonSet) {
-    moonTransit = new Date(moonRise.getTime() + (moonSet.getTime() - moonRise.getTime())/2);
-  }
-
-  // Helper to check full window validity within same day
-  const isValidWindow = (center, hours) => {
+  // Helper to check if window is fully within the day
+  const validWindow = (center,hours) => {
     if (!center) return false;
     const start = new Date(center.getTime() - hours*30*60000);
     const end   = new Date(center.getTime() + hours*30*60000);
-    return start.getDate() === now.getDate() && end.getDate() === now.getDate();
+    return start.getDate()===now.getDate() && end.getDate()===now.getDate();
   };
 
-  // Compute major periods
-  let majors = [];
-  if (moonTransit) {
-    if (isValidWindow(moonTransit, 2)) majors.push(moonTransit);
-    const underfoot = new Date(moonTransit.getTime() + 12*3600000);
-    if (isValidWindow(underfoot,2)) majors.push(underfoot);
-  }
+  // Major periods
+  const majors=[];
+  if (validWindow(transit,2)) majors.push(transit);
+  if (validWindow(underfoot,2)) majors.push(underfoot);
 
-  // Compute minor periods
-  let minors = [];
-  if (moonRise && isValidWindow(moonRise,1)) minors.push(moonRise);
-  if (moonSet  && isValidWindow(moonSet, 1)) minors.push(moonSet );
-  majors.sort((a,b)=>a-b);
-  minors.sort((a,b)=>a-b);
+  // Minor periods
+  const minors=[];
+  if (validWindow(moonRise,1)) minors.push(moonRise);
+  if (validWindow(moonSet,1))  minors.push(moonSet);
 
-  const range = (center,hrs) => {
-    const s = new Date(center.getTime() - hrs*30*60000);
-    const e = new Date(center.getTime() + hrs*30*60000);
-    return `${fmt(s)}–${fmt(e)}`;
-  };
+  const range = (center,hours)=>center ? `${fmt(new Date(center.getTime()-hours*30*60000))}–${fmt(new Date(center.getTime()+hours*30*60000))}` : '—';
 
   document.getElementById('maj1').textContent = majors[0] ? range(majors[0],2) : '—';
   document.getElementById('maj2').textContent = majors[1] ? range(majors[1],2) : '—';
   document.getElementById('min1').textContent = minors[0] ? range(minors[0],1) : '—';
   document.getElementById('min2').textContent = minors[1] ? range(minors[1],1) : '—';
 
-  // Moon phase & illumination (SunCalc fallback)
-  const moonIll = usnoData && usnoData.properties && usnoData.properties.fracillum
-                  ? parseFloat(usnoData.properties.fracillum) * 100
-                  : Math.round(SunCalc.getMoonIllumination(now).fraction * 100);
-  const illumPct = moonIll;
+  // Moon phase
+  const p = moonIll.phase;
+  const phaseName = p < 0.0625 || p > 0.9375 ? 'New Moon' :
+                    p < 0.25 ? 'Waxing Crescent' :
+                    p < 0.4375 ? 'Waxing Gibbous' :
+                    p < 0.5625 ? 'Full Moon' :
+                    p < 0.75 ? 'Waning Gibbous' :
+                    p < 0.9375 ? 'Waning Crescent' : 'Last Quarter';
 
-  document.getElementById('illum').textContent = `${illumPct}% Illumination`;
+  document.getElementById('phase').textContent = phaseName;
+  document.getElementById('illum').textContent = `${illum}% Illumination`;
 
-  const moonPhase   = (usnoData && usnoData.properties && usnoData.properties.curphase)
-                        ? usnoData.properties.curphase
-                        : (() => {
-                            const p = SunCalc.getMoonIllumination(now).phase;
-                            return p < 0.0625 || p > 0.9375 ? 'New Moon' :
-                                   p < 0.25                ? 'Waxing Crescent' :
-                                   p < 0.4375              ? 'Waxing Gibbous' :
-                                   p < 0.5625              ? 'Full Moon' :
-                                   p < 0.75                ? 'Waning Gibbous' :
-                                   p < 0.9375              ? 'Waning Crescent' : 'Last Quarter';
-                          })();
+  // Moon image
+  const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+  const pct = Math.round(illum/5)*5;
+  const moonFile = illum===0 ? 'newmoon.png' :
+                   illum===100 ? 'fullmoon.png' :
+                   (illum===50 && phaseName.includes('First')) ? 'firstquart.png' :
+                   (illum===50 && phaseName.includes('Last'))  ? 'lastquart.png' :
+                   `${dir}${pct}.png`;
+  document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-  document.getElementById('phase').textContent = moonPhase;
+  // Solunar rating 0-4 stars: 0=Poor, 1=Fair, 2=Good, 3=Better, 4=Best
+  let points=0;
+  if(illum<=10||illum>=90) points+=2;
+  majors.forEach(m=>{if(times.sunrise&&Math.abs(m-times.sunrise)<3600000) points+=1;});
+  majors.forEach(m=>{if(times.sunset &&Math.abs(m-times.sunset )<3600000) points+=1;});
+  let ratingScore=0,ratingText='Poor';
+  if(points>=4){ratingScore=4;ratingText='Best';}
+  else if(points>=3){ratingScore=3;ratingText='Better';}
+  else if(points>=2){ratingScore=2;ratingText='Good';}
+  else if(points>=1){ratingScore=1;ratingText='Fair';}
+  const stars=ratingScore>0?'★★★★'.slice(0,ratingScore):'';
+  document.getElementById('rating').innerHTML=stars?`${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`:`<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
 
-  // Star rating
-  let points = 0;
-  if (illumPct <= 10 || illumPct >= 90) points += 2;
-
-  const sunTimesList = [];
-  if (sunData) {
-    sunTimesList.push(new Date(sunData.sunrise));
-    sunTimesList.push(new Date(sunData.sunset ));
-  }
-
-  const isClose = (t1,t2) => t1 && t2 && Math.abs(t1 - t2) <= 60*60*1000;
-  majors.forEach(m => { if (sunTimesList.some(s=>isClose(m,s))) points += 1; });
-  minors.forEach(m => { if (sunTimesList.some(s=>isClose(m,s))) points += 0.5; });
-
-  let ratingScore = 0;
-  let ratingText  = 'Poor';
-  if (points >= 4)       { ratingScore=4; ratingText='Best'; }
-  else if (points >= 3)  { ratingScore=3; ratingText='Better'; }
-  else if (points >= 2)  { ratingScore=2; ratingText='Good'; }
-  else if (points >= 1)  { ratingScore=1; ratingText='Fair'; }
-
-  const stars = ratingScore>0 ? '★★★★'.slice(0,ratingScore) : '';
-  document.getElementById('rating').innerHTML = stars
-    ? `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`
-    : `<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
-
-  // Moon image logic unchanged (you can use your existing file naming scheme)...
-
-  // Date displays
-  document.getElementById('header-date').textContent =
-    now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-  document.getElementById('date').textContent =
-    now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  // Dates
+  document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+  document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 });
 </script>
 
-
-
-
 </body>
 </html>
+
 
 
 
