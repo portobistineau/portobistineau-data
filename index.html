@@ -164,9 +164,26 @@
 
     <!-- BANNER — FULL WIDTH, PERFECT ON MOBILE -->
 <div class="banner">
-  <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img">
+  <a href="index.html" id="banner-link">
+    <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
+  </a>
 </div>
-    <p class="tagline">Your Gateway to Lake Bistineau – Live Lake Views, Lake Updates & More</p>
+<p class="tagline">Your Gateway to Lake Bistineau – Live Lake Views, Lake Updates & More</p>
+
+<script>
+  let clicks = 0, timer;
+  document.getElementById('banner').addEventListener('click', function(e) {
+    e.preventDefault();                  // block normal navigation
+    clicks++;
+    if (clicks === 1) {
+      timer = setTimeout(() => clicks = 0, 400);
+    } else if (clicks === 2) {
+      clearTimeout(timer);
+      clicks = 0;
+      window.location.href = 'test.html';  // secret double-click → test page
+    }
+  });
+</script>
 
     <!-- YOUTUBE HERO CTA (After Banner) -->
     <div style="text-align:center; margin:20px 0; padding:15px; background:#f0f8ff; border-radius:8px;">
@@ -653,6 +670,7 @@
 </body>
 
 </html>
+
 
 
 
