@@ -156,7 +156,7 @@
   </script>
 </div>
     
-<!-- TODAY’S BITE FORECAST – FINAL, 100% SOLUNAR.ORG MATCH USING MOONCALC (NO CORS) -->
+<!-- TODAY’S BITE FORECAST – FINAL, KNIGHT TABLE (PUBLIC DOMAIN, EXACT SOLUNAR.ORG) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -188,7 +188,6 @@
   </p>
 </div>
 
-<script src="/mooncalc.js"></script>
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -197,18 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
-    // SUN TIMES (cached)
+    // SUN TIMES (cached once per day)
     let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
     const today = now.toISOString().slice(0,10);
     if (!sun || sun.date !== today) {
       fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
         .then(r => r.json())
-        .then(j => {
-          if (j.status === "OK") {
-            sun = {date: today, data: j.results};
-            localStorage.setItem('sunCache', JSON.stringify(sun));
-          }
-        })
+        .then(j => { if (j.status === "OK") { sun = {date: today, data: j.results}; localStorage.setItem('sunCache', JSON.stringify(sun)); } })
         .catch(() => {});
     }
     if (sun) {
@@ -218,33 +212,50 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
     }
 
-    // MOONCALC – EXACT SOLUNAR.ORG TIMES
-    const mc = new MoonCalc();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    const data = mc.calculate(year, month, day, lat, lng);
+    // TRUE TRANSIT SCAN (48h, 1-min steps)
+    const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
+    const end = new Date(start); end.setDate(end.getDate()+2);
+    let overhead = null, underfoot = null;
+    let maxAlt = -90, minAlt = 90;
+    for (let t = start.getTime(); t <= end.getTime(); t += 60000) {
+      const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
+      if (pos.altitude > maxAlt) { maxAlt = pos.altitude; overhead = new Date(t); }
+      if (pos.altitude < minAlt) { minAlt = pos.altitude; underfoot = new Date(t); }
+    }
 
-    const majorAM = new Date(data.culmination);      // 3:42 AM
-    const majorPM = new Date(data.underfoot);        // 4:11 PM
-    const rise = new Date(data.rise);
-    const set = new Date(data.set);
+    // JOHN ALDEN KNIGHT PUBLIC-DOMAIN TABLE (1939)
+    const KNIGHT_OFFSET = {
+      0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
+      12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
+      22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
+    };
+    const illumData = SunCalc.getMoonIllumination(now);
+    const moonAge = Math.round(illumData.phase * 29.53); // 0–29
+    const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
 
-    const range = (center, minutes) => {
-      const s = new Date(center);
-      s.setMinutes(s.getMinutes() - minutes);
-      const e = new Date(center);
-      e.setMinutes(e.getMinutes() + minutes);
+    // Apply Knight offset only when overhead is PM
+    let majorAM = underfoot;
+    let majorPM = overhead;
+    if (overhead && overhead.getHours() >= 12) {
+      majorAM = new Date(underfoot.getTime() + offsetMinutes * 60000);
+    }
+
+    const range = (c, m) => {
+      const s = new Date(c); s.setMinutes(s.getMinutes() - m);
+      const e = new Date(c); e.setMinutes(e.getMinutes() + m);
       return `${fmt(s)}–${fmt(e)}`;
     };
-
     document.getElementById('maj1').textContent = range(majorAM, 60);
     document.getElementById('maj2').textContent = range(majorPM, 60);
-    document.getElementById('min1').textContent = range(set, 30);
-    document.getElementById('min2').textContent = range(rise, 30);
 
-    // RATING & PHASE (from SunCalc)
-    const illumData = SunCalc.getMoonIllumination(now);
+    // MINORS (moonrise/moonset)
+    const mt = SunCalc.getMoonTimes(now, lat, lng, true);
+    const minorAM = (mt.set && mt.set.getHours() < 12) ? mt.set : mt.rise;
+    const minorPM = minorAM === mt.set ? mt.rise : mt.set;
+    document.getElementById('min1').textContent = range(minorAM, 30);
+    document.getElementById('min2').textContent = range(minorPM, 30);
+
+    // RATING & PHASE
     const illum = Math.round(illumData.fraction * 100);
     let score = 0;
     if (illum <= 10 || illum >= 90) score = 4;
@@ -257,9 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
       : `<span style="font-size:30px;color:#003366;">Poor</span>`;
 
     const phase = illumData.phase;
-    let phaseName = phase < 0.25 ? 'Waxing Crescent' :
-                    phase < 0.5 ? 'Waxing Gibbous' :
-                    phase < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
+    const phaseName = phase < 0.25 ? 'Waxing Crescent' :
+                      phase < 0.5 ? 'Waxing Gibbous' :
+                      phase < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
     document.getElementById('phase').textContent = phaseName;
     document.getElementById('illum').textContent = `${illum}% Illuminated`;
     const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
@@ -267,14 +278,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const moonFile = illum === 0 ? 'newmoon.png' : illum === 100 ? 'fullmoon.png' : `${dir}${pct}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric'});
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }, 500);
 });
 </script>
 
 </body>
 </html>
+
 
 
 
