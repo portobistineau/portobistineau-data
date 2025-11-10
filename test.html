@@ -173,6 +173,9 @@
         <b>Sunset</b> <div id="set" style="text-align:right;">Calculating…</div>
         <b>Last Light</b> <div id="last" style="text-align:right;">Calculating…</div>
       </div>
+      <p style="font-size:13px;color:#003366;margin-top:15px;text-align:center;">
+        <b>Bold</b> periods indicate the stronger feeding time of each group.
+      </p>
     </div>
     <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
       <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Calculating…</div>
@@ -240,7 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- APPLY OFFSET AND SORT ----
     const OFFSET_SIGN = 1; // try 1 first; if majors are early, switch to -1
-
     const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
 
     const centers = [];
@@ -258,18 +260,31 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${fmt(s)}–${fmt(e)}`;
     };
 
-    document.getElementById('maj1').innerHTML = `<i>${mkRange(major1Center,60)}</i>`;
+    // ---- Display majors (bold = better period) ----
+    document.getElementById('maj1').innerHTML = mkRange(major1Center,60);
     document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
 
     // ---- MINOR PERIODS ----
-    const mt = SunCalc.getMoonTimes(now, lat, lng, true);
-    const minors = [];
-    if (mt.rise) minors.push(mt.rise);
-    if (mt.set) minors.push(mt.set);
-    minors.sort((a,b) => a.getTime() - b.getTime());
-    const min1Center = minors[0] || null;
-    const min2Center = minors[1] || null;
-    document.getElementById('min1').innerHTML = `<i>${mkRange(min1Center,30)}</i>`;
+    // More robust logic: compute moon times for both today and tomorrow,
+    // sort, and pick the two that fall within today's 24-hour span
+    const mtToday = SunCalc.getMoonTimes(now, lat, lng, true);
+    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+    const mtTomorrow = SunCalc.getMoonTimes(tomorrow, lat, lng, true);
+
+    const allMinors = [];
+    [mtToday, mtTomorrow].forEach(mt => {
+      if (mt.rise) allMinors.push(mt.rise);
+      if (mt.set) allMinors.push(mt.set);
+    });
+    const startDay = new Date(now); startDay.setHours(0,0,0,0);
+    const endDay = new Date(startDay); endDay.setDate(endDay.getDate()+1);
+    const dayMinors = allMinors.filter(t => t >= startDay && t < endDay);
+    dayMinors.sort((a,b) => a.getTime() - b.getTime());
+
+    const min1Center = dayMinors[0] || null;
+    const min2Center = dayMinors[1] || null;
+
+    document.getElementById('min1').innerHTML = mkRange(min1Center,30);
     document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center,30)}</b>`;
 
     // ---- RATING & MOON PHASE ----
@@ -314,11 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-
-
-
 </body>
 </html>
+
 
 
 
