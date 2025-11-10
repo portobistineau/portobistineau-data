@@ -128,7 +128,7 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – FINAL, 100% WORKING -->
+<!-- TODAY’S BITE FORECAST – SOLUNAR CALCULATOR -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (sunResults) {
-    // ✅ Convert API UTC times to local times correctly
+    // Correctly convert UTC to local time
     document.getElementById('first').textContent = fmt(new Date(sunResults.civil_twilight_begin));
     document.getElementById('rise').textContent  = fmt(new Date(sunResults.sunrise));
     document.getElementById('set').textContent   = fmt(new Date(sunResults.sunset));
@@ -206,37 +206,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   const rise = moonTimes.rise;
   const set = moonTimes.set;
 
-  // Majors
+  // Helper to check if period start/end is valid today
+  const isValidPeriod = (center, hours) => {
+    if (!center) return false;
+    const start = new Date(center.getTime() - hours*30*60000);
+    const end   = new Date(center.getTime() + hours*30*60000);
+    return start.getDate() === now.getDate() && end.getDate() === now.getDate();
+  };
+
+  // Majors: 2 hours centered on overhead/underfoot
   let majors = [];
   if (rise && set) {
     const overhead = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
-    let underfoot = new Date(overhead.getTime() + 12 * 3600000);
-    if (underfoot.getDate() !== now.getDate()) {
-      majors = []; // Only one major would fall outside current day → show dash
-    } else {
-      majors = [overhead, underfoot].sort((a,b)=>a-b);
-    }
+    const underfoot = new Date(overhead.getTime() + 12*3600000);
+    if (isValidPeriod(overhead, 2)) majors.push(overhead);
+    if (isValidPeriod(underfoot, 2)) majors.push(underfoot);
+    majors.sort((a,b)=>a-b);
   }
 
-  // Minors
+  // Minors: 1 hour centered on rise/set
   let minors = [];
-  if (rise && set) {
-    minors = [rise, set].sort((a,b)=>a-b);
-  }
+  if (rise && isValidPeriod(rise,1)) minors.push(rise);
+  if (set && isValidPeriod(set,1)) minors.push(set);
+  minors.sort((a,b)=>a-b);
 
-  // Period range helper
+  // Helper to display period
   const range = (center, hours) => {
     if (!center) return '—';
     const start = new Date(center.getTime() - hours*30*60000);
-    const end = new Date(center.getTime() + hours*30*60000);
+    const end   = new Date(center.getTime() + hours*30*60000);
     return `${fmt(start)}–${fmt(end)}`;
   };
 
-  // Display periods or dash if missing
-  document.getElementById('maj1').textContent = majors.length === 2 ? range(majors[0],2) : '—';
-  document.getElementById('maj2').textContent = majors.length === 2 ? range(majors[1],2) : '—';
-  document.getElementById('min1').textContent = minors.length === 2 ? range(minors[0],1) : '—';
-  document.getElementById('min2').textContent = minors.length === 2 ? range(minors[1],1) : '—';
+  document.getElementById('maj1').textContent = majors[0] ? range(majors[0],2) : '—';
+  document.getElementById('maj2').textContent = majors[1] ? range(majors[1],2) : '—';
+  document.getElementById('min1').textContent = minors[0] ? range(minors[0],1) : '—';
+  document.getElementById('min2').textContent = minors[1] ? range(minors[1],1) : '—';
 
   // --- 3️⃣ Solunar Day Rating (0–4 stars) ---
   let points = 0;
@@ -293,8 +298,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 
 
+
 </body>
 </html>
+
 
 
 
