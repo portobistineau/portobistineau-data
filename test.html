@@ -161,61 +161,78 @@
 </div>
 
 <script>
-// TODAY’S BITE FORECAST – US NAVY MOON API + SUNRISE-SUNSET (PERFECT)
+// TODAY’S BITE FORECAST – 100% US NAVY + SUNRISE-SUNSET (NO SOLUNAR.ORG EVER)
 (async () => {
   const lat = 32.4619, lng = -93.34883;
   const now = new Date();
   const today = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
 
-  // 1. SUN TIMES
+  // 1. SUN TIMES (your trusted API)
   let sun = {results: {}};
   try {
     sun = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`).then(r => r.json());
   } catch(e) {}
-  const fmt = t => new Date(t || now).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  const fmt = t => t ? new Date(t).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
   document.getElementById('first').textContent = fmt(sun.results.civil_twilight_begin);
   document.getElementById('rise').textContent = fmt(sun.results.sunrise);
   document.getElementById('set').textContent = fmt(sun.results.sunset);
   document.getElementById('last').textContent = fmt(sun.results.civil_twilight_end);
 
-  // 2. US NAVY MOON DATA (official, exact transit times)
-  let moon = {phase: '', illumination: 0, moonrise: '', moonset: '', transit: '', antitransit: ''};
+  // 2. US NAVY MOON DATA — OFFICIAL TRANSIT TIMES
+  let navy = {moonrise: '', moonset: '', transit: '', antitransit: '', phase: '—', fracillum: 0};
   try {
-    const navyURL = `https://api.usno.navy.mil/moon/phase?date=11/9/2025&lat=${lat}&lon=${lng}&tz=-6`;
-    const raw = await fetch(navyURL).then(r => r.json());
-    moon = raw.phasedata.find(p => p.phase === 'Waning Gibbous') || raw.phasedata[0];
-    const times = raw.lunardata[0];
-    moon.moonrise = times.moonrise;
-    moon.moonset = times.moonset;
-    moon.transit = times.transit;
-    moon.antitransit = times.antitransit;
-  } catch(e) {}
+    const navyURL = `https://aa.usno.navy.mil/api/rstt/oneday?date=${m}/${d}/${y}&coords=${lat},${lng}&tz=-6`;
+    const data = await fetch(navyURL).then(r => r.json());
+    const moon = data.moonphases[0] || {};
+    navy.moonrise = data.moonrise;
+    navy.moonset = data.moonset;
+    navy.transit = data.closestmoon?.transit_time || '';
+    navy.antitransit = data.closestmoon?.antitransit_time || '';
+    navy.phase = moon.phenomena || 'Waning Gibbous';
+    navy.fracillum = moon.illum || 73;
+  } catch(e) {
+    document.getElementById('rating').innerHTML = 'Navy offline<br><span style="font-size:20px;">Refresh</span>';
+  }
 
-  // 3. SOLUNAR PERIODS (exact ±1h majors, ±30m minors)
+  // 3. SOLUNAR PERIODS (±1h major, ±30min minor)
   const toDate = s => s ? new Date(s) : null;
   const range = (d, hrs) => {
     if (!d) return '—';
-    const start = new Date(d); start.setHours(start.getHours() - hrs/2);
-    const end = new Date(d); end.setHours(end.getHours() + hrs/2);
+    const start = new Date(d);
+    const end = new Date(d);
+    start.setMinutes(start.getMinutes() - hrs * 30);
+    end.setMinutes(end.getMinutes() + hrs * 30);
     return `${fmt(start)}–${fmt(end)}`;
   };
 
-  document.getElementById('maj1').textContent = range(toDate(moon.transit), 2);
-  document.getElementById('maj2').textContent = range(toDate(moon.antitransit), 2);
-  document.getElementById('min1').textContent = range(toDate(moon.moonrise), 1);
-  document.getElementById('min2').textContent = range(toDate(moon.moonset), 1);
+  document.getElementById('maj1').textContent = range(toDate(navy.transit), 2);
+  document.getElementById('maj2').textContent = range(toDate(navy.antitransit), 2);
+  document.getElementById('min1').textContent = range(toDate(navy.moonrise), 1);
+  document.getElementById('min2').textContent = range(toDate(navy.moonset), 1);
 
-  // 4. RATING & IMAGE
-  const illum = Math.round(moon.illumination || 73);
+  // 4. RATING & MOON IMAGE
+  const illum = Math.round(navy.fracillum);
   const ratingScore = illum > 75 || illum < 25 ? 4 : illum > 50 ? 3 : 2;
   const stars = '★★★★'.slice(0, ratingScore);
   const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
 
   document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
-  document.getElementById('phase').textContent = moon.phase || 'Waning Gibbous';
+  document.getElementById('phase').textContent = navy.phase;
   document.getElementById('illum').textContent = `${illum}% Illumination`;
 
-  let moonFile = `wane${Math.round(illum / 5) * 5}.png`;
+  let moonFile = '';
+  if (illum === 0) moonFile = 'newmoon.png';
+  else if (illum === 100) moonFile = 'fullmoon.png';
+  else if (illum === 50 && navy.phase.includes('First')) moonFile = 'firstquart.png';
+  else if (illum === 50 && navy.phase.includes('Last')) moonFile = 'lastquart.png';
+  else {
+    const p = navy.phase.includes('Waxing') ? 'wax' : 'wane';
+    const pct = Math.round(illum / 5) * 5;
+    moonFile = `${p}${pct}.png`;
+  }
   document.getElementById('moon-img').src = `/images/${moonFile}`;
 
   document.getElementById('header-date').textContent = today;
@@ -225,6 +242,7 @@
 
 </body>
 </html>
+
 
 
 
