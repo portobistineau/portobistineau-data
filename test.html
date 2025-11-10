@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lake Bistineau Weather & Solunar - TEST</title>
+    <style>
+        body {font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f8ff;}
+        header {text-align: center; margin-bottom: 20px;}
+        #banner {max-width: 100%; height: auto; cursor: pointer;}
+        h1 {color: #0044aa;}
+        table {width: 100%; border-collapse: collapse; margin: 20px 0;}
+        th, td {border: 1px solid #88c; padding: 8px; text-align: center;}
+        th {background: #0044aa; color: white;}
+        .good {background: #d4edda;}
+        .fair {background: #fff3cd;}
+        .slow {background: #f8d7da;}
+        footer {margin-top: 40px; font-size: 0.9em; color: #555; text-align: center;}
+    </style>
+</head>
+<body>
+<header>
+    <a href="index.html">
+        <img src="your-banner-image.jpg" alt="Lake Bistineau Weather & Solunar" id="banner">
+    </a>
+</header>
+
+<h1 id="header-date">Solunar Times for Loading...</h1>
+
+<div id="weather-section">Loading weather...</div>
+<div id="solunar-section">Loading solunar data...</div>
+
+<table id="solunar-table">
+    <thead>
+        <tr><th>Time Frame</th><th>Activity Level</th><th>Tips</th></tr>
+    </thead>
+    <tbody>
+        <!-- JS fills this -->
+    </tbody>
+</table>
+
+<footer>
+    <p>Lake Bistineau drawdown in progress — 8 ft below pool stage until ~Nov 15.</p>
+</footer>
+
+<script>
+/* ==== DOUBLE-CLICK BANNER TO STAY ON TEST PAGE ==== */
+let clicks = 0, timer;
+document.getElementById('banner').addEventListener('click', function(e) {
+    e.preventDefault();
+    clicks++;
+    if (clicks === 1) {
+        timer = setTimeout(() => clicks = 0, 400);
+    } else if (clicks === 2) {
+        clearTimeout(timer);
+        clicks = 0;
+        // do nothing — stay on test.html (double-click = secret "I'm testing")
+    }
+});
+document.querySelector('header a').addEventListener('click', e => e.preventDefault());
+
+/* ==== LOCAL SOLUNAR CALCULATOR (no API) ==== */
+function calculateSolunar(lat = 32.44, lon = -93.49) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+
+    // Simplified moon phase (accurate enough for solunar)
+    const lunarMonth = 29.53058867;
+    const knownNewMoon = new Date(2025, 0, 29, 17, 46); // Jan 29 2025
+    const daysSince = (now - knownNewMoon) / 86400000;
+    const age = ((daysSince % lunarMonth) + lunarMonth) % lunarMonth;
+    const phase = age / lunarMonth; // 0 = new, 0.5 = full
+
+    // Sunrise/sunset approximation (good for NW Louisiana)
+    const J0 = (now.getMonth() + 1) * 30 + now.getDate();
+    const sunrise = new Date(now);
+    sunrise.setHours(6, 40 + Math.round((J0 - 315) * 0.08), 0, 0); // rough
+    const sunset = new Date(now);
+    sunset.setHours(17, 20 - Math.round((J0 - 315) * 0.08), 0, 0);
+
+    // Moon transit (overhead)
+    const moonTransit = new Date(now);
+    moonTransit.setHours(12, 0, 0, 0);
+    moonTransit.setMinutes((phase * 1440) % 60);
+
+    const major1 = new Date(sunrise);
+    major1.setMinutes(major1.getMinutes() - 60);
+    const major2 = new Date(moonTransit);
+    const minor1 = new Date(sunrise);
+    minor1.setHours(minor1.getHours() + 3);
+    const minor2 = new Date(sunset);
+    minor2.setMinutes(minor2.getMinutes() - 60);
+
+    return {
+        date: now.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'}),
+        sunrise: sunrise.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}),
+        sunset: sunset.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}),
+        moonPhase: Math.round(phase * 100) + '%',
+        periods: [
+            {time: formatRange(major1, 2), level: 'Good (Major)', tip: 'Target structure; jigs or crankbaits.'},
+            {time: formatRange(minor1, 1.5), level: 'Fair', tip: 'Slower—try deeper water.'},
+            {time: formatRange(minor2, 1.5), level: 'Good (Minor)', tip: 'Evening bite picks up.'},
+            {time: 'Night', level: 'Moderate', tip: 'Catfish active under lights.'}
+        ]
+    };
+}
+
+function formatRange(date, hours) {
+    const start = date.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+    const end = new Date(date);
+    end.setHours(end.getHours() + hours);
+    const endStr = end.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+    return `${start} – ${endStr}`;
+}
+
+/* ==== WEATHER (still your original source or replace later) ==== */
+async function loadWeather() {
+    // Placeholder — replace with your actual weather fetch when ready
+    return {
+        temp: '90–93°F (32–34°C)',
+        low: '68–70°F (19–21°C)',
+        conditions: 'Mostly sunny to partly cloudy',
+        wind: 'N 5–6 mph',
+        note: 'Lake ~8 ft below pool stage until ~Nov 15.'
+    };
+}
+
+/* ==== BUILD PAGE ==== */
+(async () => {
+    const solunar = calculateSolunar();
+    const weather = await loadWeather();
+
+    document.getElementById('header-date').innerHTML = `Solunar Times for ${solunar.date}`;
+
+    document.getElementById('weather-section').innerHTML = `
+        <p><strong>High:</strong> ${weather.temp} &nbsp; <strong>Low:</strong> ${weather.low}</p>
+        <p><strong>Conditions:</strong> ${weather.conditions} &nbsp; <strong>Wind:</strong> ${weather.wind}</p>
+        <p><strong>Sunrise:</strong> ${solunar.sunrise} &nbsp; <strong>Sunset:</strong> ${solunar.sunset}</p>
+        <p><strong>Moon:</strong> Waning Gibbous (${solunar.moonPhase} illuminated)</p>
+        <p style="color:red;"><strong>${weather.note}</strong></p>
+    `;
+
+    const tbody = document.querySelector('#solunar-table tbody');
+    tbody.innerHTML = '';
+    solunar.periods.forEach(p => {
+        const row = document.createElement('tr');
+        row.className = p.level.includes('Good') ? 'good' : p.level.includes('Fair') ? 'fair' : 'slow';
+        row.innerHTML = `<td>${p.time}</td><td>${p.level}</td><td>${p.tip}</td>`;
+        tbody.appendChild(row);
+    });
+})();
+</script>
+</body>
+</html>
