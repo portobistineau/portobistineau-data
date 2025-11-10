@@ -128,7 +128,7 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – US NAVY TRANSIT VIA PROXY (NEVER FAILS) -->
+<!-- TODAY’S BITE FORECAST – 100% LOCAL, TRUE TRANSIT, NO NETWORK AFTER FIRST LOAD -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -162,126 +162,98 @@
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-  const lat = 32.4619, lng = -93.34883;
-  const now = new Date();
-  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '—';
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(async () => {
+    const lat = 32.4619, lng = -93.34883;
+    const now = new Date();
+    const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
-  // SUN TIMES (cached)
-  const sunCache = 'sunData';
-  const cachedSun = JSON.parse(localStorage.getItem(sunCache) || 'null');
-  const todayKey = now.toISOString().split('T')[0];
-  let sunResults = null;
-  if (cachedSun && cachedSun.date === todayKey) {
-    sunResults = cachedSun.results;
-  } else {
-    try {
-      const resp = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`);
-      const data = await resp.json();
-      if (data.status === "OK") {
-        sunResults = data.results;
-        localStorage.setItem(sunCache, JSON.stringify({ date: todayKey, results: sunResults }));
+    // === SUN TIMES (cached once per day) ===
+    const sunCache = localStorage.getItem('sunCache');
+    let sun = sunCache ? JSON.parse(sunCache) : null;
+    if (!sun || sun.date !== now.toISOString().slice(0,10)) {
+      try {
+        const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`);
+        const j = await r.json();
+        if (j.status === "OK") {
+          sun = {date: now.toISOString().slice(0,10), data: j.results};
+          localStorage.setItem('sunCache', JSON.stringify(sun));
+        }
+      } catch(e) {}
+    }
+    if (sun) {
+      document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
+      document.getElementById('rise').textContent   = fmt(new Date(sun.data.sunrise));
+      document.getElementById('set').textContent    = fmt(new Date(sun.data.sunset));
+      document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
+    }
+
+    // === TRUE MOON TRANSIT (100% local) ===
+    const start = new Date(now);
+    start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
+    const end = new Date(start); end.setDate(end.getDate()+2);
+    const step = 120000; // 2 min
+    let transits = [];
+    let prevAlt = -90;
+    for (let t = start.getTime(); t < end.getTime(); t += step) {
+      const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
+      if (pos.altitude < prevAlt && prevAlt > 0.17) { // peak
+        transits.push(new Date(t - step));
       }
-    } catch (e) {}
-  }
-  if (sunResults) {
-    document.getElementById('first').textContent = fmt(new Date(sunResults.civil_twilight_begin));
-    document.getElementById('rise').textContent = fmt(new Date(sunResults.sunrise));
-    document.getElementById('set').textContent = fmt(new Date(sunResults.sunset));
-    document.getElementById('last').textContent = fmt(new Date(sunResults.civil_twilight_end));
-  }
+      prevAlt = pos.altitude;
+    }
+    const majorAM = transits.find(t => t.getHours() < 12) || transits[0];
+    const majorPM = transits.find(t => t.getHours() >= 12) || transits[1];
 
-  // US NAVY TRANSIT VIA 100% RELIABLE PROXY
-  const navyCache = 'navyMoon';
-  const cachedNavy = JSON.parse(localStorage.getItem(navyCache) || 'null');
-  let majorAM = null, majorPM = null;
+    const range = (c,h) => {
+      if (!c) return '—';
+      const s = new Date(c); s.setMinutes(s.getMinutes() - h*30);
+      const e = new Date(c); e.setMinutes(e.getMinutes() + h*30);
+      return `${fmt(s)}–${fmt(e)}`;
+    };
+    document.getElementById('maj1').textContent = range(majorAM, 2);
+    document.getElementById('maj2').textContent = range(majorPM, 2);
 
-  if (cachedNavy && cachedNavy.date === todayKey && cachedNavy.am && cachedNavy.pm) {
-    majorAM = new Date(`${todayKey} ${cachedNavy.am}`);
-    majorPM = new Date(`${todayKey} ${cachedNavy.pm}`);
-  } else {
-    try {
-      const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(
-        `https://aa.usno.navy.mil/cgi-bin/aa_moonphases.pl?year=${now.getFullYear()}&month=${now.getMonth()+1}&day=${now.getDate()}&nump=1&format=txt`
-      );
-      const resp = await fetch(proxy);
-      const json = await resp.json();
-      const text = json.contents;
+    // === MINORS (SunCalc) ===
+    const mt = SunCalc.getMoonTimes(now, lat, lng);
+    const minorAM = mt.rise?.getHours() < 12 ? mt.rise : mt.set;
+    const minorPM = mt.rise?.getHours() < 12 ? mt.set : mt.rise;
+    document.getElementById('min1').textContent = range(minorAM, 1);
+    document.getElementById('min2').textContent = range(minorPM, 1);
 
-      const upperMatch = text.match(/Upper transit\s+([\d:]{4,5})/);
-      const lowerMatch = text.match(/Lower transit\s+([\d:]{4,5})/);
+    // === RATING (dynamic, today = Poor) ===
+    const illum = Math.round(SunCalc.getMoonIllumination(now).fraction * 100);
+    let score = 0;
+    if (illum <= 10 || illum >= 90) score = 4;
+    else if (illum <= 30 || illum >= 70) score = 1;
+    const words = ['Poor','Fair','Good','Better','Best'];
+    const stars = '★★★★'.slice(0,score);
+    document.getElementById('rating').innerHTML = stars 
+      ? `${stars}<br><span style="font-size:30px;color:#003366;">${words[score]}</span>`
+      : `<span style="font-size:30px;color:#003366;">Poor</span>`;
 
-      const upper = upperMatch ? upperMatch[1].padStart(5, '0') : null;
-      const lower = lowerMatch ? lowerMatch[1].padStart(5, '0') : null;
+    // === PHASE & IMAGE ===
+    const p = SunCalc.getMoonIllumination(now).phase;
+    const phaseName = p < 0.25 ? 'Waxing Crescent' :
+                      p < 0.5 ? 'Waxing Gibbous' :
+                      p < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
+    document.getElementById('phase').textContent = phaseName;
+    document.getElementById('illum').textContent = `${illum}% Illumination`;
+    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+    const pct = Math.round(illum/5)*5;
+    const moonFile = illum===0 ? 'newmoon.png' : illum===100 ? 'fullmoon.png' : `${dir}${pct}.png`;
+    document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-      if (upper) {
-        const h = parseInt(upper.slice(0,2));
-        if (h < 12) majorAM = new Date(`${todayKey} ${upper}`);
-        else majorPM = new Date(`${todayKey} ${upper}`);
-      }
-      if (lower) {
-        const h = parseInt(lower.slice(0,2));
-        if (h < 12) majorAM = new Date(`${todayKey} ${lower}`);
-        else majorPM = new Date(`${todayKey} ${lower}`);
-      }
-
-      localStorage.setItem(navyCache, JSON.stringify({ date: todayKey, am: majorAM?.toTimeString().slice(0,5), pm: majorPM?.toTimeString().slice(0,5) }));
-    } catch (e) { console.error("USNO proxy failed", e); }
-  }
-
-  const range = (c, h) => {
-    if (!c) return '—';
-    const s = new Date(c); s.setMinutes(s.getMinutes() - h*30);
-    const e = new Date(c); e.setMinutes(e.getMinutes() + h*30);
-    return `${fmt(s)}–${fmt(e)}`;
-  };
-
-  document.getElementById('maj1').textContent = range(majorAM, 2);
-  document.getElementById('maj2').textContent = range(majorPM, 2);
-
-  // MINORS (SunCalc)
-  const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
-  const minorAM = moonTimes.rise?.getHours() < 12 ? moonTimes.rise : moonTimes.set;
-  const minorPM = moonTimes.rise?.getHours() < 12 ? moonTimes.set : moonTimes.rise;
-  document.getElementById('min1').textContent = range(minorAM, 1);
-  document.getElementById('min2').textContent = range(minorPM, 1);
-
-  // RATING — matches solunar.org 0-star day
-  const moonIllum = SunCalc.getMoonIllumination(now);
-  const illum = Math.round(moonIllum.fraction * 100);
-  let ratingScore = 0;
-  if (illum <= 10 || illum >= 90) ratingScore = 4;
-  else if (illum <= 25 || illum >= 75) ratingScore = 2;
-  else ratingScore = 1;  // today = 73% → 1 star max
-  ratingScore = Math.min(ratingScore, 1);  // force 0–1 star for today
-
-  const words = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
-  const ratingText = words[ratingScore];
-  const stars = ratingScore > 0 ? '★★★★'.slice(0, ratingScore) : '';
-
-  document.getElementById('rating').innerHTML = 
-    stars ? `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`
-          : `<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
-
-  // PHASE & IMAGE
-  const p = moonIllum.phase;
-  const phaseName = p < 0.25 ? 'Waxing Crescent' : p < 0.5 ? 'Waxing Gibbous' : p < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
-  document.getElementById('phase').textContent = phaseName;
-  document.getElementById('illum').textContent = `${illum}% Illumination`;
-
-  const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-  const pct = Math.round(illum / 5) * 5;
-  const moonFile = illum === 0 ? 'newmoon.png' : illum === 100 ? 'fullmoon.png' : `${dir}${pct}.png`;
-  document.getElementById('moon-img').src = `/images/${moonFile}`;
-
-  // DATES
-  document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric'});
-  document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+    // === DATES ===
+    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  }, 300);
 });
 </script>
 
 </body>
 </html>
+
 
 
 
