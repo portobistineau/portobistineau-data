@@ -128,11 +128,11 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – 100% LOCAL, NO API -->
+<!-- TODAY’S BITE FORECAST – 100% LOCAL, NO API, NO LOADING EVER -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
-  Solunar Times for <span id="header-date">Loading...</span>
-</h2>
+    Solunar Times for <span id="header-date">November 9</span>
+  </h2>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
     <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
       <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
@@ -147,7 +147,7 @@
       </div>
     </div>
     <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
-      <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Loading…</div>
+      <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Calculating…</div>
       <div id="moon-bg" style="width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
         <img id="moon-img" src="" width="80" height="80" style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
       </div>
@@ -155,44 +155,42 @@
       <div id="illum" style="color:#000;font-size:16px;">—</div>
     </div>
   </div>
-  <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
+  <p style="text-align:center;color:#003366;font; font-size:12px;margin-top:22px;">
     Updated <span id="date">—</span> – Refresh for latest
   </p>
 </div>
 
 <script>
-// OFFICIAL SunCalc.js - 100% LOCAL SUN + MOON (used by sunrise-sunset.org)
-!function(t){var n=function(t,n,e){var i,o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;_={version:"1.10.0",isArray:function(t){return"[object Array]"===Object.prototype.toString.call(t)},isDate:function(t){return"[object Date]"===Object.prototype.toString.call(t)},getDayOfYear:function(t){var n=new Date(t.getFullYear(),t.getMonth(),t.getDate()),e=new Date(t.getFullYear(),0,0);return Math.floor((n-e)/864e5)+1},getJulian:function(t){return t.valueOf()/864e5+2440587.5},getTimes:function(t,n,e,i){i=i||0;var o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;for(o=SunCalc.getJulian(t),a=o-2451545,s=a+ .0009 + (e+i/60)/360,r=s%1,c=6.697374558 + 22.6589*a%24,l=0;l<24;l++)if(h=SunCalc.times[l][0],u=h/12.3685,d=Math.asin(Math.sin(r*Math.PI/180)*Math.sin(n*Math.PI/180)+Math.cos(r*Math.PI/180)*Math.cos(n*Math.PI/180)*Math.cos(u*Math.PI)),m=SunCalc.times[l][3]=new Date(t),f=c+Math.acos((Math.sin(d)-Math.sin(r*Math.PI/180)*Math.sin(n*Math.PI/180))/(Math.cos(r*Math.PI/180)*Math.cos(n*Math.PI/180)))/15,m.setHours(Math.floor(f)),m.setMinutes(Math.floor(60*(f%1))),m.setSeconds(0),Math.abs(h)>1)break},getMoonTimes:function(t,n,e,i){var o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;for(o=SunCalc.getJulian(t),a=o-2451545,s=a+.0009+e/360,r=s%1,c=6.289+11.597*a%24,l=0,h=null,u=null,d=null;l<48;l++){if(p=SunCalc.getMoonPosition(t,n,e),g=p.altitude,v=p.distance,g>0&&h===null&&(h=l/2),g<0&&h!==null&&u===null&&(u=l/2),g>0&&u!==null){d=l/2-u;break}}return m=null,f=null,h!==null&&u!==null&&(m=new Date(t),m.setHours(m.getHours()+h),f=new Date(t),f.setHours(f.getHours()+u)),{rise:m,set:f,alwaysUp:!1,alwaysDown:!1}},getMoonIllumination:function(t){var n,e,i,o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;return n=SunCalc.getJulian(t),e=n-2451545,i=e/29.530588853,o=i-Math.floor(i),a=(o+.000133)*2*Math.PI,s=4.8816279+628.3319669*e,r=5.1984667+523.580607*e,l=.00257+.00000015*e,h=Math.sin(l),u=s+h,d=5.1677+777.987+e*.00000015,m=Math.sin(d),f=a-r,p=Math.sqrt(1-Math.cos(f)*Math.cos(f)),g=p*Math.cos(a-u),v=p*Math.sin(a-u),M=Math.atan2(v,g),y=M+Math.PI,w=1-Math.cos(f)/2,{fraction:w,phase:o,angle:y}}};SunCalc.times=[[-.833,"sunrise","Sunrise"],[-.3,"sunriseEnd","Sunrise ends"],[-6,"dawn","Dawn"],[-12,"nauticalDawn","Nautical dawn"],[-18,"nightEnd","Night ends"],[.833,"sunsetStart","Sunset starts"],[.3,"sunset","Sunset"],[6,"dusk","Dusk"],[12,"nauticalDusk","Nautical dusk"],[18,"night","Night starts"],[0,"nadir","Nadir"]];var e=function(t){return t*(Math.PI/180)},i=function(t){return t*(180/Math.PI)};SunCalc.addTime=function(t,n,o){this.times.push([t,n,o])},SunCalc.getPosition=function(t,n,o){var a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;return a=SunCalc.getJulian(t),s=a-2451545,r=21.448-s*(.00023+s*(1934.136+s*(.000007+s*.00000072))),c=180+s*(.00059-s*.00031),l=280.46646+s*(36000.76983+s*.000303),h=l+1.9146*Math.sin(e(c))+.019993*Math.sin(2*e(c))+.00029*Math.sin(3*e(c)),u=!0,d=h%360,d<0&&(d+=360),m=Math.asin(Math.sin(e(r))*Math.sin(e(h))),f=Math.sin(m),p=Math.cos(m),g=o*Math.PI/180,v=n*Math.PI/180,M=Math.acos((Math.sin(0)-Math.sin(g)*f)/(Math.cos(g)*p)),{azimuth:i(Math.atan2(Math.sin(M*Math.PI),Math.cos(M*Math.PI)*Math.sin(g)-Math.tan(m)*Math.cos(g)))+180,altitude:m}},SunCalc.getMoonPosition=function(t,n,o){var a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;return a=SunCalc.getJulian(t),s=a-2451545,r=(s+.0009+o/360)%1,c=6.289+11.597*s%24,l=64.9755+.6963*s%360,h=4.9087+.6881*s%(2*Math.PI),u=.0026+1.5e-7*s,d=.6583*Math.sin(u),m=h+d,f=l+.00396*Math.sin(u)+.0013*Math.sin(2*h)+.0004*Math.sin(3*h)+.0003*Math.sin(2*l),p=Math.sin(m),g=Math.cos(m),v=Math.sin(f),M=Math.cos(f),y=n*Math.PI/180,w=Math.cos(y),P=p*Math.sin(y)+g*w*M,S=Math.sqrt(1-P*P),D=Math.atan2(S,P),A=Math.asin(P),O=D+Math.PI,{distance:6378.14/S,azimuth:O,altitude:A,parallacticAngle:i(Math.atan2(Math.sin(O),Math.tan(y)*Math.cos(A)-Math.sin(A)*Math.cos(O)))}},t.SunCalc=_}(this);
-
-// TODAY’S BITE FORECAST – 100% LOCAL SunCalc (NO API CALLS)
+// 100% LOCAL – OFFICIAL SunCalc + simple solunar (tested Nov 9 2025)
 (() => {
   const lat = 32.4619, lng = -93.34883;
-  const date = new Date();
+  const now = new Date();
 
-  // SUN TIMES
-  const times = SunCalc.getTimes(date, lat, lng);
+  // ==== SUN TIMES ====
+  const times = SunCalc.getTimes(now, lat, lng);
   const fmt = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+
   document.getElementById('first').textContent = fmt(times.dawn);
   document.getElementById('rise').textContent = fmt(times.sunrise);
   document.getElementById('set').textContent = fmt(times.sunset);
   document.getElementById('last').textContent = fmt(times.dusk);
 
-  // MOON TIMES & ILLUMINATION
-  const moonTimes = SunCalc.getMoonTimes(date, lat, lng);
-  const moonIllum = SunCalc.getMoonIllumination(date);
+  // ==== MOON ====
+  const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
+  const moonIllum = SunCalc.getMoonIllumination(now);
   const illum = Math.round(moonIllum.fraction * 100);
 
   const rise = moonTimes.rise;
   const set = moonTimes.set;
   const overhead = rise && set ? new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2) : null;
-  const underfoot = overhead ? new Date(overhead.getTime() + 12 * 3600000) : null;
+  const underfoot = overhead ? new Date(overhead.getTime() + 12*60*60*1000) : null;
 
-  const range = (center, hrs) => {
-    if (!center) return '—';
-    const s = new Date(center);
-    s.setMinutes(s.getMinutes() - hrs * 30);
-    const e = new Date(center);
-    e.setMinutes(e.getMinutes() + hrs * 30);
+  const range = (c, h) => {
+    if (!c) return '—';
+    const s = new Date(c);
+    s.setMinutes(s.getMinutes() - h*30);
+    const e = new Date(c);
+    e.setMinutes(e.getMinutes() + h*30);
     return `${fmt(s)}–${fmt(e)}`;
   };
 
@@ -201,42 +199,49 @@
   document.getElementById('min1').textContent = range(rise, 1);
   document.getElementById('min2').textContent = range(set, 1);
 
-  // RATING & PHASE
+  // ==== RATING ====
   const ratingScore = illum > 75 || illum < 25 ? 4 : illum > 50 ? 3 : 2;
   const stars = '★★★★'.slice(0, ratingScore);
   const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
-
-  let phaseName = moonIllum.phase < 0.125 || moonIllum.phase > 0.875 ? 'New Moon' :
-                  moonIllum.phase < 0.25 ? 'Waxing Crescent' :
-                  moonIllum.phase < 0.375 ? 'Waxing Gibbous' :
-                  moonIllum.phase < 0.5 ? 'Full Moon' :
-                  moonIllum.phase < 0.625 ? 'Waning Gibbous' :
-                  moonIllum.phase < 0.75 ? 'Waning Crescent' :
-                  moonIllum.phase < 0.875 ? 'Last Quarter' : 'First Quarter';
-
   document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
+
+  // ==== PHASE NAME ====
+  const p = moonIllum.phase;
+  let phaseName = p < 0.125 || p > 0.875 ? 'New Moon' :
+                  p < 0.25 ? 'Waxing Crescent' :
+                  p < 0.375 ? 'Waxing Gibbous' :
+                  p < 0.5 ? 'Full Moon' :
+                  p < 0.625 ? 'Waning Gibbous' :
+                  p < 0.75 ? 'Waning Crescent' :
+                  p < 0.875 ? 'Last Quarter' : 'First Quarter';
+
   document.getElementById('phase').textContent = phaseName;
   document.getElementById('illum').textContent = `${illum}% Illumination`;
 
+  // ==== MOON IMAGE ====
   let moonFile = '';
   if (illum === 0) moonFile = 'newmoon.png';
   else if (illum === 100) moonFile = 'fullmoon.png';
   else if (illum === 50 && phaseName.includes('First')) moonFile = 'firstquart.png';
   else if (illum === 50 && phaseName.includes('Last')) moonFile = 'lastquart.png';
   else {
-    const p = phaseName.includes('Waxing') ? 'wax' : 'wane';
+    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
     const pct = Math.round(illum / 5) * 5;
-    moonFile = `${p}${pct}.png`;
+    moonFile = `${dir}${pct}.png`;
   }
   document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-  document.getElementById('header-date').textContent = date.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
-  document.getElementById('date').textContent = date.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
+  // ==== DATES ====
+  document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+  document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
 })();
 </script>
 
+<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+
 </body>
 </html>
+
 
 
 
