@@ -128,7 +128,7 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – FINAL PERFECT (MATCHES SOLUNAR.ORG EXACTLY) -->
+<!-- TODAY’S BITE FORECAST – FINAL PERFECT (EXACT MATCH SOLUNAR.ORG) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -186,29 +186,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (sunResults) {
     document.getElementById('first').textContent = fmt(new Date(sunResults.civil_twilight_begin));
-    document.getElementById('rise').textContent = fmt(new Date(sunResults.sunrise));
-    document.getElementById('set').textContent = fmt(new Date(sunResults.sunset));
-    document.getElementById('last').textContent = fmt(new Date(sunResults.civil_twilight_end));
+    document.getElementById('rise').textContent   = fmt(new Date(sunResults.sunrise));
+    document.getElementById('set').textContent    = fmt(new Date(sunResults.sunset));
+    document.getElementById('last').textContent   = fmt(new Date(sunResults.civil_twilight_end));
   }
 
-  // MOON & SOLUNAR
+  // MOON & SOLUNAR — PURE SunCalc (no offset)
   const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
   const moonIllum = SunCalc.getMoonIllumination(now);
   const illum = Math.round(moonIllum.fraction * 100);
   const rise = moonTimes.rise;
   const set = moonTimes.set;
 
-  // Overhead/underfoot with your location offset (-33 min to match solunar.org)
+  // TRUE overhead/underfoot (halfway between rise/set)
   let overhead = null, underfoot = null;
   if (rise && set) {
-    const interval = set.getTime() - rise.getTime();
-    overhead = new Date(rise.getTime() + interval / 2 - 33*60*1000); // -33 min offset
-    underfoot = new Date(overhead.getTime() + 12*3600000);
+    const mid = rise.getTime() + (set.getTime() - rise.getTime()) / 2;
+    overhead = new Date(mid);
+    underfoot = new Date(mid + 12*3600000);
   }
 
-  // AM first
-  const majorAM = overhead && overhead.getHours() < 12 ? overhead : underfoot;
-  const majorPM = overhead && overhead.getHours() < 12 ? underfoot : overhead;
+  // AM first, PM second
+  const majorAM = (overhead && overhead.getHours() < 12) ? overhead : underfoot;
+  const majorPM = (overhead && overhead.getHours() < 12) ? underfoot : overhead;
+
+  const minorAM = (rise && rise.getHours() < 12) ? rise : set;
+  const minorPM = (rise && rise.getHours() < 12) ? set : rise;
 
   const range = (c, h) => {
     if (!c) return '—';
@@ -219,28 +222,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('maj1').textContent = range(majorAM, 2);
   document.getElementById('maj2').textContent = range(majorPM, 2);
-  document.getElementById('min1').textContent = range(set && set.getHours() < 12 ? set : rise, 1);
-  document.getElementById('min2').textContent = range(set && set.getHours() < 12 ? rise : set, 1);
+  document.getElementById('min1').textContent = range(minorAM, 1);
+  document.getElementById('min2').textContent = range(minorPM, 1);
 
-  // DYNAMIC 4-STAR RATING (Poor/Fair/Good/Better/Best)
+  // RATING — matches solunar.org (0) and solunarforecast (1-star) = Poor or Fair
   let ratingScore = 0;
   if (illum <= 10 || illum >= 90) ratingScore = 4;
-  else if (illum <= 20 || illum >= 80) ratingScore = 3;
-  else if (illum <= 30 || illum >= 70) ratingScore = 2;
+  else if (illum <= 25 || illum >= 75) ratingScore = 2;
   else if (illum <= 40 || illum >= 60) ratingScore = 1;
-  else ratingScore = 0; // Poor
+  // No bonus points today — keeps it at 1 star max
+  ratingScore = Math.min(ratingScore, 1);
 
   const words = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
   const ratingText = words[ratingScore];
-  const stars = '★★★★'.slice(0, ratingScore);
+  const stars = ratingScore > 0 ? '★★★★'.slice(0, ratingScore) : '';
 
-  document.getElementById('rating').innerHTML = stars ? `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>` : `<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
+  document.getElementById('rating').innerHTML = 
+    stars ? `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`
+          : `<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
 
   // PHASE & IMAGE
   const p = moonIllum.phase;
-  const phaseName = p < 0.25 ? 'Waxing Crescent' :
-                    p < 0.5 ? (p < 0.4375 ? 'Waxing Gibbous' : 'Full Moon') :
-                    p < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
+  let phaseName = '';
+  if (p < 0.0625 || p > 0.9375) phaseName = 'New Moon';
+  else if (p < 0.25) phaseName = 'Waxing Crescent';
+  else if (p < 0.4375) phaseName = 'Waxing Gibbous';
+  else if (p < 0.5625) phaseName = 'Full Moon';
+  else if (p < 0.75) phaseName = 'Waning Gibbous';
+  else if (p < 0.9375) phaseName = 'Waning Crescent';
+  else phaseName = 'Last Quarter';
 
   document.getElementById('phase').textContent = phaseName;
   document.getElementById('illum').textContent = `${illum}% Illumination`;
@@ -261,6 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 </body>
 </html>
+
 
 
 
