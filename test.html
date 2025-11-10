@@ -128,7 +128,7 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – FINAL PERFECT (NO SOLUNAR.ORG EVER) -->
+<!-- TODAY’S BITE FORECAST – FINAL PRODUCTION VERSION (NO SOLUNAR.ORG EVER) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -149,14 +149,14 @@
     <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
       <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Calculating…</div>
       <div id="moon-bg" style="width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
-        <img id="moon-img" src="" width="80" height="80" style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <img id="moon-img" src="" width:80 height:80 style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
       </div>
       <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
       <div id="illum" style="color:#000;font-size:16px;">—</div>
     </div>
   </div>
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
-    Updated <span id="date">—</span> – Refresh for latest
+    Updated <span id="date">—</span>为一Refresh for latest
   </p>
 </div>
 
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const now = new Date();
   const fmt = d => d ? d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '—';
 
-  // --- SUN TIMES (cached sunrise-sunset.org) ---
+  // === SUN TIMES (cached sunrise-sunset.org) ===
   const cacheKey = 'sunData';
   const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
   const todayKey = now.toISOString().split('T')[0];
@@ -184,63 +184,74 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch (e) { console.error("Sun API failed", e); }
   }
-
   if (sunResults) {
     document.getElementById('first').textContent = fmt(new Date(sunResults.civil_twilight_begin));
-    document.getElementById('rise').textContent = fmt(new Date(sunResults.sunrise));
-    document.getElementById('set').textContent = fmt(new Date(sunResults.sunset));
-    document.getElementById('last').textContent = fmt(new Date(sunResults.civil_twilight_end));
+    document.getElementById('rise').textContent   = fmt(new Date(sunResults.sunrise));
+    document.getElementById('set').textContent    = fmt(new Date(sunResults.sunset));
+    document.getElementById('last').textContent   = fmt(new Date(sunResults.civil_twilight_end));
   }
 
-  // --- MOON & SOLUNAR (SunCalc) ---
+  // === MOON & SOLUNAR ===
   const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
   const moonIllum = SunCalc.getMoonIllumination(now);
   const illum = Math.round(moonIllum.fraction * 100);
   const rise = moonTimes.rise;
   const set = moonTimes.set;
 
-  // Overhead/underfoot (NO date filtering — AM major works)
+  // Overhead / Underfoot
   let overhead = null, underfoot = null;
   if (rise && set) {
-    overhead = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
+    const interval = set.getTime() - rise.getTime();
+    overhead = new Date(rise.getTime() + interval / 2);
     underfoot = new Date(overhead.getTime() + 12*3600000);
   }
 
-  const majors = [];
-  if (overhead) majors.push(overhead);
-  if (underfoot) majors.push(underfoot);
-  majors.sort((a,b) => a - b);
-
-  const minors = [];
-  if (rise) minors.push(rise);
-  if (set) minors.push(set);
-  minors.sort((a,b) => a - b);
+  // Force AM first
+  const majorAM  = (overhead && overhead.getHours() < 12) ? overhead : underfoot;
+  const majorPM  = (overhead && overhead.getHours() < 12) ? underfoot : overhead;
+  const minorAM  = (set && set.getHours() < 12) ? set : rise;
+  const minorPM  = (set && set.getHours() < 12) ? rise : set;
 
   const range = (c, h) => {
     if (!c) return '—';
-    const s = new Date(c); s.setMinutes(s.getMinutes() - h*30);
-    const e = new Date(c); e.setMinutes(e.getMinutes() + h*30);
+    const s = new Date(c.getTime() - h*30*60000);
+    const e = new Date(c.getTime() + h*30*60000);
     return `${fmt(s)}–${fmt(e)}`;
   };
 
-  document.getElementById('maj1').textContent = majors[0] ? range(majors[0], 2) : '—';
-  document.getElementById('maj2').textContent = majors[1] ? range(majors[1], 2) : '—';
-  document.getElementById('min1').textContent = minors[0] ? range(minors[0], 1) : '—';
-  document.getElementById('min2').textContent = minors[1] ? range(minors[1], 1) : '—';
+  document.getElementById('maj1').textContent = range(majorAM, 2);
+  document.getElementById('maj2').textContent = range(majorPM, 2);
+  document.getElementById('min1').textContent = range(minorAM, 1);
+  document.getElementById('min2').textContent = range(minorPM, 1);
 
-  // --- RATING: Fair (1 star) for today ---
-  const ratingScore = 1;  // matches solunar.org dayRating 0 and solunarforecast 1-star
-  const stars = '★';
-  const ratingText = 'Fair';
-  document.getElementById('rating').innerHTML = `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`;
+  // === DYNAMIC 4-STAR RATING (Poor / Fair / Good / Better / Best) ===
+  let ratingScore = 0;
+  // Base score from moon illumination
+  if (illum <= 10 || illum >= 90) ratingScore += 2;
+  else if (illum <= 20 || illum >= 80) ratingScore += 1;
+  // Bonus if major/minor close to sunrise/sunset
+  const closeTo = (a, b) => a && b && Math.abs(a - b) < 90*60*1000; // within 90 min
+  const sunrise = sunResults ? new Date(sunResults.sunrise).getTime() : 0;
+  const sunset  = sunResults ? new Date(sunResults.sunset).getTime() : 0;
+  if (majorAM  && closeTo(majorAM.getTime(),  sunrise)) ratingScore += 1;
+  if (majorPM  && closeTo(majorPM.getTime(),  sunset))  ratingScore += 1;
+  if (minorAM  && closeTo(minorAM.getTime(),  sunrise)) ratingScore += 0.5;
+  if (minorPM  && closeTo(minorPM.getTime(),  sunset))  ratingScore += 0.5;
 
-  // --- PHASE & IMAGE ---
+  ratingScore = Math.min(4, Math.round(ratingScore)); // 0–4
+  const words = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
+  const ratingText = words[ratingScore];
+  const stars = '★★★★'.slice(0, ratingScore) || '';
+
+  document.getElementById('rating').innerHTML = 
+    stars ? `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`
+          : `<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
+
+  // === PHASE & IMAGE ===
   const p = moonIllum.phase;
   const phaseName = p < 0.25 ? 'Waxing Crescent' :
-                    p < 0.4375 ? 'Waxing Gibbous' :
-                    p < 0.5625 ? 'Full Moon' :
-                    p < 0.75 ? 'Waning Gibbous' :
-                    p < 0.9375 ? 'Waning Crescent' : 'New Moon';
+                    p < 0.5 ? (p < 0.4375 ? 'Waxing Gibbous' : 'Full Moon') :
+                    p < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
 
   document.getElementById('phase').textContent = phaseName;
   document.getElementById('illum').textContent = `${illum}% Illumination`;
@@ -252,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                    `${dir}${pct}.png`;
   document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-  // --- DATES ---
+  // === DATES ===
   document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric'});
   document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
 });
@@ -261,6 +272,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 </body>
 </html>
+
 
 
 
