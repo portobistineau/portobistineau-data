@@ -37,7 +37,7 @@
   });
 </script>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (EXACT OBSERVED TEMP) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (TALLER CARDS + TEXT WRAP) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -56,13 +56,7 @@
     } else grid = JSON.parse(grid);
 
     // Current observed
-    let currentTemp = '??';
-    let feels = '??';
-    let wind = '0';
-    let dir = 'N';
-    let pressure = '??';
-    let trend = '';
-    let timeStr = '??';
+    let currentTemp = '??', feels = '??', wind = '0', dir = 'N', pressure = '??', timeStr = '??';
     try {
       const stations = await fetch(grid.observationStations).then(r => r.json());
       const station = stations.observationStations[0];
@@ -70,14 +64,14 @@
       const p = obs.properties;
       currentTemp = Math.round(p.temperature.value * 1.8 + 32);
       feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-      wind = Math.round(p.windSpeed.value * 2.23694) || 0; // m/s to mph
+      wind = Math.round(p.windSpeed.value * 2.23694) || 0;
       const windDir = p.windDirection.value || 0;
       dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
-      pressure = (p.barometricPressure.value / 3386.39).toFixed(2); // Pa to inHg
+      pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
       timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
     } catch(e) {}
 
-    // Hourly & Daily forecast
+    // Forecasts
     let hourly = {properties: {periods: []}};
     let daily = {properties: {periods: []}};
     try {
@@ -85,20 +79,19 @@
       daily = await fetch(grid.forecast).then(r => r.json());
     } catch(e) {}
 
-    // Current card
     const currentHTML = `
       <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
         <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
         <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
         <div style="font-size:14px;line-height:1.6;">
           Wind ${wind} mph ${dir}<br>
-          Pressure ${pressure} inHg ${trend}<br>
+          Pressure ${pressure} inHg<br>
         </div>
       </div>`;
 
-    // 7-day cards
+    // 7-day cards — TALLER + TEXT WRAP
     let forecastHTML = '';
-    const dailyPeriods = daily.properties.periods.slice(0,14); // day + night
+    const dailyPeriods = daily.properties.periods.slice(0,14);
     for (let i = 0; i < 7; i++) {
       const day = dailyPeriods[i*2];
       const night = dailyPeriods[i*2+1] || day;
@@ -107,18 +100,17 @@
       const dayName = i === 0 ? 'Today' : new Date(day.startTime).toLocaleDateString('en-US', {weekday: 'short'});
       const icon = day.icon.replace('large', 'medium');
       forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;display:inline-block;width:105px;margin:4px;vertical-align:top;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;font-size:13px;">
-          <div style="font-weight:bold;color:#003366;">${dayName}</div>
+        <div onclick="showDetail(${i})" style="cursor:pointer;display:inline-block;width:120px;margin:8px;vertical-align:top;background:#fff;padding:12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;font-size:13px;height:145px;">
+          <div style="font-weight:bold;color:#003366;margin-bottom:4px;">${dayName}</div>
           <img src="${icon}" width="48" height="48">
-          <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
-          <div>${day.shortForecast}</div>
+          <div style="font-size:16px;font-weight:bold;margin:6px 0;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
+          <div style="line-height:1.3;height:36px;overflow:hidden;">${day.shortForecast}</div>
         </div>`;
     }
 
     document.getElementById('bistineauWeather').innerHTML = currentHTML + 
-      `<div style="background:#f0f8ff;padding:10px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${forecastHTML}</div>`;
+      `<div style="background:#f0f8ff;padding:15px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${forecastHTML}</div>`;
 
-    // Popup hourly detail
     window.showDetail = function(dayIndex) {
       const periods = hourly.properties.periods.slice(dayIndex*24, (dayIndex+1)*24);
       let detailHTML = `<h3 style="margin-top:0;text-align:center;">${periods[0] ? new Date(periods[0].startTime).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) : 'Today'}</h3><div style="max-height:60vh;overflow-y:auto;">`;
@@ -269,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
