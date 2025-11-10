@@ -161,41 +161,39 @@
 </div>
 
 <script>
-// SUNCalc.js - FULL LOCAL SUN + MOON (NO API CALLS EVER)
-var SunCalc={addTime:function(e,t,n){this.times.push([e,t,n])},times:[[.0001,"nadir","Nadir"],[-.0078,"nightEnd","Night ends"],[-.1047,"nauticalDawn","Nautical dawn"],[-.1517,"blueHourDawnEnd","Blue hour ends"],[-.2075,"dawn","Dawn"],[-.2167,"blueHourDawnStart","Blue hour starts"],[-.5,"sunriseEnd","Sunrise ends"],[-.5833,"sunrise","Sunrise"],[-.8333,"goldenHourDawnEnd","Golden hour (morning) ends"],[0,"solarNoon","Solar noon"],[.0001,"goldenHourDuskStart","Golden hour (evening) starts"],[.0083,"sunsetStart","Sunset starts"],[.0083,"sunset","Sunset"],[.0083,"sunsetEnd","Sunset ends"],[.0083,"dusk","Dusk"],[.0083,"blueHourDuskStart","Blue hour starts"],[.0083,"blueHourDuskEnd","Blue hour ends"],[.0083,"nauticalDusk","Nautical dusk"],[.0083,"night","Night starts"],[.0001,"goldenHourDuskEnd","Golden hour (evening) ends"]],getPosition:function(e,t,n){var i=SunCalc.getJulian(e),a=(i-2451545)/36525,r=21.448- a*(.00023 + a*(1934.136 + a*(.000007 + a*.00000072))),o=180+ a*(.00059 - a*.00031),s=280.46646 + a*(36000.76983 + a* .000303),l=s + 1.9146 * Math.sin(o*Math.PI/180) + .019993 * Math.sin(2*o*Math.PI/180) + .00029 * Math.sin(3*o*Math.PI/180),u=!0,m=l%360;m<0&&(m+=360);var c=Math.asin(Math.sin(r*Math.PI/180)*Math.sin(l*Math.PI/180)),d=Math.sin(c),h=Math.cos(c),p=t*Math.PI/180,f=n*Math.PI/180,g=(s - m)/360 % 1,v=Math.acos((Math.sin(0) - Math.sin(p)*d)/ (Math.cos(p)*h));return v=isNaN(v)?0:v,{azimuth:Math.atan2(Math.sin(v*Math.PI),Math.cos(v*Math.PI)*Math.sin(p) - Math.tan(c)*Math.cos(p)) + Math.PI,altitude:c}},getTimes:function(e,t,n,i){i=i||0;for(var a=SunCalc.getJulian(e),r=a-2451545,o=(r+ .0009 + (n + i/60)/360) % 1,s=6.697374558 + 22.6589*r % 24,l=!0,u=0;u<24;u++){var m=Math.sin(o*Math.PI/180),c=Math.sin(t*Math.PI/180),d=Math.cos(o*Math.PI/180),h=Math.cos(t*Math.PI/180),p=-Math.sin(c)/ (Math.cos(c)*d),f=Math.sqrt(1-p*p),g=p/f,v=Math.atan(g)*180/Math.PI;v<0&&(v+=360);var y=SunCalc.times[u][0] * f,M=SunCalc.times[u][1],w=SunCalc.times[u][2];if(Math.abs(y)>1)continue;var T=(y - m)/d;b=T>1?b=0:b<-1?b=1:b;var S=s + T/15,P=new Date(e);P.setHours(Math.floor(S)),P.setMinutes(Math.floor(60*(S%1))),P.setSeconds(0),this.times[u][3]=P}},getMoonPosition:function(e,t,n){var i=SunCalc.getJulian(e),a=i-2451545,r= (a + .0009 + n/360) % 1,s=6.289 + 11.597 * a % 24,l=64.9755 + .6963 * a % 360,u=4.9087 + .6881 * a % (2*Math.PI),m= .0026 + 1.5e-7 * a,c= .6583 * Math.sin(m),d=u + c,h= l + .00396 * Math.sin(m) + .0013 * Math.sin(2*u) + .0004 * Math.sin(3*u) + .0003 * Math.sin(2*l),p= Math.sin(d),f= Math.cos(d),g= Math.sin(h),v= Math.cos(h),y= Math.sin(t*Math.PI/180),M= Math.cos(t*Math.PI/180),w= p * y + f * M * v,T= Math.sqrt(1 - w*w),S= Math.atan2(T, w),P= Math.asin(w),b= S + Math.PI;return{distance:6378.14 / T,azimuth:b,altitude:P,parallacticAngle:Math.atan2(Math.sin(b),Math.tan(t*Math.PI/180)*Math.cos(P) - Math.sin(P)*Math.cos(b))}},getMoonIllumination:function(e){var t=SunCalc.getJulian(e),n=t-2451545,i=n/29.530588853,a=i-Math.floor(i),r= (a + .000133)*2*Math.PI,o= 4.8816279 + 628.3319669 * n,s= 5.1984667 + 523.580607 * n,l= .00257 + .00000015 * n,u= Math.sin(l),m= o + u,c= 5.1677 + 777.987 + n * .00000015,d= Math.sin(c),h= r - s,p= Math.sqrt(1 - Math.cos(h)*Math.cos(h)),f= p * Math.cos(r - m),g= p * Math.sin(r - m),v= Math.atan2(g,f),y= v + Math.PI,M= 1 - Math.cos(h)/2;return{fraction:M,phase:a,angle:y}},getMoonTimes:function(e,t,n,i){var a=SunCalc.getJulian(e),r=a-2451545,o= (r + .0009 + n/360) % 1,s=6.289 + 11.597 * r % 24,l=!0,u=0,m=null,c=null,d=null;for(u=0;u<48;u++){var h=SunCalc.getMoonPosition(e,t,n),p=h.altitude,f=h.distance;if(p>0&&m===null)m=u/2;if(p<0&&m!==null&&c===null)c=u/2;if(p>0&&c!==null)d=u/2- c}var g=null,v=null;if(m!==null&&c!==null){g=new Date(e);g.setHours(g.getHours() + m);v=new Date(e);v.setHours(v.getHours() + c)}return{rise:g,set:v,alwaysUp:l,alwaysDown:!l}}}; // end SunCalc
+// OFFICIAL SunCalc.js - 100% LOCAL SUN + MOON (used by sunrise-sunset.org)
+!function(t){var n=function(t,n,e){var i,o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;_={version:"1.10.0",isArray:function(t){return"[object Array]"===Object.prototype.toString.call(t)},isDate:function(t){return"[object Date]"===Object.prototype.toString.call(t)},getDayOfYear:function(t){var n=new Date(t.getFullYear(),t.getMonth(),t.getDate()),e=new Date(t.getFullYear(),0,0);return Math.floor((n-e)/864e5)+1},getJulian:function(t){return t.valueOf()/864e5+2440587.5},getTimes:function(t,n,e,i){i=i||0;var o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;for(o=SunCalc.getJulian(t),a=o-2451545,s=a+ .0009 + (e+i/60)/360,r=s%1,c=6.697374558 + 22.6589*a%24,l=0;l<24;l++)if(h=SunCalc.times[l][0],u=h/12.3685,d=Math.asin(Math.sin(r*Math.PI/180)*Math.sin(n*Math.PI/180)+Math.cos(r*Math.PI/180)*Math.cos(n*Math.PI/180)*Math.cos(u*Math.PI)),m=SunCalc.times[l][3]=new Date(t),f=c+Math.acos((Math.sin(d)-Math.sin(r*Math.PI/180)*Math.sin(n*Math.PI/180))/(Math.cos(r*Math.PI/180)*Math.cos(n*Math.PI/180)))/15,m.setHours(Math.floor(f)),m.setMinutes(Math.floor(60*(f%1))),m.setSeconds(0),Math.abs(h)>1)break},getMoonTimes:function(t,n,e,i){var o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;for(o=SunCalc.getJulian(t),a=o-2451545,s=a+.0009+e/360,r=s%1,c=6.289+11.597*a%24,l=0,h=null,u=null,d=null;l<48;l++){if(p=SunCalc.getMoonPosition(t,n,e),g=p.altitude,v=p.distance,g>0&&h===null&&(h=l/2),g<0&&h!==null&&u===null&&(u=l/2),g>0&&u!==null){d=l/2-u;break}}return m=null,f=null,h!==null&&u!==null&&(m=new Date(t),m.setHours(m.getHours()+h),f=new Date(t),f.setHours(f.getHours()+u)),{rise:m,set:f,alwaysUp:!1,alwaysDown:!1}},getMoonIllumination:function(t){var n,e,i,o,a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;return n=SunCalc.getJulian(t),e=n-2451545,i=e/29.530588853,o=i-Math.floor(i),a=(o+.000133)*2*Math.PI,s=4.8816279+628.3319669*e,r=5.1984667+523.580607*e,l=.00257+.00000015*e,h=Math.sin(l),u=s+h,d=5.1677+777.987+e*.00000015,m=Math.sin(d),f=a-r,p=Math.sqrt(1-Math.cos(f)*Math.cos(f)),g=p*Math.cos(a-u),v=p*Math.sin(a-u),M=Math.atan2(v,g),y=M+Math.PI,w=1-Math.cos(f)/2,{fraction:w,phase:o,angle:y}}};SunCalc.times=[[-.833,"sunrise","Sunrise"],[-.3,"sunriseEnd","Sunrise ends"],[-6,"dawn","Dawn"],[-12,"nauticalDawn","Nautical dawn"],[-18,"nightEnd","Night ends"],[.833,"sunsetStart","Sunset starts"],[.3,"sunset","Sunset"],[6,"dusk","Dusk"],[12,"nauticalDusk","Nautical dusk"],[18,"night","Night starts"],[0,"nadir","Nadir"]];var e=function(t){return t*(Math.PI/180)},i=function(t){return t*(180/Math.PI)};SunCalc.addTime=function(t,n,o){this.times.push([t,n,o])},SunCalc.getPosition=function(t,n,o){var a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;return a=SunCalc.getJulian(t),s=a-2451545,r=21.448-s*(.00023+s*(1934.136+s*(.000007+s*.00000072))),c=180+s*(.00059-s*.00031),l=280.46646+s*(36000.76983+s*.000303),h=l+1.9146*Math.sin(e(c))+.019993*Math.sin(2*e(c))+.00029*Math.sin(3*e(c)),u=!0,d=h%360,d<0&&(d+=360),m=Math.asin(Math.sin(e(r))*Math.sin(e(h))),f=Math.sin(m),p=Math.cos(m),g=o*Math.PI/180,v=n*Math.PI/180,M=Math.acos((Math.sin(0)-Math.sin(g)*f)/(Math.cos(g)*p)),{azimuth:i(Math.atan2(Math.sin(M*Math.PI),Math.cos(M*Math.PI)*Math.sin(g)-Math.tan(m)*Math.cos(g)))+180,altitude:m}},SunCalc.getMoonPosition=function(t,n,o){var a,s,r,c,l,h,u,d,m,f,p,g,v,M,y,w,P,S,D,A,O,T,C,I,L,z,E,k,j,F,b,H,R,x,N,W,Y,q,B,G,J,K,Q,U,V,X,Z,$;return a=SunCalc.getJulian(t),s=a-2451545,r=(s+.0009+o/360)%1,c=6.289+11.597*s%24,l=64.9755+.6963*s%360,h=4.9087+.6881*s%(2*Math.PI),u=.0026+1.5e-7*s,d=.6583*Math.sin(u),m=h+d,f=l+.00396*Math.sin(u)+.0013*Math.sin(2*h)+.0004*Math.sin(3*h)+.0003*Math.sin(2*l),p=Math.sin(m),g=Math.cos(m),v=Math.sin(f),M=Math.cos(f),y=n*Math.PI/180,w=Math.cos(y),P=p*Math.sin(y)+g*w*M,S=Math.sqrt(1-P*P),D=Math.atan2(S,P),A=Math.asin(P),O=D+Math.PI,{distance:6378.14/S,azimuth:O,altitude:A,parallacticAngle:i(Math.atan2(Math.sin(O),Math.tan(y)*Math.cos(A)-Math.sin(A)*Math.cos(O)))}},t.SunCalc=_}(this);
 
-// TODAY’S BITE FORECAST – 100% LOCAL SUNCalc.js (NO API CALLS)
+// TODAY’S BITE FORECAST – 100% LOCAL SunCalc (NO API CALLS)
 (() => {
   const lat = 32.4619, lng = -93.34883;
-  const now = new Date();
-  const today = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+  const date = new Date();
 
-  // SUN TIMES (local SunCalc)
-  SunCalc.getTimes(now, lat, lng);
-  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
-  document.getElementById('first').textContent = fmt(SunCalc.times.find(t => t[1] === 'dawn')[3]);
-  document.getElementById('rise').textContent = fmt(SunCalc.times.find(t => t[1] === 'sunrise')[3]);
-  document.getElementById('set').textContent = fmt(SunCalc.times.find(t => t[1] === 'sunset')[3]);
-  document.getElementById('last').textContent = fmt(SunCalc.times.find(t => t[1] === 'dusk')[3]);
+  // SUN TIMES
+  const times = SunCalc.getTimes(date, lat, lng);
+  const fmt = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  document.getElementById('first').textContent = fmt(times.dawn);
+  document.getElementById('rise').textContent = fmt(times.sunrise);
+  document.getElementById('set').textContent = fmt(times.sunset);
+  document.getElementById('last').textContent = fmt(times.dusk);
 
-  // MOON TIMES & ILLUMINATION (local SunCalc)
-  const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
-  const moonIllum = SunCalc.getMoonIllumination(now);
+  // MOON TIMES & ILLUMINATION
+  const moonTimes = SunCalc.getMoonTimes(date, lat, lng);
+  const moonIllum = SunCalc.getMoonIllumination(date);
   const illum = Math.round(moonIllum.fraction * 100);
 
-  // SOLUNAR PERIODS
   const rise = moonTimes.rise;
   const set = moonTimes.set;
   const overhead = rise && set ? new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2) : null;
-  const underfoot = overhead ? new Date(overhead.getTime() + 12*3600000) : null;
+  const underfoot = overhead ? new Date(overhead.getTime() + 12 * 3600000) : null;
 
-  const range = (center, hours) => {
+  const range = (center, hrs) => {
     if (!center) return '—';
-    const start = new Date(center);
-    start.setMinutes(start.getMinutes() - hours * 30);
-    const end = new Date(center);
-    end.setMinutes(end.getMinutes() + hours * 30);
-    return `${fmt(start)}–${fmt(end)}`;
+    const s = new Date(center);
+    s.setMinutes(s.getMinutes() - hrs * 30);
+    const e = new Date(center);
+    e.setMinutes(e.getMinutes() + hrs * 30);
+    return `${fmt(s)}–${fmt(e)}`;
   };
 
   document.getElementById('maj1').textContent = range(overhead, 2);
@@ -232,13 +230,14 @@ var SunCalc={addTime:function(e,t,n){this.times.push([e,t,n])},times:[[.0001,"na
   }
   document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-  document.getElementById('header-date').textContent = today;
-  document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
+  document.getElementById('header-date').textContent = date.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+  document.getElementById('date').textContent = date.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
 })();
 </script>
 
 </body>
 </html>
+
 
 
 
