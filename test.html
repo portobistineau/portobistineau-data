@@ -37,7 +37,7 @@
   });
 </script>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (TALLER CARDS + TEXT WRAP) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (FINAL: 100×150, WRAP, NO SCROLL, PRESSURE TREND) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -56,7 +56,7 @@
     } else grid = JSON.parse(grid);
 
     // Current observed
-    let currentTemp = '??', feels = '??', wind = '0', dir = 'N', pressure = '??', timeStr = '??';
+    let currentTemp = '??', feels = '??', wind = '0', dir = 'N', pressure = '??', trend = '', timeStr = '??';
     try {
       const stations = await fetch(grid.observationStations).then(r => r.json());
       const station = stations.observationStations[0];
@@ -68,15 +68,17 @@
       const windDir = p.windDirection.value || 0;
       dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
       pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
+      
+      // Pressure trend (rising/falling/steady) – NWS gives 3-hour change
+      const change = p.pressureChange?.value;
+      if (change !== null) {
+        const inches = change / 3386.39;
+        if (Math.abs(inches) < 0.02) trend = '(steady)';
+        else if (inches > 0) trend = '(rising)';
+        else trend = '(falling)';
+      }
+      
       timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    } catch(e) {}
-
-    // Forecasts
-    let hourly = {properties: {periods: []}};
-    let daily = {properties: {periods: []}};
-    try {
-      hourly = await fetch(grid.forecastHourly).then(r => r.json());
-      daily = await fetch(grid.forecast).then(r => r.json());
     } catch(e) {}
 
     const currentHTML = `
@@ -85,13 +87,13 @@
         <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
         <div style="font-size:14px;line-height:1.6;">
           Wind ${wind} mph ${dir}<br>
-          Pressure ${pressure} inHg<br>
+          Pressure ${pressure} inHg ${trend}<br>
         </div>
       </div>`;
 
-    // 7-day cards — TALLER + TEXT WRAP
-    let forecastHTML = '';
-    const dailyPeriods = daily.properties.periods.slice(0,14);
+    // 7-day cards — 100×150, text wraps, no scroll
+    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:10px;background:#f0f8ff;border-radius:15px;">';
+    const dailyPeriods = (await fetch(grid.forecast).then(r => r.json())).properties.periods.slice(0,14);
     for (let i = 0; i < 7; i++) {
       const day = dailyPeriods[i*2];
       const night = dailyPeriods[i*2+1] || day;
@@ -100,19 +102,22 @@
       const dayName = i === 0 ? 'Today' : new Date(day.startTime).toLocaleDateString('en-US', {weekday: 'short'});
       const icon = day.icon.replace('large', 'medium');
       forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;display:inline-block;width:120px;margin:8px;vertical-align:top;background:#fff;padding:12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;font-size:13px;height:145px;">
-          <div style="font-weight:bold;color:#003366;margin-bottom:4px;">${dayName}</div>
+        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:150px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
+          <div style="font-weight:bold;color:#003366;">${dayName}</div>
           <img src="${icon}" width="48" height="48">
-          <div style="font-size:16px;font-weight:bold;margin:6px 0;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
-          <div style="line-height:1.3;height:36px;overflow:hidden;">${day.shortForecast}</div>
+          <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
+          <div style="font-size:11px;line-height:1.2;height:33px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+            ${day.shortForecast}
+          </div>
         </div>`;
     }
+    forecastHTML += '</div>';
 
-    document.getElementById('bistineauWeather').innerHTML = currentHTML + 
-      `<div style="background:#f0f8ff;padding:15px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${forecastHTML}</div>`;
+    document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
 
     window.showDetail = function(dayIndex) {
-      const periods = hourly.properties.periods.slice(dayIndex*24, (dayIndex+1)*24);
+      const hourly = (await fetch(grid.forecastHourly).then(r => r.json())).properties.periods;
+      const periods = hourly.slice(dayIndex*24, (dayIndex+1)*24);
       let detailHTML = `<h3 style="margin-top:0;text-align:center;">${periods[0] ? new Date(periods[0].startTime).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) : 'Today'}</h3><div style="max-height:60vh;overflow-y:auto;">`;
       periods.forEach(p => {
         const time = new Date(p.startTime).toLocaleTimeString('en-US',{hour:'numeric'});
@@ -120,10 +125,10 @@
         const windStr = p.windSpeed.replace(' mph', '');
         const dir = p.windDirection;
         detailHTML += `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
             <div style="width:50px;">${time}</div>
             <img src="${p.icon.replace('large', 'small')}" width="32" height="32">
-            <div style="width:60px;text-align:right;">${temp}°F</div>
+            <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
             <div style="width:70px;">${windStr} ${dir}</div>
             <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
           </div>`;
@@ -136,7 +141,7 @@
   })();
   </script>
 </div>
-
+    
 <!-- TODAY’S BITE FORECAST – FINAL, 100% LOCAL, EXACT MATCH SOLUNAR.ORG -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
@@ -261,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
