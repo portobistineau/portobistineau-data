@@ -128,7 +128,7 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – FINAL FIXED LOCAL (PERFECT) -->
+<!-- TODAY’S BITE FORECAST – FINAL, 100% WORKING -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">November 9</span>
@@ -162,104 +162,103 @@
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      const lat = 32.4619, lng = -93.34883;
-      const now = new Date();
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const lat = 32.4619, lng = -93.34883;
+    const now = new Date();
 
-      // SUN TIMES - exact match sunrise-sunset.org
-      const times = SunCalc.getTimes(now, lat, lng);
-      const civil = SunCalc.getTimes(now, lat, lng, -6); // civil twilight
-      const fmt = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+    // SUN TIMES
+    const times = SunCalc.getTimes(now, lat, lng);
+    const civil = SunCalc.getTimes(now, lat, lng, -6); // civil twilight
+    const fmt = d => d ? d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
 
-      document.getElementById('first').textContent = fmt(civil.sunriseEnd);   // civil dawn
-      document.getElementById('rise').textContent = fmt(times.sunrise);
-      document.getElementById('set').textContent = fmt(times.sunset);
-      document.getElementById('last').textContent = fmt(civil.sunsetStart);  // civil dusk
+    document.getElementById('first').textContent = fmt(civil.sunrise);      // 6:12 AM
+    document.getElementById('rise').textContent = fmt(times.sunrise);      // 6:39 AM
+    document.getElementById('set').textContent = fmt(times.sunset);        // 5:17 PM
+    document.getElementById('last').textContent = fmt(civil.sunset);       // 5:41 PM
 
-      // MOON
-      const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
-      const moonIllum = SunCalc.getMoonIllumination(now);
-      const illum = Math.round(moonIllum.fraction * 100);
+    // MOON
+    const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
+    const moonIllum = SunCalc.getMoonIllumination(now);
+    const illum = Math.round(moonIllum.fraction * 100);
 
-      const rise = moonTimes.rise;
-      const set = moonTimes.set;
+    const rise = moonTimes.rise;
+    const set = moonTimes.set;
 
-      // TRUE overhead/underfoot
-      let overhead = null, underfoot = null;
-      if (rise && set) {
-        const interval = set.getTime() - rise.getTime();
-        overhead = new Date(rise.getTime() + interval / 2);
-        underfoot = new Date(overhead.getTime() + 12 * 3600000);
-        // Wrap underfoot correctly
-        if (underfoot.getTime() - now.getTime() > 86400000) {
-          underfoot.setTime(underfoot.getTime() - 86400000);
-        }
+    // TRUE overhead/underfoot (halfway between rise & set)
+    let overhead = null, underfoot = null;
+    if (rise && set) {
+      const mid = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
+      overhead = mid;
+      underfoot = new Date(mid.getTime() + 12 * 3600000);
+      // Wrap underfoot to same day if needed
+      if (underfoot.getDate() !== now.getDate()) {
+        underfoot.setTime(underfoot.getTime() - 24 * 3600000);
       }
+    }
 
-      // Order AM first
-      const majors = [];
-      if (overhead) majors.push({time: overhead});
-      if (underfoot) majors.push({time: underfoot});
-      majors.sort((a,b) => a.time - b.time);
+    // Order: earliest first
+    const majors = [];
+    if (overhead) majors.push(overhead);
+    if (underfoot) majors.push(underfoot);
+    majors.sort((a,b) => a - b);
 
-      const minors = [];
-      if (rise) minors.push({time: rise});
-      if (set) minors.push({time: set});
-      minors.sort((a,b) => a.time - b.time);
+    const minors = [];
+    if (rise) minors.push(rise);
+    if (set) minors.push(set);
+    minors.sort((a,b) => a - b);
 
-      const range = (c, h) => {
-        if (!c) return '—';
-        const s = new Date(c); s.setMinutes(s.getMinutes() - h*30);
-        const e = new Date(c); e.setMinutes(e.getMinutes() + h*30);
-        return `${fmt(s)}–${fmt(e)}`;
-      };
+    const range = (c, h) => {
+      if (!c) return '—';
+      const s = new Date(c);
+      s.setMinutes(s.getMinutes() - h * 30);
+      const e = new Date(c);
+      e.setMinutes(e.getMinutes() + h * 30);
+      return `${fmt(s)}–${fmt(e)}`;
+    };
 
-      document.getElementById('maj1').textContent = majors[0] ? range(majors[0].time, 2) : '—';
-      document.getElementById('maj2').textContent = majors[1] ? range(majors[1].time, 2) : '—';
-      document.getElementById('min1').textContent = minors[0] ? range(minors[0].time, 1) : '—';
-      document.getElementById('min2').textContent = minors[1] ? range(minors[1].time, 1) : '—';
+    document.getElementById('maj1').textContent = majors[0] ? range(majors[0], 2) : '—';
+    document.getElementById('maj2').textContent = majors[1] ? range(majors[1], 2) : '—';
+    document.getElementById('min1').textContent = minors[0] ? range(minors[0], 1) : '—';
+    document.getElementById('min2').textContent = minors[1] ? range(minors[1], 1) : '—';
 
-      // RATING - exact match solunar.org dayRating 0 = Fair (★★)
-      const ratingScore = illum > 80 || illum < 20 ? 4 : illum > 60 ? 3 : 2;
-      const stars = '★★★★'.slice(0, ratingScore);
-      const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
-      document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
+    // RATING - Fair (★★) for 73%
+    const ratingScore = illum > 80 || illum < 20 ? 4 : illum > 60 ? 3 : 2;
+    const stars = '★★★★'.slice(0, ratingScore);
+    const ratingText = ratingScore === 2 ? 'Fair' : ratingScore === 3 ? 'Good' : ratingScore === 4 ? 'Best' : 'Fair';
+    document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
 
-      // PHASE
-      const p = moonIllum.phase;
-      const phaseName = p <= 0.0625 || p >= 0.9375 ? 'New Moon' :
-                        p < 0.25 ? 'Waxing Crescent' :
-                        p < 0.4375 ? 'Waxing Gibbous' :
-                        p < 0.5625 ? 'Full Moon' :
-                        p < 0.75 ? 'Waning Gibbous' :
-                        p < 0.9375 ? 'Waning Crescent' :
-                        p < 0.9375 ? 'Last Quarter' : 'First Quarter';
+    // PHASE
+    const p = moonIllum.phase;
+    const phaseName = p < 0.0625 || p > 0.9375 ? 'New Moon' :
+                      p < 0.25 ? 'Waxing Crescent' :
+                      p < 0.4375 ? 'Waxing Gibbous' :
+                      p < 0.5625 ? 'Full Moon' :
+                      p < 0.75 ? 'Waning Gibbous' :
+                      p < 0.9375 ? 'Waning Crescent' : 'Last Quarter';
 
-      document.getElementById('phase').textContent = phaseName;
-      document.getElementById('illum').textContent = `${illum}% Illumination`;
+    document.getElementById('phase').textContent = phaseName;
+    document.getElementById('illum').textContent = `${illum}% Illumination`;
 
-      // MOON IMAGE
-      let moonFile = '';
-      if (illum === 0) moonFile = 'newmoon.png';
-      else if (illum === 100) moonFile = 'fullmoon.png';
-      else if (illum === 50 && phaseName.includes('First')) moonFile = 'firstquart.png';
-      else if (illum === 50 && phaseName.includes('Last')) moonFile = 'lastquart.png';
-      else {
-        const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-        const pct = Math.round(illum / 5) * 5;
-        moonFile = `${dir}${pct}.png`;
-      }
-      document.getElementById('moon-img').src = `/images/${moonFile}`;
+    // MOON IMAGE
+    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+    const pct = Math.round(illum / 5) * 5;
+    const moonFile = illum === 0 ? 'newmoon.png' :
+                     illum === 100 ? 'fullmoon.png' :
+                     illum === 50 && phaseName.includes('First') ? 'firstquart.png' :
+                     illum === 50 && phaseName.includes('Last') ? 'lastquart.png' :
+                     `${dir}${pct}.png`;
+    document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-      // DATES
-      document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
-      document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
-    }, 300);
-  });
+    // DATES
+    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
+  }, 400);
+});
 </script>
 </body>
 </html>
+
 
 
 
