@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
     }
 
-    // TRUE TRANSIT SCAN
+    // TRUE TRANSIT SCAN (MAJOR/MINOR PERIODS) – KEEP EXACTLY AS BEFORE
     const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
     const end = new Date(start); end.setDate(end.getDate()+2);
     let overhead = null, underfoot = null;
@@ -226,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pos.altitude < minAlt) { minAlt = pos.altitude; underfoot = new Date(t); }
     }
 
-    // JOHN ALDEN KNIGHT TABLE (1939)
     const KNIGHT_OFFSET = {
       0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
       12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
@@ -249,16 +248,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return bold ? `<b>${txt}</b>` : txt;
     };
 
-    // MAJOR & MINOR PERIODS (NO CHANGES)
+    // SET PERIODS (UNCHANGED)
     document.getElementById('maj1').textContent = range(majorAM, 60);
-    document.getElementById('maj2').textContent = range(majorPM, 60); // bold logic left untouched
+    document.getElementById('maj2').textContent = range(majorPM, 60);
     const mt = SunCalc.getMoonTimes(now, lat, lng, true);
     const minorAM = (mt.set && mt.set.getHours() < 12) ? mt.set : mt.rise;
     const minorPM = minorAM === mt.set ? mt.rise : mt.set;
     document.getElementById('min1').textContent = range(minorAM, 30);
     document.getElementById('min2').textContent = range(minorPM, 30);
 
-    // DAY RATING ONLY (Solunar.org-style based on illumination)
+    // -------------------------------
+    // NEW: DAY RATING ONLY (ISOLATED)
+    // -------------------------------
     const illum = illumData.fraction;
     let score = 0;
     if (illum <= 0.01) score = 5;
@@ -276,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stars = '★★★★★'.slice(0, score);
     document.getElementById('rating').innerHTML = `${stars}<br><span style="font-size:30px;color:#003366;">${words[score]}</span>`;
 
-    // MOON PHASE & ILLUMINATION DISPLAY
+    // MOON PHASE DISPLAY
     const phase = illumData.phase;
     const phaseName = phase < 0.25 ? 'Waxing Crescent' :
                       phase < 0.5 ? 'Waxing Gibbous' :
@@ -288,14 +289,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const moonFile = illum === 0 ? 'newmoon.png' : illum === 1 ? 'fullmoon.png' : `${dir}${pct}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
+    // HEADER DATE
     document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
     document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }, 500);
 });
 </script>
 
+
 </body>
 </html>
+
 
 
 
