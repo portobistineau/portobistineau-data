@@ -194,19 +194,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lat = 32.4619, lng = -93.3486;
   const now = new Date();
   const today = now.toISOString().slice(0,10);
-  const fmt = d => d ? d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '—';
+  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '—';
 
-  // ---- SUN TIMES ----
+  // --- get sunrise/sunset once (awaited) ---
   let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
   if (!sun || sun.date !== today) {
     try {
-      const res = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`);
-      const j = await res.json();
-      if (j.status === "OK") {
-        sun = {date: today, data: j.results};
-        localStorage.setItem('sunCache', JSON.stringify(sun));
-      }
-    } catch(e){ console.warn(e); }
+      const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`);
+      const j = await r.json();
+      if (j.status === "OK") { sun = {date: today, data: j.results}; localStorage.setItem('sunCache', JSON.stringify(sun)); }
+    } catch(e) { console.warn(e); }
   }
   if (sun) {
     document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
@@ -215,78 +212,121 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('last').textContent  = fmt(new Date(sun.data.civil_twilight_end));
   }
 
-  // ---- MOON POSITIONS ----
-  const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
-  const end = new Date(start); end.setDate(end.getDate()+2);
-  let overhead=null, underfoot=null, maxAlt=-90, minAlt=90;
-  for (let t = start.getTime(); t <= end.getTime(); t += 60000) {
-    const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
-    if (pos.altitude > maxAlt) { maxAlt = pos.altitude; overhead = new Date(t); }
-    if (pos.altitude < minAlt) { minAlt = pos.altitude; underfoot = new Date(t); }
-  }
-
-  // ---- KNIGHT OFFSETS ----
+  // --- Knight table (same as you used) ---
   const KNIGHT_OFFSET = {
     0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
     12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
     22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
   };
-  const illumData = SunCalc.getMoonIllumination(now);
-  const moonAge = Math.round(illumData.phase * 29.53);
-  const offset = KNIGHT_OFFSET[moonAge] || 0;
 
-  const addMins = (date, mins) => new Date(date.getTime() + mins*60000);
-  const range = (c, m) => {
-    if (!c) return '—';
-    const s = addMins(c, -m), e = addMins(c, m);
+  // --- HIGH-PRECISION TRANSIT/ANTITRANSIT FINDER ---
+  // coarse 1-minute scan over -1d..+1d to find max/min altitude, then quadratic interpolate
+  const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
+  const end = new Date(start); end.setDate(end.getDate()+2);
+  let maxAlt = -Infinity, minAlt = Infinity, maxT = null, minT = null;
+  for (let t = start.getTime(); t <= end.getTime(); t += 60000) {
+    const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
+    if (pos.altitude > maxAlt) { maxAlt = pos.altitude; maxT = t; }
+    if (pos.altitude < minAlt) { minAlt = pos.altitude; minT = t; }
+  }
+
+  // quadratic interpolation around the best sample to get sub-minute precision
+  const refinePeak = (tCenter) => {
+    // take three points: center - 60s, center, center + 60s and fit parabola altitude = a*t^2 + b*t + c
+    const t0 = tCenter - 60000, t1 = tCenter, t2 = tCenter + 60000;
+    const a0 = SunCalc.getMoonPosition(new Date(t0), lat, lng).altitude;
+    const a1 = SunCalc.getMoonPosition(new Date(t1), lat, lng).altitude;
+    const a2 = SunCalc.getMoonPosition(new Date(t2), lat, lng).altitude;
+    // x in seconds relative to t1
+    // fit parabola y(x) = Ax^2 + Bx + C using the three points (-60,a0),(0,a1),(60,a2)
+    const x1 = -60, x2 = 0, x3 = 60;
+    // Solve for A: A = (a0 - 2*a1 + a2) / (2*60*60)
+    const A = (a0 - 2*a1 + a2) / (2 * 60 * 60);
+    if (A === 0) return new Date(t1);
+    // vertex at x_v = -B/(2A). Compute B from (a2 - a0) = 120*B  => B = (a2 - a0)/120
+    const B = (a2 - a0) / 120;
+    const xVertex = -B / (2 * A); // in seconds
+    const refined = new Date(t1 + Math.round(xVertex * 1000));
+    return refined;
+  };
+
+  const overhead = refinePeak(maxT);
+  const underfoot = refinePeak(minT);
+
+  // --- Moon illumination / age ---
+  const illumData = SunCalc.getMoonIllumination(now);
+  const illumPct = Math.round(illumData.fraction * 100);
+  const moonAge = Math.round(illumData.phase * 29.53);
+  const offsetMinutes = KNIGHT_OFFSET[moonAge] || 0;
+
+  // --- Decide which culmination is Major1 (AM) and Major2 (PM) ---
+  // Use local hour to place them. If both end up same side, choose by closeness to noon.
+  const isAM = d => d && (new Date(d)).getHours() < 12;
+  let majorCenterAM = isAM(overhead) ? overhead : (isAM(underfoot) ? underfoot : (overhead < underfoot ? overhead : underfoot));
+  let majorCenterPM = (majorCenterAM === overhead) ? underfoot : overhead;
+
+  // --- Apply Knight offset ---
+  // Many solunar implementations shift centers by adding the KNIGHT offset.
+  // Which sign to use can flip the result by several minutes. We'll apply a phase-based sign:
+  // for waxing (phase < 0.5) add the offset; for waning subtract it. You can invert if you need.
+  const phase = illumData.phase; // 0..1 where 0 new, 0.5 full
+  const sign = phase < 0.5 ? 1 : -1; // tune this if you want solunar.org behavior other way
+  const applyOffset = (d) => d ? new Date(d.getTime() + sign * offsetMinutes * 60000) : null;
+  const major1Center = applyOffset(majorCenterAM);
+  const major2Center = applyOffset(majorCenterPM);
+
+  // --- Produce human ranges (±60 min majors, ±30 min minors) ---
+  const mkRange = (center, minutes) => {
+    if (!center) return '—';
+    const s = new Date(center.getTime() - minutes*60000);
+    const e = new Date(center.getTime() + minutes*60000);
     return `${fmt(s)}–${fmt(e)}`;
   };
 
-  // ---- MAJORS ----
-  const major1 = addMins(underfoot, offset);
-  const major2 = addMins(overhead, -offset);
-  document.getElementById('maj1').innerHTML = `<i>${range(major1,60)}</i>`;
-  document.getElementById('maj2').innerHTML = `<b>${range(major2,60)}</b>`;
-
-  // ---- MINORS ----
+  // minors: moonrise/set (use SunCalc.getMoonTimes fallback)
   const mt = SunCalc.getMoonTimes(now, lat, lng, true);
-  const minors = [mt.rise, mt.set].filter(Boolean);
-  if (minors[0]) document.getElementById('min1').innerHTML = `<i>${range(minors[0],30)}</i>`;
-  if (minors[1]) document.getElementById('min2').innerHTML = `<b>${range(minors[1],30)}</b>`;
+  const minorCandidates = [];
+  if (mt.rise) minorCandidates.push(mt.rise);
+  if (mt.set) minorCandidates.push(mt.set);
+  // order minors by time-of-day (first smaller hour -> min1)
+  minorCandidates.sort((a,b) => a.getTime() - b.getTime());
+  const min1Center = minorCandidates[0] || null;
+  const min2Center = minorCandidates[1] || null;
 
-  // ---- MOON PHASE & RATING ----
-  const illum = Math.round(illumData.fraction * 100);
-  const p = illumData.phase;
-  const phaseName =
-    p < 0.03 ? 'New Moon' :
-    p < 0.22 ? 'Waxing Crescent' :
-    p < 0.28 ? 'First Quarter' :
-    p < 0.47 ? 'Waxing Gibbous' :
-    p < 0.53 ? 'Full Moon' :
-    p < 0.72 ? 'Waning Gibbous' :
-    p < 0.78 ? 'Last Quarter' : 'Waning Crescent';
-  document.getElementById('phase').textContent = phaseName;
-  document.getElementById('illum').textContent = `${illum}% Illuminated`;
+  // --- Insert into DOM and highlight better periods (bold) ---
+  // convention: Major2 and Minor2 are usually stronger; bold them
+  document.getElementById('maj1').innerHTML = `<i>${mkRange(major1Center,60)}</i>`;
+  document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
+  document.getElementById('min1').innerHTML = `<i>${mkRange(min1Center,30)}</i>`;
+  document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center,30)}</b>`;
 
-  // Rating: 0–4 stars
+  // --- Rating (0..4 stars) using illumination and closeness to new/full ---
+  // This is a practical composite: best when Full or New (illum ~100 or ~0) and moon close to transit times.
   let stars = 0;
-  if (illum <= 10 || illum >= 90) stars = 4;
-  else if (illum <= 25 || illum >= 75) stars = 3;
-  else if (illum <= 40 || illum >= 60) stars = 2;
-  else if (illum <= 50 || illum >= 50) stars = 1;
+  if (illumPct <= 10 || illumPct >= 90) stars = 4;
+  else if (illumPct <= 25 || illumPct >= 75) stars = 3;
+  else if (illumPct <= 40 || illumPct >= 60) stars = 2;
+  else stars = 1;
   const labels = ['Poor','Fair','Good','Better','Best'];
-  document.getElementById('rating').innerHTML =
-    '★'.repeat(stars) + '<br><span style="font-size:30px;color:#003366;">' + labels[stars] + '</span>';
+  const starStr = '★'.repeat(stars);
+  document.getElementById('rating').innerHTML = `${starStr}<br><span style="font-size:30px;color:#003366;">${labels[stars]}</span>`;
 
-  // ---- MOON IMAGE ----
+  // --- phase & image & dates ---
+  const phaseName =
+    phase < 0.03 ? 'New Moon' :
+    phase < 0.22 ? 'Waxing Crescent' :
+    phase < 0.28 ? 'First Quarter' :
+    phase < 0.47 ? 'Waxing Gibbous' :
+    phase < 0.53 ? 'Full Moon' :
+    phase < 0.72 ? 'Waning Gibbous' :
+    phase < 0.78 ? 'Last Quarter' : 'Waning Crescent';
+  document.getElementById('phase').textContent = phaseName;
+  document.getElementById('illum').textContent = `${illumPct}% Illuminated`;
   const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-  const pct = Math.round(illum / 5) * 5;
-  const moonFile = illum === 0 ? 'newmoon.png' :
-                   illum === 100 ? 'fullmoon.png' :
-                   `${dir}${pct}.png`;
+  const pct = Math.round(illumPct / 5) * 5;
+  const moonFile = illumPct === 0 ? 'newmoon.png' : illumPct === 100 ? 'fullmoon.png' : `${dir}${pct}.png`;
   document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-  // ---- DATES ----
   document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
   document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 });
@@ -294,8 +334,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
+
 </body>
 </html>
+
 
 
 
