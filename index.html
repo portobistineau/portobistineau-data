@@ -162,25 +162,29 @@
 <body>
   <div class="container">
 
-    <!-- BANNER — FULL WIDTH, PERFECT ON MOBILE -->
+<!-- BANNER — FULL WIDTH, PERFECT ON MOBILE -->
 <div class="banner">
-  <a href="index.html" id="banner-link">
-    <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
-  </a>
+  <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
 </div>
 <p class="tagline">Your Gateway to Lake Bistineau – Live Lake Views, Lake Updates & More</p>
 
 <script>
+  // ==== SECRET DOUBLE-CLICK HANDLER (works on both pages) ====
   let clicks = 0, timer;
   document.getElementById('banner').addEventListener('click', function(e) {
-    e.preventDefault();                  // block normal navigation
+    // Do NOT preventDefault() — lets normal click behavior (mobile tap, etc.) work
     clicks++;
     if (clicks === 1) {
       timer = setTimeout(() => clicks = 0, 400);
     } else if (clicks === 2) {
       clearTimeout(timer);
       clicks = 0;
-      window.location.href = 'test.html';  // secret double-click → test page
+      // On index.html → go to test.html
+      // On test.html  → stay here (do nothing)
+      if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+        window.location.href = 'test.html';
+      }
+      // else already on test.html → do nothing
     }
   });
 </script>
@@ -670,6 +674,7 @@
 </body>
 
 </html>
+
 
 
 
