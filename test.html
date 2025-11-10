@@ -5,153 +5,257 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lake Bistineau Weather & Solunar - TEST</title>
     <style>
-        body {font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f8ff;}
-        header {text-align: center; margin-bottom: 20px;}
-        #banner {max-width: 100%; height: auto; cursor: pointer;}
-        h1 {color: #0044aa;}
-        table {width: 100%; border-collapse: collapse; margin: 20px 0;}
-        th, td {border: 1px solid #88c; padding: 8px; text-align: center;}
-        th {background: #0044aa; color: white;}
-        .good {background: #d4edda;}
-        .fair {background: #fff3cd;}
-        .slow {background: #f8d7da;}
-        footer {margin-top: 40px; font-size: 0.9em; color: #555; text-align: center;}
+        body {font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f0f8ff;}
+        .banner {width: 100%; text-align: center;}
+        .banner-img {max-width: 100%; height: auto;}
+        .tagline {text-align: center; font-style: italic; color: #003366; margin: 10px 0;}
+        h2 {color: #003366; text-align: center;}
     </style>
 </head>
 <body>
-<header>
-    <a href="index.html">
-        <img src="banner.jpg" alt="Lake Bistineau Weather & Solunar" id="banner">
-    </a>
-</header>
 
-<h1 id="header-date">Solunar Times for Loading...</h1>
-
-<div id="weather-section">Loading weather...</div>
-<div id="solunar-section">Loading solunar data...</div>
-
-<table id="solunar-table">
-    <thead>
-        <tr><th>Time Frame</th><th>Activity Level</th><th>Tips</th></tr>
-    </thead>
-    <tbody>
-        <!-- JS fills this -->
-    </tbody>
-</table>
-
-<footer>
-    <p>Lake Bistineau drawdown in progress — 8 ft below pool stage until ~Nov 15.</p>
-</footer>
+<!-- BANNER — FULL WIDTH, PERFECT ON MOBILE -->
+<div class="banner">
+  <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
+</div>
+<p class="tagline">Your Gateway to Lake Bistineau – Live Lake Views, Lake Updates & More</p>
 
 <script>
-/* ==== DOUBLE-CLICK BANNER TO STAY ON TEST PAGE ==== */
-let clicks = 0, timer;
-document.getElementById('banner').addEventListener('click', function(e) {
-    e.preventDefault();
+  // SECRET DOUBLE-CLICK: index.html → test.html | test.html → stay
+  let clicks = 0, timer;
+  document.getElementById('banner').addEventListener('click', function(e) {
     clicks++;
     if (clicks === 1) {
-        timer = setTimeout(() => clicks = 0, 400);
+      timer = setTimeout(() => clicks = 0, 400);
     } else if (clicks === 2) {
-        clearTimeout(timer);
-        clicks = 0;
-        // do nothing — stay on test.html (double-click = secret "I'm testing")
+      clearTimeout(timer);
+      clicks = 0;
+      if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+        window.location.href = 'test.html';
+      }
     }
-});
-document.querySelector('header a').addEventListener('click', e => e.preventDefault());
+  });
+</script>
 
-/* ==== LOCAL SOLUNAR CALCULATOR (no API) ==== */
-function calculateSolunar(lat = 32.44, lon = -93.49) {
+<!-- Weather -->
+<div class="section">
+  <h2>Lake Bistineau Weather</h2>
+  <div id="bistineauWeather"></div>
+  <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
+  <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
+  <script>
+  const lat = 32.4066, lon = -93.3906;
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,precipitation_probability,wind_speed_10m,wind_direction_10m,weather_code,pressure_msl,cloud_cover&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=9&timezone=America%2FChicago&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch`)
+  .then(r=>r.json())
+  .then(w=>{
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-
-    // Simplified moon phase (accurate enough for solunar)
-    const lunarMonth = 29.53058867;
-    const knownNewMoon = new Date(2025, 0, 29, 17, 46); // Jan 29 2025
-    const daysSince = (now - knownNewMoon) / 86400000;
-    const age = ((daysSince % lunarMonth) + lunarMonth) % lunarMonth;
-    const phase = age / lunarMonth; // 0 = new, 0.5 = full
-
-    // Sunrise/sunset approximation (good for NW Louisiana)
-    const J0 = (now.getMonth() + 1) * 30 + now.getDate();
-    const sunrise = new Date(now);
-    sunrise.setHours(6, 40 + Math.round((J0 - 315) * 0.08), 0, 0); // rough
-    const sunset = new Date(now);
-    sunset.setHours(17, 20 - Math.round((J0 - 315) * 0.08), 0, 0);
-
-    // Moon transit (overhead)
-    const moonTransit = new Date(now);
-    moonTransit.setHours(12, 0, 0, 0);
-    moonTransit.setMinutes((phase * 1440) % 60);
-
-    const major1 = new Date(sunrise);
-    major1.setMinutes(major1.getMinutes() - 60);
-    const major2 = new Date(moonTransit);
-    const minor1 = new Date(sunrise);
-    minor1.setHours(minor1.getHours() + 3);
-    const minor2 = new Date(sunset);
-    minor2.setMinutes(minor2.getMinutes() - 60);
-
-    return {
-        date: now.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'}),
-        sunrise: sunrise.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}),
-        sunset: sunset.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}),
-        moonPhase: Math.round(phase * 100) + '%',
-        periods: [
-            {time: formatRange(major1, 2), level: 'Good (Major)', tip: 'Target structure; jigs or crankbaits.'},
-            {time: formatRange(minor1, 1.5), level: 'Fair', tip: 'Slower—try deeper water.'},
-            {time: formatRange(minor2, 1.5), level: 'Good (Minor)', tip: 'Evening bite picks up.'},
-            {time: 'Night', level: 'Moderate', tip: 'Catfish active under lights.'}
-        ]
+    const todayISO = now.toLocaleDateString('en-CA');
+    let todayIndex = w.daily.time.findIndex(d => d === todayISO);
+    if (todayIndex === -1) todayIndex = 1;
+    const currentHourStr = now.toISOString().slice(0,13) + ':00';
+    const hourIndex = w.hourly.time.indexOf(currentHourStr);
+    const prevIndex = hourIndex - 1;
+    const c = w.hourly;
+    const temp = Math.round(c.temperature_2m[hourIndex]);
+    const feels = Math.round(c.apparent_temperature[hourIndex]);
+    const wind = Math.round(c.wind_speed_10m[hourIndex]);
+    const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(c.wind_direction_10m[hourIndex]/22.5)%16];
+    const precip = c.precipitation_probability[hourIndex];
+    const pressureNow = (c.pressure_msl[hourIndex] / 33.8639).toFixed(2);
+    const pressurePrev = prevIndex >= 0 ? c.pressure_msl[prevIndex] / 33.8639 : pressureNow;
+    const diff = pressureNow - pressurePrev;
+    const trend = diff > 0.03 ? 'Rising' : diff < -0.03 ? 'Falling' : 'Steady';
+    const timeStr = now.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+    const currentHTML = `
+      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+        <div style="font-size:28px;font-weight:bold;">${temp}°F</div>
+        <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
+        <div style="font-size:14px;line-height:1.6;">
+          Wind ${wind} mph ${dir}<br>
+          Rain chance ${precip}%<br>
+          Pressure ${pressureNow} inHg <strong>${trend}</strong><br>
+          Cloud cover ${c.cloud_cover ? c.cloud_cover[hourIndex] : 0}%
+        </div>
+      </div>`;
+    let forecastHTML = '';
+    for(let i = 0; i < 7; i++){
+      const idx = todayIndex + i;
+      const thisDate = new Date(w.daily.time[idx] + 'T12:00:00');
+      const dayName = i === 0 ? 'Today' : thisDate.toLocaleDateString('en-US', {weekday: 'short'});
+      const hi = Math.round(w.daily.temperature_2m_max[idx]);
+      const lo = Math.round(w.daily.temperature_2m_min[idx]);
+      const rain = w.daily.precipitation_probability_max[idx] || 0;
+      const code = w.daily.weather_code[idx];
+      forecastHTML += `
+        <div onclick="showDetail('${w.daily.time[idx]}')" style="cursor:pointer;display:inline-block;width:105px;margin:4px;vertical-align:top;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;font-size:13px;">
+          <div style="font-weight:bold;color:#003366;">${dayName}</div>
+          <img src="/images/${code}.svg" width="48" height="48" style="margin:4px 0;" onerror="this.src='/images/3.svg'">
+          <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
+          <div>${rain}% rain</div>
+        </div>`;
+    }
+    document.getElementById('bistineauWeather').innerHTML = currentHTML +
+      `<div style="background:#f0f8ff;padding:10px;border-radius:15px;overflow-x:auto;white-space:nowrap;">${forecastHTML}</div>`;
+    window.showDetail = function(isoDate){
+      const date = new Date(isoDate + 'T12:00:00');
+      const startHour = w.hourly.time.findIndex(t => t.startsWith(isoDate));
+      let detailHTML = `<h3 style="margin-top:0;text-align:center;">${date.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
+      for(let h = 0; h < 24; h++){
+        const idx = startHour + h;
+        if(idx >= w.hourly.time.length) break;
+        const hourTime = new Date(w.hourly.time[idx]);
+        const tempH = Math.round(w.hourly.temperature_2m[idx]);
+        const windH = Math.round(w.hourly.wind_speed_10m[idx]);
+        const dirH = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(w.hourly.wind_direction_10m[idx]/22.5)%16];
+        const rainH = w.hourly.precipitation_probability[idx];
+        const codeH = w.hourly.weather_code[idx];
+        detailHTML += `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;">
+            <div style="width:50px;">${hourTime.toLocaleTimeString('en-US',{hour:'numeric'})}</div>
+            <img src="/images/${codeH}.svg" width="32" height="32" onerror="this.src='/images/3.svg'">
+            <div style="width:60px;text-align:right;">${tempH}°F</div>
+            <div style="width:70px;">${windH} mph ${dirH}</div>
+            <div style="width:50px;text-align:right;">${rainH}%</div>
+          </div>`;
+      }
+      detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
+      document.getElementById('dayDetail').innerHTML = detailHTML;
+      document.getElementById('dayDetail').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
     };
-}
+  })
+  .catch(()=>document.getElementById('bistineauWeather').innerHTML='<div style="padding:20px;text-align:center;color:#c00;">Weather offline – refresh</div>');
+  </script>
+</div>
 
-function formatRange(date, hours) {
-    const start = date.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    const end = new Date(date);
-    end.setHours(end.getHours() + hours);
-    const endStr = end.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    return `${start} – ${endStr}`;
-}
+<!-- TODAY’S BITE FORECAST – 100% LOCAL, NO API -->
+<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
+  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
+  Solunar Times for <span id="header-date">Loading...</span>
+</h2>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
+      <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
+        <b>First Light</b> <div id="first" style="text-align:right;">—</div>
+        <b>Sunrise</b> <div id="rise" style="text-align:right;">—</div>
+        <b>Major Period 1</b> <div id="maj1" style="text-align:right;">—</div>
+        <b>Major Period 2</b> <div id="maj2" style="text-align:right;">—</div>
+        <b>Minor Period 1</b> <div id="min1" style="text-align:right;">—</div>
+        <b>Minor Period 2</b> <div id="min2" style="text-align:right;">—</div>
+        <b>Sunset</b> <div id="set" style="text-align:right;">—</div>
+        <b>Last Light</b> <div id="last" style="text-align:right;">—</div>
+      </div>
+    </div>
+    <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+      <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Loading…</div>
+      <div id="moon-bg" style="width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
+        <img id="moon-img" src="" width="80" height="80" style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+      </div>
+      <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
+      <div id="illum" style="color:#000;font-size:16px;">—</div>
+    </div>
+  </div>
+  <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
+    Updated <span id="date">—</span> – Refresh for latest
+  </p>
+</div>
 
-/* ==== WEATHER (still your original source or replace later) ==== */
-async function loadWeather() {
-    // Placeholder — replace with your actual weather fetch when ready
-    return {
-        temp: '90–93°F (32–34°C)',
-        low: '68–70°F (19–21°C)',
-        conditions: 'Mostly sunny to partly cloudy',
-        wind: 'N 5–6 mph',
-        note: 'Lake ~8 ft below pool stage until ~Nov 15.'
-    };
-}
-
-/* ==== BUILD PAGE ==== */
+<script>
+// 100% LOCAL SOLUNAR + SUNRISE/SUNSET (NO EXTERNAL API)
 (async () => {
-    const solunar = calculateSolunar();
-    const weather = await loadWeather();
+  const lat = 32.4619, lng = -93.34883;
+  const now = new Date();
+  const today = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
 
-    document.getElementById('header-date').innerHTML = `Solunar Times for ${solunar.date}`;
+  // === SUN TIMES (local calculation) ===
+  const toRad = deg => deg * Math.PI / 180;
+  const toDeg = rad => rad * 180 / Math.PI;
+  const J2000 = 2451545;
+  const julian = new Date(now.getTime() + now.getTimezoneOffset() * 60000) / 86400000 + 2440587.5;
+  const n = julian - J2000;
+  const L = (280.460 + 0.9856474 * n) % 360;
+  const g = toRad((357.528 + 0.9856003 * n) % 360);
+  const lambda = toRad(L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g));
+  const obliquity = toRad(23.439 - 0.0000004 * n);
+  const tanLat = Math.tan(toRad(lat));
+  const sinDec = Math.sin(obliquity) * Math.sin(lambda);
+  const cosDec = Math.cos(Math.asin(sinDec));
+  const H = Math.acos((Math.cos(toRad(90.833)) - sinDec * Math.sin(toRad(lat))) / (cosDec * Math.cos(toRad(lat))));
+  const Jtransit = J2000 + n + (lng / 360) - (L / 360);
+  const transit = new Date((Jtransit - 2440587.5) * 86400000);
+  const sunrise = new Date(transit.getTime() - H * 3.81971863 * 3600000);
+  const sunset = new Date(transit.getTime() + H * 3.81971863 * 3600000);
+  const civilBegin = new Date(sunrise.getTime() - 6 * 60000);
+  const civilEnd = new Date(sunset.getTime() + 6 * 60000);
 
-    document.getElementById('weather-section').innerHTML = `
-        <p><strong>High:</strong> ${weather.temp} &nbsp; <strong>Low:</strong> ${weather.low}</p>
-        <p><strong>Conditions:</strong> ${weather.conditions} &nbsp; <strong>Wind:</strong> ${weather.wind}</p>
-        <p><strong>Sunrise:</strong> ${solunar.sunrise} &nbsp; <strong>Sunset:</strong> ${solunar.sunset}</p>
-        <p><strong>Moon:</strong> Waning Gibbous (${solunar.moonPhase} illuminated)</p>
-        <p style="color:red;"><strong>${weather.note}</strong></p>
-    `;
+  const fmt = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  document.getElementById('first').textContent = fmt(civilBegin);
+  document.getElementById('rise').textContent = fmt(sunrise);
+  document.getElementById('set').textContent = fmt(sunset);
+  document.getElementById('last').textContent = fmt(civilEnd);
 
-    const tbody = document.querySelector('#solunar-table tbody');
-    tbody.innerHTML = '';
-    solunar.periods.forEach(p => {
-        const row = document.createElement('tr');
-        row.className = p.level.includes('Good') ? 'good' : p.level.includes('Fair') ? 'fair' : 'slow';
-        row.innerHTML = `<td>${p.time}</td><td>${p.level}</td><td>${p.tip}</td>`;
-        tbody.appendChild(row);
-    });
+  // === MOON PHASE & ILLUMINATION ===
+  const knownNew = new Date(2025, 0, 29, 17, 46); // Jan 29 2025
+  const lunarMonth = 29.53058867;
+  const daysSince = (now - knownNew) / 86400000;
+  let age = ((daysSince % lunarMonth) + lunarMonth) % lunarMonth;
+  const phase = age / lunarMonth;
+  const illum = Math.round((1 - Math.cos(2 * Math.PI * phase)) * 50);
+
+  // === SOLUNAR PERIODS (local math) ===
+  const moonTransit = new Date(now);
+  moonTransit.setHours(12, 0, 0, 0);
+  moonTransit.setMinutes((phase * 1440) % 60);
+  const major1 = new Date(sunrise); major1.setMinutes(major1.getMinutes() - 60);
+  const major2 = new Date(moonTransit);
+  const minor1 = new Date(sunrise); minor1.setHours(minor1.getHours() + 3);
+  const minor2 = new Date(sunset); minor2.setMinutes(minor2.getMinutes() - 60);
+
+  const toAMPM = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  const range = (start, hrs) => {
+    const end = new Date(start); end.setHours(end.getHours() + hrs);
+    return `${toAMPM(start)}–${toAMPM(end)}`;
+  };
+
+  document.getElementById('maj1').textContent = range(major1, 2);
+  document.getElementById('maj2').textContent = range(major2, 2);
+  document.getElementById('min1').textContent = range(minor1, 1.5);
+  document.getElementById('min2').textContent = range(minor2, 1.5);
+
+  // === RATING & MOON IMAGE ===
+  const ratingScore = illum > 80 || illum < 20 ? 4 : illum > 60 || illum < 40 ? 3 : 2;
+  const stars = '★★★★'.slice(0, ratingScore);
+  const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
+  document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
+
+  let phaseName = '';
+  if (illum === 0) phaseName = 'New Moon';
+  else if (illum === 100) phaseName = 'Full Moon';
+  else if (phase < 0.25) phaseName = 'Waxing Crescent';
+  else if (phase < 0.5) phaseName = 'Waxing Gibbous';
+  else if (phase < 0.75) phaseName = 'Waning Gibbous';
+  else phaseName = 'Waning Crescent';
+
+  document.getElementById('phase').textContent = phaseName;
+  document.getElementById('illum').textContent = `${illum}% Illumination`;
+
+  let moonFile = '';
+  if (illum === 0) moonFile = 'newmoon.png';
+  else if (illum === 100) moonFile = 'fullmoon.png';
+  else if (illum === 50 && phaseName.includes('Waxing')) moonFile = 'firstquart.png';
+  else if (illum === 50 && phaseName.includes('Waning')) moonFile = 'lastquart.png';
+  else {
+    const p = phaseName.includes('Waxing') ? 'wax' : 'wane';
+    const pct = Math.round(illum / 5) * 5;
+    moonFile = `${p}${pct}.png`;
+  }
+  document.getElementById('moon-img').src = `/images/${moonFile}`;
+
+  document.getElementById('header-date').textContent = today;
+  document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
 })();
 </script>
-</body>
 
+</body>
 </html>
+
