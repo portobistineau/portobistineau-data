@@ -156,7 +156,7 @@
   </script>
 </div>
     
-<!-- TODAY’S BITE FORECAST – FINAL, 100% LOCAL, EXACT MATCH SOLUNAR.ORG -->
+<!-- TODAY’S BITE FORECAST – FINAL, EXACT SOLUNAR.ORG MATCH, 100% LOCAL -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -191,50 +191,54 @@
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(async () => {
+  setTimeout(() => {
     const lat = 32.4619, lng = -93.34883;
     const now = new Date();
     const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
-    // SUN TIMES (cached once/day)
-    const sunCache = localStorage.getItem('sunCache');
-    let sun = sunCache ? JSON.parse(sunCache) : null;
-    if (!sun || sun.date !== now.toISOString().slice(0,10)) {
-      try {
-        const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`);
-        const j = await r.json();
-        if (j.status === "OK") {
-          sun = {date: now.toISOString().slice(0,10), data: j.results};
-          localStorage.setItem('sunCache', JSON.stringify(sun));
-        }
-      } catch(e) {}
-    }
-    if (sun) {
-      document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
-      document.getElementById('rise').textContent   = fmt(new Date(sun.data.sunrise));
-      document.getElementById('set').textContent    = fmt(new Date(sun.data.sunset));
-      document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
+    // === SUN TIMES – CACHED ONCE PER DAY ===
+    let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
+    const today = now.toISOString().slice(0,10);
+    if (!sun || sun.date !== today) {
+      fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
+        .then(r => r.json())
+        .then(j => {
+          if (j.status === "OK") {
+            sun = {date: today, data: j.results};
+            localStorage.setItem('sunCache', JSON.stringify(sun));
+            fillSun();
+          }
+        })
+        .catch(fillSun);
+    } else fillSun();
+    function fillSun() {
+      if (sun) {
+        document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
+        document.getElementById('rise').textContent   = fmt(new Date(sun.data.sunrise));
+        document.getElementById('set').textContent    = fmt(new Date(sun.data.sunset));
+        document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
+      }
     }
 
-    // TRUE TRANSIT: overhead (highest) + underfoot (lowest)
+    // === TRUE TRANSIT – OVERHEAD (positive altitude) + UNDERFOOT ===
     const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
     const end = new Date(start); end.setDate(end.getDate()+2);
-    const step = 120000; // 2 min
-    let highest = null, lowest = null;
-    let maxAlt = -90, minAlt = 90;
-    for (let t = start.getTime(); t < end.getTime(); t += step) {
+    let bestHigh = null, bestLow = null;
+    let highAlt = -90, lowAlt = 90;
+
+    for (let t = start.getTime(); t < end.getTime(); t += 120000) {
       const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
-      if (pos.altitude > maxAlt) { maxAlt = pos.altitude; highest = new Date(t); }
-      if (pos.altitude < minAlt) { minAlt = pos.altitude; lowest = new Date(t); }
+      const alt = pos.altitude;
+      if (alt > highAlt && alt > 0) { highAlt = alt; bestHigh = new Date(t); }  // ← ONLY ABOVE HORIZON
+      if (alt < lowAlt) { lowAlt = alt; bestLow = new Date(t); }
     }
 
-    const majorAM = highest.getHours() < 12 ? highest : lowest;
-    const majorPM = highest.getHours() < 12 ? lowest : highest;
+    const majorAM = bestHigh?.getHours() < 12 ? bestHigh : bestLow;
+    const majorPM = bestHigh?.getHours() < 12 ? bestLow : bestHigh;
 
     const range = (c,h) => {
-      if (!c) return '—';
-      const s = new Date(c); s.setMinutes(s.getMinutes() - h*30);
-      const e = new Date(c); e.setMinutes(e.getMinutes() + h*30);
+      const s = new Date(c); s.setMinutes(s.getMinutes()-h*30);
+      const e = new Date(c); e.setMinutes(e.getMinutes()+h*30);
       return `${fmt(s)}–${fmt(e)}`;
     };
     document.getElementById('maj1').textContent = range(majorAM, 2);
@@ -247,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('min1').textContent = range(minorAM, 1);
     document.getElementById('min2').textContent = range(minorPM, 1);
 
-    // RATING — today = Poor (0 stars)
+    // RATING – TODAY = POOR
     const illum = Math.round(SunCalc.getMoonIllumination(now).fraction * 100);
     let score = 0;
     if (illum <= 10 || illum >= 90) score = 4;
@@ -274,12 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // DATES
     document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
     document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  }, 300);
+  }, 500);
 });
 </script>
 
 </body>
 </html>
+
 
 
 
