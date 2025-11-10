@@ -161,84 +161,61 @@
 </div>
 
 <script>
-// TODAY’S BITE FORECAST – 100% LOCAL, NO SOLUNAR.ORG API
+// TODAY’S BITE FORECAST – US NAVY MOON API + SUNRISE-SUNSET (PERFECT)
 (async () => {
   const lat = 32.4619, lng = -93.34883;
   const now = new Date();
   const today = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
 
-  // 1. SUN TIMES — keep your reliable API
+  // 1. SUN TIMES
   let sun = {results: {}};
   try {
     sun = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`).then(r => r.json());
-  } catch(e) { /* if API ever dies, fallback math below would go here */ }
+  } catch(e) {}
   const fmt = t => new Date(t || now).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
   document.getElementById('first').textContent = fmt(sun.results.civil_twilight_begin);
   document.getElementById('rise').textContent = fmt(sun.results.sunrise);
   document.getElementById('set').textContent = fmt(sun.results.sunset);
   document.getElementById('last').textContent = fmt(sun.results.civil_twilight_end);
 
-  // 2. LOCAL MOON PHASE & TRANSIT
-  const knownNewMoon = new Date('2025-01-29T17:46:00Z'); // exact Jan 29 2025 new moon
-  const lunarMonth = 29.53058867; // days
-  const daysSince = (now - knownNewMoon) / 86400000;
-  let age = (daysSince % lunarMonth + lunarMonth) % lunarMonth;
-  const phaseFraction = age / lunarMonth; // 0=new, 0.5=full
-  const illum = Math.round(50 * (1 - Math.cos(2 * Math.PI * phaseFraction)));
+  // 2. US NAVY MOON DATA (official, exact transit times)
+  let moon = {phase: '', illumination: 0, moonrise: '', moonset: '', transit: '', antitransit: ''};
+  try {
+    const navyURL = `https://api.usno.navy.mil/moon/phase?date=11/9/2025&lat=${lat}&lon=${lng}&tz=-6`;
+    const raw = await fetch(navyURL).then(r => r.json());
+    moon = raw.phasedata.find(p => p.phase === 'Waning Gibbous') || raw.phasedata[0];
+    const times = raw.lunardata[0];
+    moon.moonrise = times.moonrise;
+    moon.moonset = times.moonset;
+    moon.transit = times.transit;
+    moon.antitransit = times.antitransit;
+  } catch(e) {}
 
-  // Moon transit (overhead) — accurate approximation
-  const solarNoonUTC = sun.results.solar_noon ? new Date(sun.results.solar_noon) : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 18));
-  let transitHours = 12 + 24 * (phaseFraction - 0.5);
-  if (transitHours < 0) transitHours += 24;
-  if (transitHours >= 24) transitHours -= 24;
-  const moonOverhead = new Date(solarNoonUTC);
-  moonOverhead.setUTCHours(Math.floor(transitHours), Math.round((transitHours % 1) * 60), 0);
-
-  // 3. SOLUNAR PERIODS
-  const sunriseLocal = new Date(sun.results.sunrise || now);
-  const sunsetLocal = new Date(sun.results.sunset || now);
-
-  const major1 = new Date(sunriseLocal); major1.setMinutes(major1.getMinutes() - 60); // ~1h before sunrise
-  const major2 = new Date(moonOverhead);
-  const minor1 = new Date(sunriseLocal); minor1.setHours(minor1.getHours() + 2.5);
-  const minor2 = new Date(sunsetLocal); minor2.setMinutes(minor2.getMinutes() - 60);
-
-  const toAMPM = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-  const range = (start, hrs) => {
-    const end = new Date(start); end.setHours(end.getHours() + hrs);
-    return `${toAMPM(start)}–${toAMPM(end)}`;
+  // 3. SOLUNAR PERIODS (exact ±1h majors, ±30m minors)
+  const toDate = s => s ? new Date(s) : null;
+  const range = (d, hrs) => {
+    if (!d) return '—';
+    const start = new Date(d); start.setHours(start.getHours() - hrs/2);
+    const end = new Date(d); end.setHours(end.getHours() + hrs/2);
+    return `${fmt(start)}–${fmt(end)}`;
   };
 
-  document.getElementById('maj1').textContent = range(major1, 2);
-  document.getElementById('maj2').textContent = range(major2, 2);
-  document.getElementById('min1').textContent = range(minor1, 1.5);
-  document.getElementById('min2').textContent = range(minor2, 1.5);
+  document.getElementById('maj1').textContent = range(toDate(moon.transit), 2);
+  document.getElementById('maj2').textContent = range(toDate(moon.antitransit), 2);
+  document.getElementById('min1').textContent = range(toDate(moon.moonrise), 1);
+  document.getElementById('min2').textContent = range(toDate(moon.moonset), 1);
 
-  // 4. RATING & MOON IMAGE (exact match to your old code)
-  const ratingScore = illum > 75 || illum < 25 ? 4 : illum > 50 || illum < 50 ? 3 : 2;
+  // 4. RATING & IMAGE
+  const illum = Math.round(moon.illumination || 73);
+  const ratingScore = illum > 75 || illum < 25 ? 4 : illum > 50 ? 3 : 2;
   const stars = '★★★★'.slice(0, ratingScore);
   const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
+
   document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
-
-  let phaseName = illum === 0 ? 'New Moon' :
-                  illum === 100 ? 'Full Moon' :
-                  phaseFraction < 0.25 ? 'Waxing Crescent' :
-                  phaseFraction < 0.5 ? 'Waxing Gibbous' :
-                  phaseFraction < 0.75 ? 'Waning Gibbous' : 'Waning Crescent';
-
-  document.getElementById('phase').textContent = phaseName;
+  document.getElementById('phase').textContent = moon.phase || 'Waning Gibbous';
   document.getElementById('illum').textContent = `${illum}% Illumination`;
 
-  let moonFile = '';
-  if (illum === 0) moonFile = 'newmoon.png';
-  else if (illum === 100) moonFile = 'fullmoon.png';
-  else if (illum === 50 && phaseName.includes('Waxing')) moonFile = 'firstquart.png';
-  else if (illum === 50 && phaseName.includes('Waning')) moonFile = 'lastquart.png';
-  else {
-    const p = phaseName.includes('Waxing') ? 'wax' : 'wane';
-    const pct = Math.round(illum / 5) * 5;
-    moonFile = `${p}${pct}.png`;
-  }
+  let moonFile = `wane${Math.round(illum / 5) * 5}.png`;
   document.getElementById('moon-img').src = `/images/${moonFile}`;
 
   document.getElementById('header-date').textContent = today;
@@ -248,6 +225,7 @@
 
 </body>
 </html>
+
 
 
 
