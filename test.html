@@ -131,7 +131,7 @@
 <!-- TODAY’S BITE FORECAST – FINAL, 100% WORKING -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
-    Solunar Times for <span id="header-date">November 9</span>
+    Solunar Times for <span id="header-date">—</span>
   </h2>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
     <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
@@ -162,102 +162,140 @@
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const lat = 32.4619, lng = -93.34883;
-    const now = new Date();
+document.addEventListener('DOMContentLoaded', async () => {
+  const lat = 32.4619, lng = -93.34883;
+  const now = new Date();
+  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
 
-    // SUN TIMES
-    const times = SunCalc.getTimes(now, lat, lng);
-    const civil = SunCalc.getTimes(now, lat, lng, -6); // civil twilight
-    const fmt = d => d ? d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
+  // --- 1️⃣ Sunrise-Sunset API with caching ---
+  const cacheKey = 'sunData';
+  const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+  const todayKey = now.toISOString().split('T')[0];
 
-    document.getElementById('first').textContent = fmt(civil.sunrise);      // 6:12 AM
-    document.getElementById('rise').textContent = fmt(times.sunrise);      // 6:39 AM
-    document.getElementById('set').textContent = fmt(times.sunset);        // 5:17 PM
-    document.getElementById('last').textContent = fmt(civil.sunset);       // 5:41 PM
-
-    // MOON
-    const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
-    const moonIllum = SunCalc.getMoonIllumination(now);
-    const illum = Math.round(moonIllum.fraction * 100);
-
-    const rise = moonTimes.rise;
-    const set = moonTimes.set;
-
-    // TRUE overhead/underfoot (halfway between rise & set)
-    let overhead = null, underfoot = null;
-    if (rise && set) {
-      const mid = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
-      overhead = mid;
-      underfoot = new Date(mid.getTime() + 12 * 3600000);
-      // Wrap underfoot to same day if needed
-      if (underfoot.getDate() !== now.getDate()) {
-        underfoot.setTime(underfoot.getTime() - 24 * 3600000);
+  let sunResults = null;
+  if (cached && cached.date === todayKey && cached.results) {
+    sunResults = cached.results;
+  } else {
+    try {
+      const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (data.status === "OK") {
+        sunResults = data.results;
+        localStorage.setItem(cacheKey, JSON.stringify({ date: todayKey, results: sunResults }));
       }
+    } catch (e) {
+      console.error("Sunrise-sunset API failed:", e);
     }
+  }
 
-    // Order: earliest first
-    const majors = [];
-    if (overhead) majors.push(overhead);
-    if (underfoot) majors.push(underfoot);
-    majors.sort((a,b) => a - b);
+  if (sunResults) {
+    const convert = utc => new Date(new Date(utc).getTime() + (now.getTimezoneOffset() * -60000));
+    document.getElementById('first').textContent = fmt(convert(sunResults.civil_twilight_begin));
+    document.getElementById('rise').textContent  = fmt(convert(sunResults.sunrise));
+    document.getElementById('set').textContent   = fmt(convert(sunResults.sunset));
+    document.getElementById('last').textContent  = fmt(convert(sunResults.civil_twilight_end));
+  } else {
+    ['first','rise','set','last'].forEach(id=>document.getElementById(id).textContent='—');
+  }
 
-    const minors = [];
-    if (rise) minors.push(rise);
-    if (set) minors.push(set);
-    minors.sort((a,b) => a - b);
+  // --- 2️⃣ SunCalc Moon and Solunar ---
+  const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
+  const moonIllum = SunCalc.getMoonIllumination(now);
+  const illum = Math.round(moonIllum.fraction * 100);
+  const rise = moonTimes.rise;
+  const set = moonTimes.set;
 
-    const range = (c, h) => {
-      if (!c) return '—';
-      const s = new Date(c);
-      s.setMinutes(s.getMinutes() - h * 30);
-      const e = new Date(c);
-      e.setMinutes(e.getMinutes() + h * 30);
-      return `${fmt(s)}–${fmt(e)}`;
-    };
+  // Majors
+  let majors = [];
+  if (rise && set) {
+    const overhead = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
+    let underfoot = new Date(overhead.getTime() + 12 * 3600000);
+    if (underfoot.getDate() !== now.getDate()) {
+      majors = []; // Only one major would fall outside current day → show dash
+    } else {
+      majors = [overhead, underfoot].sort((a,b)=>a-b);
+    }
+  }
 
-    document.getElementById('maj1').textContent = majors[0] ? range(majors[0], 2) : '—';
-    document.getElementById('maj2').textContent = majors[1] ? range(majors[1], 2) : '—';
-    document.getElementById('min1').textContent = minors[0] ? range(minors[0], 1) : '—';
-    document.getElementById('min2').textContent = minors[1] ? range(minors[1], 1) : '—';
+  // Minors
+  let minors = [];
+  if (rise && set) {
+    minors = [rise, set].sort((a,b)=>a-b);
+  }
 
-    // RATING - Fair (★★) for 73%
-    const ratingScore = illum > 80 || illum < 20 ? 4 : illum > 60 ? 3 : 2;
-    const stars = '★★★★'.slice(0, ratingScore);
-    const ratingText = ratingScore === 2 ? 'Fair' : ratingScore === 3 ? 'Good' : ratingScore === 4 ? 'Best' : 'Fair';
-    document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
+  // Period range helper
+  const range = (center, hours) => {
+    if (!center) return '—';
+    const start = new Date(center.getTime() - hours*30*60000);
+    const end = new Date(center.getTime() + hours*30*60000);
+    return `${fmt(start)}–${fmt(end)}`;
+  };
 
-    // PHASE
-    const p = moonIllum.phase;
-    const phaseName = p < 0.0625 || p > 0.9375 ? 'New Moon' :
-                      p < 0.25 ? 'Waxing Crescent' :
-                      p < 0.4375 ? 'Waxing Gibbous' :
-                      p < 0.5625 ? 'Full Moon' :
-                      p < 0.75 ? 'Waning Gibbous' :
-                      p < 0.9375 ? 'Waning Crescent' : 'Last Quarter';
+  // Display periods or dash if missing
+  document.getElementById('maj1').textContent = majors.length === 2 ? range(majors[0], 2) : '—';
+  document.getElementById('maj2').textContent = majors.length === 2 ? range(majors[1], 2) : '—';
+  document.getElementById('min1').textContent = minors.length === 2 ? range(minors[0], 1) : '—';
+  document.getElementById('min2').textContent = minors.length === 2 ? range(minors[1], 1) : '—';
 
-    document.getElementById('phase').textContent = phaseName;
-    document.getElementById('illum').textContent = `${illum}% Illumination`;
+  // --- 3️⃣ Solunar Day Rating (0–4 stars) ---
+  let points = 0;
+  if (illum <= 10 || illum >= 90) points += 2;
 
-    // MOON IMAGE
-    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-    const pct = Math.round(illum / 5) * 5;
-    const moonFile = illum === 0 ? 'newmoon.png' :
-                     illum === 100 ? 'fullmoon.png' :
-                     illum === 50 && phaseName.includes('First') ? 'firstquart.png' :
-                     illum === 50 && phaseName.includes('Last') ? 'lastquart.png' :
-                     `${dir}${pct}.png`;
-    document.getElementById('moon-img').src = `/images/${moonFile}`;
+  const sunTimesList = [];
+  if (sunResults) {
+    const convert = utc => new Date(new Date(utc).getTime() + (now.getTimezoneOffset() * -60000));
+    sunTimesList.push(convert(sunResults.sunrise));
+    sunTimesList.push(convert(sunResults.sunset));
+  }
 
-    // DATES
-    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
-  }, 400);
+  const isClose = (t1,t2) => t1 && t2 && Math.abs(t1-t2) <= 60*60*1000;
+  majors.forEach(m => { if (sunTimesList.some(s=>isClose(m,s))) points +=1; });
+  minors.forEach(m => { if (sunTimesList.some(s=>isClose(m,s))) points +=0.5; });
+
+  let ratingScore = 0;
+  let ratingText = 'Poor';
+  if (points >= 4) { ratingScore=4; ratingText='Best'; }
+  else if (points >=3) { ratingScore=3; ratingText='Better'; }
+  else if (points >=2) { ratingScore=2; ratingText='Good'; }
+  else if (points >=1) { ratingScore=1; ratingText='Fair'; }
+
+  const stars = ratingScore>0 ? '★★★★'.slice(0,ratingScore) : '';
+  document.getElementById('rating').innerHTML = stars
+    ? `${stars}<br><span style="font-size:30px;color:#003366;">${ratingText}</span>`
+    : `<span style="font-size:30px;color:#003366;">${ratingText}</span>`;
+
+  // --- 4️⃣ Moon phase + image ---
+  const p = moonIllum.phase;
+  const phaseName = p < 0.0625 || p > 0.9375 ? 'New Moon' :
+                    p < 0.25 ? 'Waxing Crescent' :
+                    p < 0.4375 ? 'Waxing Gibbous' :
+                    p < 0.5625 ? 'Full Moon' :
+                    p < 0.75 ? 'Waning Gibbous' :
+                    p < 0.9375 ? 'Waning Crescent' : 'Last Quarter';
+  document.getElementById('phase').textContent = phaseName;
+  document.getElementById('illum').textContent = `${illum}% Illumination`;
+
+  const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+  const pct = Math.round(illum / 5) * 5;
+  const moonFile = illum===0 ? 'newmoon.png' :
+                   illum===100 ? 'fullmoon.png' :
+                   (illum===50 && phaseName.includes('First')) ? 'firstquart.png' :
+                   (illum===50 && phaseName.includes('Last')) ? 'lastquart.png' :
+                   `${dir}${pct}.png`;
+  document.getElementById('moon-img').src = `/images/${moonFile}`;
+
+  // --- 5️⃣ Dates ---
+  document.getElementById('header-date').textContent =
+    now.toLocaleDateString('en-US', {month:'long', day:'numeric'});
+  document.getElementById('date').textContent =
+    now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
 });
 </script>
+
 </body>
 </html>
+
 
 
 
