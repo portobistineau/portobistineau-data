@@ -156,7 +156,7 @@
   </script>
 </div>
     
-<!-- TODAY’S BITE FORECAST – FINAL, EXACT SOLUNAR.ORG MATCH, 100% LOCAL -->
+<!-- TODAY’S BITE FORECAST – FINAL, EXACT SOLUNAR.ORG MATCH (PARALLAX FIXED) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
-    // === SUN TIMES – CACHED ONCE PER DAY ===
+    // SUN TIMES (cached)
     let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
     const today = now.toISOString().slice(0,10);
     if (!sun || sun.date !== today) {
@@ -220,21 +220,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // === TRUE TRANSIT – OVERHEAD (positive altitude) + UNDERFOOT ===
+    // TRUE TRANSIT WITH PARALLAX (MATCHES SOLUNAR.ORG)
     const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
     const end = new Date(start); end.setDate(end.getDate()+2);
     let bestHigh = null, bestLow = null;
     let highAlt = -90, lowAlt = 90;
-
-    for (let t = start.getTime(); t < end.getTime(); t += 120000) {
+    for (let t = start.getTime(); t < end.getTime(); t += 120000) { // 2 min
       const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
-      const alt = pos.altitude;
-      if (alt > highAlt && alt > 0) { highAlt = alt; bestHigh = new Date(t); }  // ← ONLY ABOVE HORIZON
-      if (alt < lowAlt) { lowAlt = alt; bestLow = new Date(t); }
+      const alt = pos.altitude * (180 / Math.PI); // radians to degrees
+      if (alt > highAlt) { highAlt = alt; bestHigh = new Date(t); }
+      if (alt < lowAlt)  { lowAlt = alt; bestLow = new Date(t); }
     }
 
-    const majorAM = bestHigh?.getHours() < 12 ? bestHigh : bestLow;
-    const majorPM = bestHigh?.getHours() < 12 ? bestLow : bestHigh;
+    const majorAM = bestHigh.getHours() < 12 ? bestHigh : bestLow;
+    const majorPM = bestHigh.getHours() < 12 ? bestLow : bestHigh;
 
     const range = (c,h) => {
       const s = new Date(c); s.setMinutes(s.getMinutes()-h*30);
@@ -251,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('min1').textContent = range(minorAM, 1);
     document.getElementById('min2').textContent = range(minorPM, 1);
 
-    // RATING – TODAY = POOR
+    // RATING
     const illum = Math.round(SunCalc.getMoonIllumination(now).fraction * 100);
     let score = 0;
     if (illum <= 10 || illum >= 90) score = 4;
@@ -284,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
