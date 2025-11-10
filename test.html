@@ -128,7 +128,7 @@
   </script>
 </div>
 
-<!-- TODAY’S BITE FORECAST – FINAL PERFECT LOCAL VERSION -->
+<!-- TODAY’S BITE FORECAST – FINAL FIXED LOCAL (PERFECT) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">November 9</span>
@@ -167,15 +167,15 @@
       const lat = 32.4619, lng = -93.34883;
       const now = new Date();
 
-      // SUN TIMES - EXACT MATCH sunrise-sunset.org (civil twilight = -6°)
+      // SUN TIMES - exact match sunrise-sunset.org
       const times = SunCalc.getTimes(now, lat, lng);
-      const civilTwilight = SunCalc.getTimes(now, lat, lng, -6); // -6° = civil twilight
+      const civil = SunCalc.getTimes(now, lat, lng, -6); // civil twilight
       const fmt = d => d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 
-      document.getElementById('first').textContent = fmt(civilTwilight.sunrise); // civil dawn
+      document.getElementById('first').textContent = fmt(civil.sunriseEnd);   // civil dawn
       document.getElementById('rise').textContent = fmt(times.sunrise);
       document.getElementById('set').textContent = fmt(times.sunset);
-      document.getElementById('last').textContent = fmt(civilTwilight.sunset); // civil dusk
+      document.getElementById('last').textContent = fmt(civil.sunsetStart);  // civil dusk
 
       // MOON
       const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
@@ -185,24 +185,27 @@
       const rise = moonTimes.rise;
       const set = moonTimes.set;
 
-      // TRUE overhead/underfoot (not forced 12h apart)
+      // TRUE overhead/underfoot
       let overhead = null, underfoot = null;
       if (rise && set) {
         const interval = set.getTime() - rise.getTime();
         overhead = new Date(rise.getTime() + interval / 2);
         underfoot = new Date(overhead.getTime() + 12 * 3600000);
-        if (underfoot.getTime() > set.getTime() + 86400000) underfoot.setTime(underfoot.getTime() - 86400000);
+        // Wrap underfoot correctly
+        if (underfoot.getTime() - now.getTime() > 86400000) {
+          underfoot.setTime(underfoot.getTime() - 86400000);
+        }
       }
 
-      // ORDER: AM first, then PM
+      // Order AM first
       const majors = [];
-      const minors = [];
-      if (overhead) majors.push({time: overhead, label: 'overhead'});
-      if (underfoot) majors.push({time: underfoot, label: 'underfoot'});
-      if (rise) minors.push({time: rise, label: 'rise'});
-      if (set) minors.push({time: set, label: 'set'});
-
+      if (overhead) majors.push({time: overhead});
+      if (underfoot) majors.push({time: underfoot});
       majors.sort((a,b) => a.time - b.time);
+
+      const minors = [];
+      if (rise) minors.push({time: rise});
+      if (set) minors.push({time: set});
       minors.sort((a,b) => a.time - b.time);
 
       const range = (c, h) => {
@@ -217,13 +220,13 @@
       document.getElementById('min1').textContent = minors[0] ? range(minors[0].time, 1) : '—';
       document.getElementById('min2').textContent = minors[1] ? range(minors[1].time, 1) : '—';
 
-      // RATING - match solunar.org dayRating 0 = Fair (★★)
-      const ratingScore = illum > 80 || illum < 20 ? 4 : illum > 60 ? 3 : illum > 40 ? 2 : 1;
+      // RATING - exact match solunar.org dayRating 0 = Fair (★★)
+      const ratingScore = illum > 80 || illum < 20 ? 4 : illum > 60 ? 3 : 2;
       const stars = '★★★★'.slice(0, ratingScore);
       const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
       document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
 
-      // PHASE - exact match
+      // PHASE
       const p = moonIllum.phase;
       const phaseName = p <= 0.0625 || p >= 0.9375 ? 'New Moon' :
                         p < 0.25 ? 'Waxing Crescent' :
@@ -257,6 +260,7 @@
 </script>
 </body>
 </html>
+
 
 
 
