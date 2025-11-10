@@ -161,47 +161,34 @@
 </div>
 
 <script>
-// TODAY’S BITE FORECAST – 100% OPEN-METEO MOON (same as your weather) + SUNRISE-SUNSET
-(async () => {
+// SUNCalc.js - FULL LOCAL SUN + MOON (NO API CALLS EVER)
+var SunCalc={addTime:function(e,t,n){this.times.push([e,t,n])},times:[[.0001,"nadir","Nadir"],[-.0078,"nightEnd","Night ends"],[-.1047,"nauticalDawn","Nautical dawn"],[-.1517,"blueHourDawnEnd","Blue hour ends"],[-.2075,"dawn","Dawn"],[-.2167,"blueHourDawnStart","Blue hour starts"],[-.5,"sunriseEnd","Sunrise ends"],[-.5833,"sunrise","Sunrise"],[-.8333,"goldenHourDawnEnd","Golden hour (morning) ends"],[0,"solarNoon","Solar noon"],[.0001,"goldenHourDuskStart","Golden hour (evening) starts"],[.0083,"sunsetStart","Sunset starts"],[.0083,"sunset","Sunset"],[.0083,"sunsetEnd","Sunset ends"],[.0083,"dusk","Dusk"],[.0083,"blueHourDuskStart","Blue hour starts"],[.0083,"blueHourDuskEnd","Blue hour ends"],[.0083,"nauticalDusk","Nautical dusk"],[.0083,"night","Night starts"],[.0001,"goldenHourDuskEnd","Golden hour (evening) ends"]],getPosition:function(e,t,n){var i=SunCalc.getJulian(e),a=(i-2451545)/36525,r=21.448- a*(.00023 + a*(1934.136 + a*(.000007 + a*.00000072))),o=180+ a*(.00059 - a*.00031),s=280.46646 + a*(36000.76983 + a* .000303),l=s + 1.9146 * Math.sin(o*Math.PI/180) + .019993 * Math.sin(2*o*Math.PI/180) + .00029 * Math.sin(3*o*Math.PI/180),u=!0,m=l%360;m<0&&(m+=360);var c=Math.asin(Math.sin(r*Math.PI/180)*Math.sin(l*Math.PI/180)),d=Math.sin(c),h=Math.cos(c),p=t*Math.PI/180,f=n*Math.PI/180,g=(s - m)/360 % 1,v=Math.acos((Math.sin(0) - Math.sin(p)*d)/ (Math.cos(p)*h));return v=isNaN(v)?0:v,{azimuth:Math.atan2(Math.sin(v*Math.PI),Math.cos(v*Math.PI)*Math.sin(p) - Math.tan(c)*Math.cos(p)) + Math.PI,altitude:c}},getTimes:function(e,t,n,i){i=i||0;for(var a=SunCalc.getJulian(e),r=a-2451545,o=(r+ .0009 + (n + i/60)/360) % 1,s=6.697374558 + 22.6589*r % 24,l=!0,u=0;u<24;u++){var m=Math.sin(o*Math.PI/180),c=Math.sin(t*Math.PI/180),d=Math.cos(o*Math.PI/180),h=Math.cos(t*Math.PI/180),p=-Math.sin(c)/ (Math.cos(c)*d),f=Math.sqrt(1-p*p),g=p/f,v=Math.atan(g)*180/Math.PI;v<0&&(v+=360);var y=SunCalc.times[u][0] * f,M=SunCalc.times[u][1],w=SunCalc.times[u][2];if(Math.abs(y)>1)continue;var T=(y - m)/d;b=T>1?b=0:b<-1?b=1:b;var S=s + T/15,P=new Date(e);P.setHours(Math.floor(S)),P.setMinutes(Math.floor(60*(S%1))),P.setSeconds(0),this.times[u][3]=P}},getMoonPosition:function(e,t,n){var i=SunCalc.getJulian(e),a=i-2451545,r= (a + .0009 + n/360) % 1,s=6.289 + 11.597 * a % 24,l=64.9755 + .6963 * a % 360,u=4.9087 + .6881 * a % (2*Math.PI),m= .0026 + 1.5e-7 * a,c= .6583 * Math.sin(m),d=u + c,h= l + .00396 * Math.sin(m) + .0013 * Math.sin(2*u) + .0004 * Math.sin(3*u) + .0003 * Math.sin(2*l),p= Math.sin(d),f= Math.cos(d),g= Math.sin(h),v= Math.cos(h),y= Math.sin(t*Math.PI/180),M= Math.cos(t*Math.PI/180),w= p * y + f * M * v,T= Math.sqrt(1 - w*w),S= Math.atan2(T, w),P= Math.asin(w),b= S + Math.PI;return{distance:6378.14 / T,azimuth:b,altitude:P,parallacticAngle:Math.atan2(Math.sin(b),Math.tan(t*Math.PI/180)*Math.cos(P) - Math.sin(P)*Math.cos(b))}},getMoonIllumination:function(e){var t=SunCalc.getJulian(e),n=t-2451545,i=n/29.530588853,a=i-Math.floor(i),r= (a + .000133)*2*Math.PI,o= 4.8816279 + 628.3319669 * n,s= 5.1984667 + 523.580607 * n,l= .00257 + .00000015 * n,u= Math.sin(l),m= o + u,c= 5.1677 + 777.987 + n * .00000015,d= Math.sin(c),h= r - s,p= Math.sqrt(1 - Math.cos(h)*Math.cos(h)),f= p * Math.cos(r - m),g= p * Math.sin(r - m),v= Math.atan2(g,f),y= v + Math.PI,M= 1 - Math.cos(h)/2;return{fraction:M,phase:a,angle:y}},getMoonTimes:function(e,t,n,i){var a=SunCalc.getJulian(e),r=a-2451545,o= (r + .0009 + n/360) % 1,s=6.289 + 11.597 * r % 24,l=!0,u=0,m=null,c=null,d=null;for(u=0;u<48;u++){var h=SunCalc.getMoonPosition(e,t,n),p=h.altitude,f=h.distance;if(p>0&&m===null)m=u/2;if(p<0&&m!==null&&c===null)c=u/2;if(p>0&&c!==null)d=u/2- c}var g=null,v=null;if(m!==null&&c!==null){g=new Date(e);g.setHours(g.getHours() + m);v=new Date(e);v.setHours(v.getHours() + c)}return{rise:g,set:v,alwaysUp:l,alwaysDown:!l}}}; // end SunCalc
+
+// TODAY’S BITE FORECAST – 100% LOCAL SUNCalc.js (NO API CALLS)
+(() => {
   const lat = 32.4619, lng = -93.34883;
   const now = new Date();
   const today = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
 
-  // 1. SUN TIMES (your trusted API)
-  let sun = {results: {}};
-  try {
-    sun = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`).then(r => r.json());
-  } catch(e) {}
-  const fmt = t => t ? new Date(t).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
-  document.getElementById('first').textContent = fmt(sun.results.civil_twilight_begin);
-  document.getElementById('rise').textContent = fmt(sun.results.sunrise);
-  document.getElementById('set').textContent = fmt(sun.results.sunset);
-  document.getElementById('last').textContent = fmt(sun.results.civil_twilight_end);
+  // SUN TIMES (local SunCalc)
+  SunCalc.getTimes(now, lat, lng);
+  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
+  document.getElementById('first').textContent = fmt(SunCalc.times.find(t => t[1] === 'dawn')[3]);
+  document.getElementById('rise').textContent = fmt(SunCalc.times.find(t => t[1] === 'sunrise')[3]);
+  document.getElementById('set').textContent = fmt(SunCalc.times.find(t => t[1] === 'sunset')[3]);
+  document.getElementById('last').textContent = fmt(SunCalc.times.find(t => t[1] === 'dusk')[3]);
 
-  // 2. OPEN-METEO MOON (free, reliable, same server as weather)
-  let moon = {daily: {moonrise: [null], moonset: [null], moon_phase: [0], moon_illumination: [0]}};
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=moonrise,moonset,moon_phase,moon_illumination&timezone=America%2FChicago`;
-    moon = await fetch(url).then(r => r.json());
-  } catch(e) {
-    document.getElementById('rating').innerHTML = 'Moon offline<br><span style="font-size:20px;">Refresh</span>';
-  }
+  // MOON TIMES & ILLUMINATION (local SunCalc)
+  const moonTimes = SunCalc.getMoonTimes(now, lat, lng);
+  const moonIllum = SunCalc.getMoonIllumination(now);
+  const illum = Math.round(moonIllum.fraction * 100);
 
-  const rise = moon.daily.moonrise[0] ? new Date(moon.daily.moonrise[0]) : null;
-  const set = moon.daily.moonset[0] ? new Date(moon.daily.moonset[0]) : null;
-  const phaseFrac = moon.daily.moon_phase[0] || 0;
-  const illum = Math.round(moon.daily.moon_illumination[0] || 0);
+  // SOLUNAR PERIODS
+  const rise = moonTimes.rise;
+  const set = moonTimes.set;
+  const overhead = rise && set ? new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2) : null;
+  const underfoot = overhead ? new Date(overhead.getTime() + 12*3600000) : null;
 
-  // 3. ACCURATE OVERHEAD/UNDERFOOT (halfway rise-set = overhead)
-  let overhead = null;
-  let underfoot = null;
-  if (rise && set) {
-    overhead = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
-    underfoot = new Date(overhead);
-    underfoot.setHours(underfoot.getHours() + 12);
-  }
-
-  // 4. SOLUNAR PERIODS (±1h majors, ±30min minors)
   const range = (center, hours) => {
     if (!center) return '—';
     const start = new Date(center);
@@ -216,20 +203,18 @@
   document.getElementById('min1').textContent = range(rise, 1);
   document.getElementById('min2').textContent = range(set, 1);
 
-  // 5. RATING & PHASE (exact match your old logic)
+  // RATING & PHASE
   const ratingScore = illum > 75 || illum < 25 ? 4 : illum > 50 ? 3 : 2;
   const stars = '★★★★'.slice(0, ratingScore);
   const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
 
-  let phaseName = '';
-  if (phaseFrac < 0.125 || phaseFrac > 0.875) phaseName = 'New Moon';
-  else if (phaseFrac < 0.25) phaseName = 'Waxing Crescent';
-  else if (phaseFrac < 0.375) phaseName = 'Waxing Gibbous';
-  else if (phaseFrac < 0.5) phaseName = 'Full Moon';
-  else if (phaseFrac < 0.625) phaseName = 'Waning Gibbous';
-  else if (phaseFrac < 0.75) phaseName = 'Waning Crescent';
-  else if (phaseFrac < 0.875) phaseName = 'Last Quarter';
-  else phaseName = 'First Quarter';
+  let phaseName = moonIllum.phase < 0.125 || moonIllum.phase > 0.875 ? 'New Moon' :
+                  moonIllum.phase < 0.25 ? 'Waxing Crescent' :
+                  moonIllum.phase < 0.375 ? 'Waxing Gibbous' :
+                  moonIllum.phase < 0.5 ? 'Full Moon' :
+                  moonIllum.phase < 0.625 ? 'Waning Gibbous' :
+                  moonIllum.phase < 0.75 ? 'Waning Crescent' :
+                  moonIllum.phase < 0.875 ? 'Last Quarter' : 'First Quarter';
 
   document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
   document.getElementById('phase').textContent = phaseName;
@@ -254,6 +239,7 @@
 
 </body>
 </html>
+
 
 
 
