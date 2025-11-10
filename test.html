@@ -37,7 +37,7 @@
   });
 </script>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (FINAL: 100×150, WRAP, NO SCROLL, PRESSURE TREND) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (FINAL: FULLY CACHED, NO RATE LIMIT, PERFECT) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -46,40 +46,52 @@
   <script>
   (async () => {
     const lat = 32.4066, lon = -93.3906;
-    let grid = localStorage.getItem('nwsGrid');
-    if (!grid) {
+    const today = new Date().toISOString().slice(0,10);
+
+    // === LOAD OR FETCH ALL DATA ONCE PER DAY ===
+    let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
+    if (!data || data.date !== today) {
+      document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+      let grid;
       try {
         const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`).then(r => r.json());
         grid = point.properties;
-        localStorage.setItem('nwsGrid', JSON.stringify(grid));
-      } catch(e) { document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh</div>'; return; }
-    } else grid = JSON.parse(grid);
+      } catch(e) { document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; return; }
 
-    // Current observed
-    let currentTemp = '??', feels = '??', wind = '0', dir = 'N', pressure = '??', trend = '', timeStr = '??';
-    try {
-      const stations = await fetch(grid.observationStations).then(r => r.json());
+      const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
+        fetch(grid.observationStations),
+        fetch(grid.forecast),
+        fetch(grid.forecastHourly)
+      ]);
+
+      const stations = await stationsRes.json();
       const station = stations.observationStations[0];
       const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
-      const p = obs.properties;
-      currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-      feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-      wind = Math.round(p.windSpeed.value * 2.23694) || 0;
-      const windDir = p.windDirection.value || 0;
-      dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
-      pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
-      
-      // Pressure trend (rising/falling/steady) – NWS gives 3-hour change
-      const change = p.pressureChange?.value;
-      if (change !== null) {
-        const inches = change / 3386.39;
-        if (Math.abs(inches) < 0.02) trend = '(steady)';
-        else if (inches > 0) trend = '(rising)';
-        else trend = '(falling)';
-      }
-      
-      timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    } catch(e) {}
+
+      const daily = await dailyRes.json();
+      const hourly = await hourlyRes.json();
+
+      data = {date: today, grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties};
+      localStorage.setItem('nwsCache', JSON.stringify(data));
+    }
+
+    // === CURRENT OBSERVED ===
+    const p = data.obs;
+    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
+    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
+    const wind = Math.round(p.windSpeed.value * 2.23694) || 0;
+    const windDir = p.windDirection.value || 0;
+    const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
+    const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
+    let trend = '';
+    const change = p.pressureChange?.value;
+    if (change !== null) {
+      const inches = change / 3386.39;
+      if (Math.abs(inches) < 0.02) trend = '(steady)';
+      else if (inches > 0) trend = '(rising)';
+      else trend = '(falling)';
+    }
+    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 
     const currentHTML = `
       <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
@@ -91,9 +103,9 @@
         </div>
       </div>`;
 
-    // 7-day cards — 100×150, text wraps, no scroll
-    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:10px;background:#f0f8ff;border-radius:15px;">';
-    const dailyPeriods = (await fetch(grid.forecast).then(r => r.json())).properties.periods.slice(0,14);
+    // === 7-DAY CARDS (100×150, wrap, no scroll) ===
+    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
+    const dailyPeriods = data.daily.periods.slice(0,14);
     for (let i = 0; i < 7; i++) {
       const day = dailyPeriods[i*2];
       const night = dailyPeriods[i*2+1] || day;
@@ -115,9 +127,9 @@
 
     document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
 
+    // === POPUP (uses cached hourly) ===
     window.showDetail = function(dayIndex) {
-      const hourly = (await fetch(grid.forecastHourly).then(r => r.json())).properties.periods;
-      const periods = hourly.slice(dayIndex*24, (dayIndex+1)*24);
+      const periods = data.hourly.periods.slice(dayIndex*24, (dayIndex+1)*24);
       let detailHTML = `<h3 style="margin-top:0;text-align:center;">${periods[0] ? new Date(periods[0].startTime).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) : 'Today'}</h3><div style="max-height:60vh;overflow-y:auto;">`;
       periods.forEach(p => {
         const time = new Date(p.startTime).toLocaleTimeString('en-US',{hour:'numeric'});
@@ -266,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
