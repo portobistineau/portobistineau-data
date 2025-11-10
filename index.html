@@ -204,7 +204,7 @@
       </p>
     </div>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (PERFECT: TALLER + CENTERED ICONS) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (LIVE + SPACING FIX) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -215,7 +215,7 @@
     const lat = 32.4066, lon = -93.3906;
     const today = new Date().toISOString().slice(0,10);
 
-    // === FULLY CACHED – ONE FETCH PER DAY ===
+    // FULLY CACHED – ONE FETCH PER DAY
     let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
     if (!data || data.date !== today) {
       document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
@@ -242,7 +242,7 @@
       localStorage.setItem('nwsCache', JSON.stringify(data));
     }
 
-    // === CURRENT OBSERVED ===
+    // CURRENT OBSERVED
     const p = data.obs;
     const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
     const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
@@ -270,7 +270,7 @@
         </div>
       </div>`;
 
-    // === 7-DAY CARDS – 100×170px, ICON CENTERED, TEXT WRAPS PERFECTLY ===
+    // 7-DAY CARDS – 100×170px, ICON CENTERED, TEXT WRAPS
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
     const dailyPeriods = data.daily.periods.slice(0,14);
     for (let i = 0; i < 7; i++) {
@@ -296,7 +296,7 @@
 
     document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
 
-    // === POPUP (uses cached hourly) ===
+    // POPUP – FIXED SPACING BETWEEN TEMP AND WIND
     window.showDetail = function(dayIndex) {
       const periods = data.hourly.periods.slice(dayIndex*24, (dayIndex+1)*24);
       let detailHTML = `<h3 style="margin-top:0;text-align:center;">${periods[0] ? new Date(periods[0].startTime).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) : 'Today'}</h3><div style="max-height:60vh;overflow-y:auto;">`;
@@ -310,7 +310,7 @@
             <div style="width:50px;">${time}</div>
             <img src="${p.icon.replace('large', 'small')}" width="32" height="32">
             <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-            <div style="width:70px;">${windStr} ${dir}</div>
+            <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
             <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
           </div>`;
       });
@@ -685,6 +685,7 @@
 </body>
 
 </html>
+
 
 
 
