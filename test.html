@@ -161,14 +161,11 @@
 </div>
 
 <script>
-// TODAY’S BITE FORECAST – 100% US NAVY + SUNRISE-SUNSET (NO SOLUNAR.ORG EVER)
+// TODAY’S BITE FORECAST – 100% OPEN-METEO MOON (same as your weather) + SUNRISE-SUNSET
 (async () => {
   const lat = 32.4619, lng = -93.34883;
   const now = new Date();
   const today = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
 
   // 1. SUN TIMES (your trusted API)
   let sun = {results: {}};
@@ -181,55 +178,70 @@
   document.getElementById('set').textContent = fmt(sun.results.sunset);
   document.getElementById('last').textContent = fmt(sun.results.civil_twilight_end);
 
-  // 2. US NAVY MOON DATA — OFFICIAL TRANSIT TIMES
-  let navy = {moonrise: '', moonset: '', transit: '', antitransit: '', phase: '—', fracillum: 0};
+  // 2. OPEN-METEO MOON (free, reliable, same server as weather)
+  let moon = {daily: {moonrise: [null], moonset: [null], moon_phase: [0], moon_illumination: [0]}};
   try {
-    const navyURL = `https://aa.usno.navy.mil/api/rstt/oneday?date=${m}/${d}/${y}&coords=${lat},${lng}&tz=-6`;
-    const data = await fetch(navyURL).then(r => r.json());
-    const moon = data.moonphases[0] || {};
-    navy.moonrise = data.moonrise;
-    navy.moonset = data.moonset;
-    navy.transit = data.closestmoon?.transit_time || '';
-    navy.antitransit = data.closestmoon?.antitransit_time || '';
-    navy.phase = moon.phenomena || 'Waning Gibbous';
-    navy.fracillum = moon.illum || 73;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=moonrise,moonset,moon_phase,moon_illumination&timezone=America%2FChicago`;
+    moon = await fetch(url).then(r => r.json());
   } catch(e) {
-    document.getElementById('rating').innerHTML = 'Navy offline<br><span style="font-size:20px;">Refresh</span>';
+    document.getElementById('rating').innerHTML = 'Moon offline<br><span style="font-size:20px;">Refresh</span>';
   }
 
-  // 3. SOLUNAR PERIODS (±1h major, ±30min minor)
-  const toDate = s => s ? new Date(s) : null;
-  const range = (d, hrs) => {
-    if (!d) return '—';
-    const start = new Date(d);
-    const end = new Date(d);
-    start.setMinutes(start.getMinutes() - hrs * 30);
-    end.setMinutes(end.getMinutes() + hrs * 30);
+  const rise = moon.daily.moonrise[0] ? new Date(moon.daily.moonrise[0]) : null;
+  const set = moon.daily.moonset[0] ? new Date(moon.daily.moonset[0]) : null;
+  const phaseFrac = moon.daily.moon_phase[0] || 0;
+  const illum = Math.round(moon.daily.moon_illumination[0] || 0);
+
+  // 3. ACCURATE OVERHEAD/UNDERFOOT (halfway rise-set = overhead)
+  let overhead = null;
+  let underfoot = null;
+  if (rise && set) {
+    overhead = new Date(rise.getTime() + (set.getTime() - rise.getTime()) / 2);
+    underfoot = new Date(overhead);
+    underfoot.setHours(underfoot.getHours() + 12);
+  }
+
+  // 4. SOLUNAR PERIODS (±1h majors, ±30min minors)
+  const range = (center, hours) => {
+    if (!center) return '—';
+    const start = new Date(center);
+    start.setMinutes(start.getMinutes() - hours * 30);
+    const end = new Date(center);
+    end.setMinutes(end.getMinutes() + hours * 30);
     return `${fmt(start)}–${fmt(end)}`;
   };
 
-  document.getElementById('maj1').textContent = range(toDate(navy.transit), 2);
-  document.getElementById('maj2').textContent = range(toDate(navy.antitransit), 2);
-  document.getElementById('min1').textContent = range(toDate(navy.moonrise), 1);
-  document.getElementById('min2').textContent = range(toDate(navy.moonset), 1);
+  document.getElementById('maj1').textContent = range(overhead, 2);
+  document.getElementById('maj2').textContent = range(underfoot, 2);
+  document.getElementById('min1').textContent = range(rise, 1);
+  document.getElementById('min2').textContent = range(set, 1);
 
-  // 4. RATING & MOON IMAGE
-  const illum = Math.round(navy.fracillum);
+  // 5. RATING & PHASE (exact match your old logic)
   const ratingScore = illum > 75 || illum < 25 ? 4 : illum > 50 ? 3 : 2;
   const stars = '★★★★'.slice(0, ratingScore);
   const ratingText = ['','Fair','Good','Better','Best'][ratingScore];
 
+  let phaseName = '';
+  if (phaseFrac < 0.125 || phaseFrac > 0.875) phaseName = 'New Moon';
+  else if (phaseFrac < 0.25) phaseName = 'Waxing Crescent';
+  else if (phaseFrac < 0.375) phaseName = 'Waxing Gibbous';
+  else if (phaseFrac < 0.5) phaseName = 'Full Moon';
+  else if (phaseFrac < 0.625) phaseName = 'Waning Gibbous';
+  else if (phaseFrac < 0.75) phaseName = 'Waning Crescent';
+  else if (phaseFrac < 0.875) phaseName = 'Last Quarter';
+  else phaseName = 'First Quarter';
+
   document.getElementById('rating').innerHTML = stars + '<br><span style="font-size:30px;color:#003366;">' + ratingText + '</span>';
-  document.getElementById('phase').textContent = navy.phase;
+  document.getElementById('phase').textContent = phaseName;
   document.getElementById('illum').textContent = `${illum}% Illumination`;
 
   let moonFile = '';
   if (illum === 0) moonFile = 'newmoon.png';
   else if (illum === 100) moonFile = 'fullmoon.png';
-  else if (illum === 50 && navy.phase.includes('First')) moonFile = 'firstquart.png';
-  else if (illum === 50 && navy.phase.includes('Last')) moonFile = 'lastquart.png';
+  else if (illum === 50 && phaseName.includes('First')) moonFile = 'firstquart.png';
+  else if (illum === 50 && phaseName.includes('Last')) moonFile = 'lastquart.png';
   else {
-    const p = navy.phase.includes('Waxing') ? 'wax' : 'wane';
+    const p = phaseName.includes('Waxing') ? 'wax' : 'wane';
     const pct = Math.round(illum / 5) * 5;
     moonFile = `${p}${pct}.png`;
   }
@@ -242,6 +254,7 @@
 
 </body>
 </html>
+
 
 
 
