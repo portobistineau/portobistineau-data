@@ -165,7 +165,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const lat = 32.4619, lng = -93.34883;
   const now = new Date();
-  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
+  const fmt = d => d ? d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '—';
 
   // --- 1️⃣ Sunrise-Sunset API with caching ---
   const cacheKey = 'sunData';
@@ -190,11 +190,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (sunResults) {
-    const convert = utc => new Date(new Date(utc).getTime() + (now.getTimezoneOffset() * -60000));
-    document.getElementById('first').textContent = fmt(convert(sunResults.civil_twilight_begin));
-    document.getElementById('rise').textContent  = fmt(convert(sunResults.sunrise));
-    document.getElementById('set').textContent   = fmt(convert(sunResults.sunset));
-    document.getElementById('last').textContent  = fmt(convert(sunResults.civil_twilight_end));
+    // ✅ Convert API UTC times to local times correctly
+    document.getElementById('first').textContent = fmt(new Date(sunResults.civil_twilight_begin));
+    document.getElementById('rise').textContent  = fmt(new Date(sunResults.sunrise));
+    document.getElementById('set').textContent   = fmt(new Date(sunResults.sunset));
+    document.getElementById('last').textContent  = fmt(new Date(sunResults.civil_twilight_end));
   } else {
     ['first','rise','set','last'].forEach(id=>document.getElementById(id).textContent='—');
   }
@@ -233,10 +233,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // Display periods or dash if missing
-  document.getElementById('maj1').textContent = majors.length === 2 ? range(majors[0], 2) : '—';
-  document.getElementById('maj2').textContent = majors.length === 2 ? range(majors[1], 2) : '—';
-  document.getElementById('min1').textContent = minors.length === 2 ? range(minors[0], 1) : '—';
-  document.getElementById('min2').textContent = minors.length === 2 ? range(minors[1], 1) : '—';
+  document.getElementById('maj1').textContent = majors.length === 2 ? range(majors[0],2) : '—';
+  document.getElementById('maj2').textContent = majors.length === 2 ? range(majors[1],2) : '—';
+  document.getElementById('min1').textContent = minors.length === 2 ? range(minors[0],1) : '—';
+  document.getElementById('min2').textContent = minors.length === 2 ? range(minors[1],1) : '—';
 
   // --- 3️⃣ Solunar Day Rating (0–4 stars) ---
   let points = 0;
@@ -244,9 +244,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const sunTimesList = [];
   if (sunResults) {
-    const convert = utc => new Date(new Date(utc).getTime() + (now.getTimezoneOffset() * -60000));
-    sunTimesList.push(convert(sunResults.sunrise));
-    sunTimesList.push(convert(sunResults.sunset));
+    sunTimesList.push(new Date(sunResults.sunrise));
+    sunTimesList.push(new Date(sunResults.sunset));
   }
 
   const isClose = (t1,t2) => t1 && t2 && Math.abs(t1-t2) <= 60*60*1000;
@@ -287,14 +286,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- 5️⃣ Dates ---
   document.getElementById('header-date').textContent =
-    now.toLocaleDateString('en-US', {month:'long', day:'numeric'});
+    now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
   document.getElementById('date').textContent =
-    now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+    now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 });
 </script>
 
+
 </body>
 </html>
+
 
 
 
