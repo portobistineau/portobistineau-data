@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
 
     // ---- APPLY OFFSET AND SORT ----
-    const OFFSET_SIGN = -1; // try 1 first; if majors are early, switch to -1
+    const OFFSET_SIGN = 1; 
     const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
 
     const centers = [];
@@ -331,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
