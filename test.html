@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('min1').innerHTML = mkRange(min1Center,30);
     document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center,30)}</b>`;
 
-    // ---- SOLUNAR.ORG-STYLE DAY RATING (independent) ----
+   // ---- SOLUNAR.ORG-STYLE DAY RATING (pure calculation) ----
 const illumFraction = illumData.fraction; // 0–1
 let dayScore = 0;
 
@@ -303,13 +303,14 @@ else if (illumFraction <= 0.986) dayScore = 3;
 else if (illumFraction <= 0.999) dayScore = 4;
 else if (illumFraction === 1) dayScore = 5;
 
-// Display rating
+// Update rating div ONLY
 const ratingWords = ['Poor','Fair','Good','Better','Best','Excellent'];
-const ratingStars = '★★★★★'.slice(0, dayScore);
-document.getElementById('rating').innerHTML = `
-  <div style="font-size:36px;color:#003366;">${ratingStars}</div>
-  <div style="font-size:24px;color:#003366;">${ratingWords[dayScore]}</div>
-`;
+const ratingStars = '★'.repeat(dayScore) + '☆'.repeat(5-dayScore);
+document.getElementById('rating').textContent = ''; // clear previous
+document.getElementById('rating').append(
+    document.createTextNode(`${ratingStars} ${ratingWords[dayScore]}`)
+);
+
 
 
     const phase = illumData.phase;
@@ -342,4 +343,5 @@ document.getElementById('rating').innerHTML = `
 
 </body>
 </html>
+
 
