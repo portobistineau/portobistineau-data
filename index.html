@@ -277,8 +277,9 @@ const dailyPeriods = data.daily.periods.slice(0, 14);
 for (let i = 0; i < 7; i++) {
   const day = dailyPeriods[i * 2];
   const night = dailyPeriods[i * 2 + 1] || day;
-  const dayDate = new Date(day.startTime);
-  const dayName = i === 0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday: 'short' });
+  const dayDate = new Date();
+dayDate.setDate(dayDate.getDate() + i); // today + i days
+const dayName = i === 0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday: 'short' });
   const icon = day.icon.replace('large', 'medium');
 
   // Calculate actual high/low using hourly data for that date
@@ -713,6 +714,7 @@ window.showDetail = function(dayIndex) {
 </body>
 
 </html>
+
 
 
 
