@@ -196,23 +196,21 @@
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const lat = 32.4619, lng = -93.3486;
-    const localNow = new Date();
-    const utcNow = new Date(localNow.getTime() + localNow.getTimezoneOffset()*60000);
+    const now = new Date();
     const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
     // ---- SUN TIMES ----
     let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
-    const today = localNow.toISOString().slice(0,10);
-    if (!sun || sun.date !== today) {
+    const todayStr = now.toISOString().slice(0,10);
+    if (!sun || sun.date !== todayStr) {
       fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
         .then(r => r.json())
         .then(j => {
           if (j.status === "OK") {
-            sun = {date: today, data: j.results};
+            sun = {date: todayStr, data: j.results};
             localStorage.setItem('sunCache', JSON.stringify(sun));
           }
-        })
-        .catch(() => {});
+        }).catch(()=>{});
     }
     if (sun) {
       document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
@@ -221,15 +219,15 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
     }
 
-    // ---- TRUE MOON TRANSIT / ANTITRANSIT IN UTC ----
-    const startUTC = new Date(Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate()-1));
-    const endUTC = new Date(startUTC); endUTC.setUTCDate(endUTC.getUTCDate()+2);
-    let overheadUTC = null, underfootUTC = null;
+    // ---- TRUE MOON TRANSIT / ANTITRANSIT ----
+    const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
+    const end = new Date(start); end.setDate(end.getDate()+2);
+    let overhead = null, underfoot = null;
     let maxAlt = -90, minAlt = 90;
-    for (let t = startUTC.getTime(); t <= endUTC.getTime(); t += 60000) {
+    for (let t = start.getTime(); t <= end.getTime(); t += 60000) {
       const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
-      if (pos.altitude > maxAlt) { maxAlt = pos.altitude; overheadUTC = new Date(t); }
-      if (pos.altitude < minAlt) { minAlt = pos.altitude; underfootUTC = new Date(t); }
+      if (pos.altitude > maxAlt) { maxAlt = pos.altitude; overhead = new Date(t); }
+      if (pos.altitude < minAlt) { minAlt = pos.altitude; underfoot = new Date(t); }
     }
 
     // ---- JOHN ALDEN KNIGHT OFFSET TABLE ----
@@ -238,96 +236,82 @@ document.addEventListener('DOMContentLoaded', () => {
       12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
       22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
     };
-    const illumData = SunCalc.getMoonIllumination(utcNow);
+    const illumData = SunCalc.getMoonIllumination(now);
     const moonAge = Math.round(illumData.phase * 29.53);
     const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
 
-    const OFFSET_SIGN = 1; // adjust if majors run early
+    const OFFSET_SIGN = 1;
     const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
 
-    // ---- Calculate Major Period Centers (UTC) ----
-    const centersUTC = [];
-    if (underfootUTC) centersUTC.push(underfootUTC);
-    if (overheadUTC) centersUTC.push(overheadUTC);
-    centersUTC.sort((a,b) => a.getTime() - b.getTime());
-    const major1CenterUTC = centersUTC[0] ? applyKnight(centersUTC[0]) : null;
-    const major2CenterUTC = centersUTC[1] ? applyKnight(centersUTC[1]) : null;
+    const centers = [];
+    if (underfoot) centers.push(underfoot);
+    if (overhead) centers.push(overhead);
+    centers.sort((a,b)=>a.getTime()-b.getTime());
 
-    const mkRange = (centerUTC, minutes) => {
-      if (!centerUTC) return '—';
-      const sLocal = new Date(centerUTC.getTime() + localNow.getTimezoneOffset()*60000 * -1);
-      const eLocal = new Date(centerUTC.getTime() + localNow.getTimezoneOffset()*60000 * -1 + minutes*60000);
-      return `${fmt(sLocal)}–${fmt(eLocal)}`;
+    const major1Center = centers[0] ? applyKnight(centers[0]) : null;
+    const major2Center = centers[1] ? applyKnight(centers[1]) : null;
+
+    const mkRange = (center, minutes) => {
+      if (!center) return '—';
+      const s = new Date(center.getTime() - minutes*60000);
+      const e = new Date(center.getTime() + minutes*60000);
+      return `${fmt(s)}–${fmt(e)}`;
     };
 
-    document.getElementById('maj1').innerHTML = mkRange(major1CenterUTC,60);
-    document.getElementById('maj2').innerHTML = `<b>${mkRange(major2CenterUTC,60)}</b>`;
+    // ---- Display Majors ----
+    document.getElementById('maj1').innerHTML = mkRange(major1Center,60);
+    document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
 
-    // ---- Minor Periods (UTC) ----
-    const mtTodayUTC = SunCalc.getMoonTimes(utcNow, lat, lng, true);
-    const tomorrowUTC = new Date(utcNow); tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate()+1);
-    const mtTomorrowUTC = SunCalc.getMoonTimes(tomorrowUTC, lat, lng, true);
+    // ---- Minor Periods ----
+    const mtToday = SunCalc.getMoonTimes(now, lat, lng, true);
+    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+    const mtTomorrow = SunCalc.getMoonTimes(tomorrow, lat, lng, true);
 
-    const allMinorsUTC = [];
-    [mtTodayUTC, mtTomorrowUTC].forEach(mt => {
-      if (mt.rise) allMinorsUTC.push(mt.rise);
-      if (mt.set) allMinorsUTC.push(mt.set);
-    });
+    const allMinors = [];
+    [mtToday, mtTomorrow].forEach(mt => { if(mt.rise) allMinors.push(mt.rise); if(mt.set) allMinors.push(mt.set); });
 
-    const startDayUTC = new Date(Date.UTC(localNow.getFullYear(), localNow.getMonth(), localNow.getDate()));
-    const endDayUTC = new Date(startDayUTC); endDayUTC.setUTCDate(endDayUTC.getUTCDate()+1);
+    const startDay = new Date(now); startDay.setHours(0,0,0,0);
+    const endDay = new Date(startDay); endDay.setDate(endDay.getDate()+1);
 
-    const dayMinorsUTC = allMinorsUTC.filter(t => t >= startDayUTC && t < endDayUTC).sort((a,b) => a.getTime() - b.getTime());
-    const min1CenterUTC = dayMinorsUTC[0] || null;
-    const min2CenterUTC = dayMinorsUTC[1] || null;
+    const dayMinors = allMinors.filter(t => t >= startDay && t < endDay).sort((a,b)=>a.getTime()-b.getTime());
+    const min1Center = dayMinors[0] || null;
+    const min2Center = dayMinors[1] || null;
 
-    document.getElementById('min1').innerHTML = mkRange(min1CenterUTC,30);
-    document.getElementById('min2').innerHTML = `<b>${mkRange(min2CenterUTC,30)}</b>`;
+    document.getElementById('min1').innerHTML = mkRange(min1Center,30);
+    document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center,30)}</b>`;
 
     // ---- Rating & Moon Phase ----
-    const illum = Math.round(illumData.fraction * 100);
-    const score = illum <= 10 || illum >= 90 ? 4 :
-                  illum <= 25 || illum >= 75 ? 3 :
-                  illum <= 40 || illum >= 60 ? 2 :
-                  illum <= 50 || illum >= 50 ? 1 : 0;
+    const illum = Math.round(illumData.fraction*100);
+    const score = illum<=10||illum>=90?4:
+                  illum<=25||illum>=75?3:
+                  illum<=40||illum>=60?2:
+                  illum<=50||illum>=50?1:0;
     const words = ['Poor','Fair','Good','Better','Best'];
-    const stars = '★'.repeat(score) + '☆'.repeat(4 - score);
+    const stars = '★'.repeat(score)+'☆'.repeat(4-score);
     document.getElementById('rating').innerHTML = `
       <div style="font-size:36px;color:#003366;">${stars}</div>
       <div style="font-size:24px;color:#003366;">${words[score]}</div>
     `;
 
     const phase = illumData.phase;
-    const phaseName =
-      phase < 0.03 ? 'New Moon' :
-      phase < 0.25 ? 'Waxing Crescent' :
-      phase < 0.26 ? 'First Quarter' :
-      phase < 0.50 ? 'Waxing Gibbous' :
-      phase < 0.51 ? 'Full Moon' :
-      phase < 0.75 ? 'Waning Gibbous' :
-      phase < 0.76 ? 'Last Quarter' :
-      'Waning Crescent';
-
+    const phaseName = phase<0.03?'New Moon':phase<0.25?'Waxing Crescent':phase<0.26?'First Quarter':phase<0.50?'Waxing Gibbous':phase<0.51?'Full Moon':phase<0.75?'Waning Gibbous':phase<0.76?'Last Quarter':'Waning Crescent';
     document.getElementById('phase').textContent = phaseName;
     document.getElementById('illum').textContent = `${illum}% Illuminated`;
 
-    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-    const pct = Math.round(illum / 5) * 5;
-    const moonFile = illum === 0 ? 'newmoon.png' :
-                     illum === 100 ? 'fullmoon.png' :
-                     `${dir}${pct}.png`;
+    const dir = phaseName.includes('Waxing')?'wax':'wane';
+    const pct = Math.round(illum/5)*5;
+    const moonFile = illum===0?'newmoon.png':illum===100?'fullmoon.png':`${dir}${pct}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-    document.getElementById('header-date').textContent =
-      localNow.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-    document.getElementById('date').textContent =
-      localNow.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-
+    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }, 500);
 });
 </script>
 
+
 </body>
 </html>
+
 
 
