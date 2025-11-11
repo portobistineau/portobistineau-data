@@ -37,7 +37,7 @@
   });
 </script>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (LIVE + HOURLY + ICON + PRESSURE TREND) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (LIVE + HOURLY CACHE + ICON) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -48,20 +48,17 @@
     const lat = 32.4066, lon = -93.3906;
     const now = new Date();
     const today = now.toISOString().slice(0,10);
-    const thisHour = now.getHours();
+    const hour = now.getHours();
 
-    // --- Cache + Refresh if hour changes ---
+    // --- Hourly Caching: refresh if date or hour changed ---
     let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
-    if (!data || data.date !== today || data.hour !== thisHour) {
+    if (!data || data.date !== today || data.hour !== hour) {
       document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
       let grid;
       try {
         const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`).then(r => r.json());
         grid = point.properties;
-      } catch(e) { 
-        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; 
-        return; 
-      }
+      } catch(e) { document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; return; }
 
       const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
         fetch(grid.observationStations),
@@ -76,29 +73,26 @@
       const daily = await dailyRes.json();
       const hourly = await hourlyRes.json();
 
-      data = {date: today, hour: thisHour, grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties};
+      data = {date: today, hour, grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties};
       localStorage.setItem('nwsCache', JSON.stringify(data));
     }
 
-    // --- CURRENT CONDITIONS (nearest hourly forecast) ---
-    const nowHourDate = new Date();
-    const closestHourly = data.hourly.periods.reduce((prev, curr) => {
-      const currTime = new Date(curr.startTime);
-      return Math.abs(currTime - nowHourDate) < Math.abs(new Date(prev.startTime) - nowHourDate) ? curr : prev;
-    });
+    // --- Current Conditions ---
+    const p = data.obs;
+    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
+    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
 
-    const currentTemp = Math.round(closestHourly.temperature);
-    const feels = currentTemp;
-    const wind = Math.round(closestHourly.windSpeed);
-    const windDir = closestHourly.windDirection;
-    const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
-    const icon = closestHourly.icon.replace('large','medium');
+    // Wind parsing
+    const windRaw = p.windSpeed?.value; // in m/s
+    const wind = windRaw !== null && !isNaN(windRaw) ? Math.round(windRaw * 2.23694) : 0;
+    const windDirDeg = p.windDirection?.value;
+    const dir = windDirDeg !== null && !isNaN(windDirDeg)
+      ? ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDirDeg/22.5)%16]
+      : '';
 
-    // Pressure + trend from latest observation
-    const pObs = data.obs;
-    const pressure = (pObs.barometricPressure.value / 3386.39).toFixed(2);
+    const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
     let trend = '';
-    const change = pObs.pressureChange?.value;
+    const change = p.pressureChange?.value;
     if (change !== null) {
       const inches = change / 3386.39;
       if (Math.abs(inches) < 0.02) trend = '(steady)';
@@ -106,46 +100,59 @@
       else trend = '(falling)';
     }
 
-    const timeStr = new Date(closestHourly.startTime).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+
+    // --- Use most recent hourly forecast for current conditions icon and description ---
+    const nowDate = now.getTime();
+    const closestHourly = data.hourly.periods.reduce((a,b) => 
+      Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+    );
+    const currentIcon = closestHourly?.icon?.replace('medium','medium') || '';
+    const currentForecast = closestHourly?.shortForecast || '';
 
     const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;gap:5px;">
+      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
         <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
-        <div style="color:#666;">Feels ${feels}°F • As of ${timeStr}</div>
-        <img src="${icon}" width="85" height="85" style="margin:5px 0;">
+        <div style="margin:8px 0;">
+          <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
+          <div style="font-size:14px;color:#666;margin-top:4px;">${currentForecast}</div>
+        </div>
+        <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
         <div style="font-size:14px;line-height:1.6;">
           Wind ${wind} mph ${dir}<br>
-          Pressure ${pressure} inHg ${trend}
+          Pressure ${pressure} inHg ${trend}<br>
         </div>
       </div>`;
 
-    // --- 7-DAY FORECAST CARDS ---
+    // --- 7-Day Forecast Cards ---
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
-    const dailyPeriods = data.daily.periods.slice(0,14);
+    const dailyPeriods = data.daily.periods.slice(0, 14);
 
     for (let i = 0; i < 7; i++) {
       const day = dailyPeriods[i*2];
-      const night = dailyPeriods[i*2+1] || day;
-      const dayDate = new Date(); dayDate.setDate(dayDate.getDate()+i);
-      const dayName = i===0?'Today':dayDate.toLocaleDateString('en-US',{weekday:'short'});
-      const iconF = day.icon.replace('large','medium');
+      const night = dailyPeriods[i*2 + 1] || day;
+      const dayDate = new Date();
+      dayDate.setDate(dayDate.getDate() + i);
+      const dayName = i===0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday:'short' });
+      const icon = day.icon.replace('large','medium');
 
-      const startOfDay = new Date(); startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate()+i);
+      const startOfDay = new Date();
+      startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + i);
       const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
 
-      const dayHours = data.hourly.periods.filter(p=>{
+      const dayHours = data.hourly.periods.filter(p => {
         const t = new Date(p.startTime);
-        return t>=startOfDay && t<=endOfDay;
+        return t >= startOfDay && t <= endOfDay;
       });
 
-      let hi = dayHours.length?Math.max(...dayHours.map(p=>p.temperature)):day.temperature;
-      let lo = dayHours.length?Math.min(...dayHours.map(p=>p.temperature)):night.temperature;
+      const hi = dayHours.length ? Math.max(...dayHours.map(p=>p.temperature)) : day.temperature;
+      const lo = dayHours.length ? Math.min(...dayHours.map(p=>p.temperature)) : night.temperature;
 
       forecastHTML += `
         <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
           <div style="font-weight:bold;color:#003366;">${dayName}</div>
           <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-            <img src="${iconF}" width="48" height="48">
+            <img src="${icon}" width="48" height="48">
           </div>
           <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
           <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
@@ -153,23 +160,24 @@
           </div>
         </div>`;
     }
-
     forecastHTML += '</div>';
+
     document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
 
     // --- POPUP DETAIL VIEW ---
-    window.showDetail = function(dayIndex){
-      const startOfDay = new Date(); startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate()+dayIndex);
+    window.showDetail = function(dayIndex) {
+      const startOfDay = new Date();
+      startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + dayIndex);
       const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
 
-      const periods = data.hourly.periods.filter(p=>{
+      const periods = data.hourly.periods.filter(p => {
         const t = new Date(p.startTime);
-        return t>=startOfDay && t<=endOfDay;
+        return t >= startOfDay && t <= endOfDay;
       });
 
       let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-      periods.forEach(p=>{
-        const time = new Date(p.startTime).toLocaleTimeString('en-US',{hour:'numeric'});
+      periods.forEach(p => {
+        const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
         const temp = p.temperature;
         const windStr = p.windSpeed.replace(' mph','');
         const dir = p.windDirection;
@@ -187,9 +195,11 @@
       document.getElementById('dayDetail').style.display = 'block';
       document.getElementById('overlay').style.display = 'block';
     };
+
   })();
   </script>
 </div>
+
 
 
 
@@ -380,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
