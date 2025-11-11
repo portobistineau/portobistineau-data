@@ -37,121 +37,118 @@
   });
 </script>
 
-<!-- LAKE BISTINEAU WEATHER – 100% NWS, FULLY CACHED, NO RATE LIMIT -->
-<div class="section">
-  <h2>Lake Bistineau Weather</h2>
-  <div id="bistineauWeather">Loading NWS data...</div>
-  <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
-  <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
-  <script>
-  (async () => {
-    const lat = 32.4066, lon = -93.3906;
-    const today = new Date().toISOString().slice(0,10  );
-    let data = JSON.parse(localStorage.getItem('nwsFullCache') || 'null');
-    if (!data || data.date !== today) {
-      document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data (first load today)...';
-      let grid;
-      try {
-        const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`).then(r => r.json());
-        grid = point.properties;
-      } catch(e) { document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; return; }
+<!-- LAKE BISTINEAU WEATHER – FINAL, 100% NWS, CORRECT CARDS + SPACING -->
+<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
+  <h2 style="text-align:center;margin:0 0 20px;color:#003366;font-size:28px;">
+    Lake Bistineau Weather
+  </h2>
+  <div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;">
+    <div id="daily-cards">Loading NWS data…</div>
+  </div>
+  <p style="text-align:center;color:#003366;font-size:12px;margin-top:20px;">
+    Powered by National Weather Service – <span id="weather-date">—</span>
+  </p>
+</div>
 
-      const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
-        fetch(grid.observationStations),
-        fetch(grid.forecast),
-        fetch(grid.forecastHourly)
-      ]);
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const lat = 32.4619, lon = -93.3486;
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
 
-      const stations = await stationsRes.json();
-      const station = stations.observationStations[0];
-      const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
+  // FULL CACHE – 15 minutes
+  let cache = JSON.parse(localStorage.getItem('nwsFullCache') || 'null');
+  if (cache && cache.date === today && Date.now() - cache.time < 900000) {
+    renderNWS(cache.data);
+  } else {
+    fetch(`https://api.weather.gov/points/${lat},${lon}`)
+      .then(r => r.json())
+      .then(point => {
+        const grid = point.properties;
+        return Promise.all([
+          fetch(grid.forecast),
+          fetch(grid.forecastHourly),
+          fetch(grid.observationStations).then(r => r.json()).then(st => fetch(st.observationStations[0] + '/observations/latest').then(r => r.json()))
+        ]).then(([dailyRes, hourlyRes, obsRes]) => {
+          return Promise.all([dailyRes.json(), hourlyRes.json(), obsRes.json()]).then(([daily, hourly, obs]) => {
+            const data = {grid, daily: daily.properties, hourly: hourly.properties, obs: obs.properties};
+            localStorage.setItem('nwsFullCache', JSON.stringify({date: today, time: Date.now(), data}));
+            renderNWS(data);
+          });
+        });
+      })
+      .catch(() => document.getElementById('daily-cards').innerHTML = '<p style="color:red;text-align:center;">NWS offline – refresh in 30s</p>');
+  }
 
-      const daily = await dailyRes.json();
-      const hourly = await hourlyRes.json();
+  function renderNWS(data) {
+    const dailyPeriods = data.daily.periods;
+    const hourlyPeriods = data.hourly.periods;
+    const obs = data.obs;
 
-      data = {date: today, grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties};
-      localStorage.setItem('nwsFullCache', JSON.stringify(data));
-    }
+    // CURRENT OBSERVED
+    const currentTemp = Math.round(obs.temperature.value * 1.8 + 32);
+    const timeStr = new Date(obs.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 
-    // CURRENT
-    const p = data.obs;
-    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-    const wind = Math.round(p.windSpeed.value * 2.23694) || 0;
-    const windDir = p.windDirection.value || 0;
-    const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
-    const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
-    let trend = '';
-    const change = p.pressureChange?.value;
-    if (change !== null) {
-      const inches = change / 3386.39;
-      if (Math.abs(inches) < 0.02) trend = '(steady)';
-      else if (inches > 0) trend = '(rising)';
-      else trend = '(falling)';
-    }
-    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+    // GROUP HOURLY BY DATE
+    const hourlyByDate = {};
+    hourlyPeriods.forEach(p => {
+      const date = p.startTime.split('T')[0];
+      if (!hourlyByDate[date]) hourlyByDate[date] = [];
+      hourlyByDate[date].push(p);
+    });
 
-    const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
-        <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
-        <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
-        <div style="font-size:14px;line-height:1.6;">
-          Wind ${wind} mph ${dir}<br>
-          Pressure ${pressure} inHg ${trend}<br>
+    // BUILD 5 DAILY CARDS
+    const dates = Object.keys(hourlyByDate).slice(0,5);
+    const cardsHTML = dates.map((date, i) => {
+      const hours = hourlyByDate[date];
+      const temps = hours.map(h => h.temperature);
+      const high = Math.max(...temps);
+      const low = Math.min(...temps);
+      const dayName = i === 0 ? 'Today' : new Date(date).toLocaleDateString('en-US', {weekday:'short'});
+      const icon = hours.find(h => h.isDaytime)?.icon || hours[0].icon;
+
+      // 24-HOUR POPUP
+      const rows = [];
+      for (let h = 0; h < 24; h++) {
+        const period = hours.find(p => new Date(p.startTime).getHours() === h) || {temperature: '—', probabilityOfPrecipitation: {value: 0}, shortForecast: 'No data', windSpeed: '0 mph', windDirection: '—'};
+        const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        const ampm = h < 12 ? 'AM' : 'PM';
+        rows.push(`
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">
+            <span>${displayH} ${ampm}</span>
+            <img src="${period.icon.replace('large', 'small')}" width="32">
+            <span>${period.temperature}°</span>
+            <span>${period.probabilityOfPrecipitation.value || 0}%</span>
+          </div>
+        `);
+      }
+
+      return `
+        <div style="background:#f8fdff;border-radius:12px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;width:150px;"
+             onclick="document.getElementById('popup-${i}').style.display='block'">
+          <div style="font-weight:bold;margin-bottom:8px;">${dayName}</div>
+          <img src="${icon.replace('large', 'medium')}" width="60">
+          <div style="font-size:20px;margin:8px 0;"><b>${high}°</b>/<span style="color:#666;">${low}°</span></div>
+          <div style="font-size:13px;color:#333;">${hours[0].shortForecast}</div>
+
+          <div id="popup-${i}" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:999;width:340px;max-height:85vh;">
+            <div style="padding:15px;background:#003366;color:white;border-radius:12px 12px 0 0;text-align:center;position:relative;">
+              <b>${dayName}, ${new Date(date).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</b>
+              <span onclick="this.parentElement.parentElement.style.display='none'" style="position:absolute;right:12px;top:12px;cursor:pointer;font-size:24px;">×</span>
+            </div>
+            <div style="max-height:65vh;overflow-y:auto;">${rows.join('')}</div>
+            <button onclick="document.getElementById('popup-${i}').style.display='none'"
+                    style="width:100%;padding:12px;background:#003366;color:white;border:none;border-radius:0 0 12px 12px;cursor:pointer;font-size:16px;">Close</button>
+          </div>
         </div>
-      </div>`;
+      `;
+    }).join('');
 
-    // 7-DAY CARDS – 100×170px, WRAP, CENTERED ICON
-    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
-    const dailyPeriods = data.daily.periods.slice(0,14);
-    for (let i = 0; i < 7; i++) {
-      const day = dailyPeriods[i*2];
-      const night = dailyPeriods[i*2+1] || day;
-      const hi = day.temperature;
-      const lo = night.temperature;
-      const dayName = i === 0 ? 'Today' : new Date(day.startTime).toLocaleDateString('en-US', {weekday:'short'});
-      const icon = day.icon.replace('large', 'medium');
-      forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
-          <div style="font-weight:bold;color:#003366;">${dayName}</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-            <img src="${icon}" width="48" height="48">
-          </div>
-          <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
-          <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-            ${day.shortForecast}
-          </div>
-        </div>`;
-    }
-    forecastHTML += '</div>';
-
-    document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
-
-    // POPUP – uses cached hourly
-    window.showDetail = function(dayIndex) {
-      const periods = data.hourly.periods.slice(dayIndex*24, (dayIndex+1)*24);
-      let detailHTML = `<h3 style="margin-top:0;text-align:center;">${periods[0] ? new Date(periods[0].startTime).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) : 'Today'}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-      periods.forEach(p => {
-        const time = new Date(p.startTime).toLocaleTimeString('en-US',{hour:'numeric'});
-        const temp = p.temperature;
-        const windStr = p.windSpeed.replace(' mph', '');
-        const dir = p.windDirection;
-        detailHTML += `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
-            <div style="width:50px;">${time}</div>
-            <img src="${p.icon.replace('large', 'small')}" width="32" height="32">
-            <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-            <div style="width:70px;">${windStr} ${dir}</div>
-            <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
-          </div>`;
-      });
-      detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
-      document.getElementById('dayDetail').innerHTML = detailHTML;
-      document.getElementById('dayDetail').style.display = 'block';
-      document.getElementById('overlay').style.display = 'block';
-    };
-  })();
-  </script>
+    document.getElementById('daily-cards').innerHTML = cardsHTML;
+    document.getElementById('weather-date').textContent = now.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+});
+</script>
 </div>
     
 <!-- TODAY’S BITE FORECAST – FINAL, KNIGHT TABLE (PUBLIC DOMAIN, EXACT SOLUNAR.ORG) -->
@@ -182,6 +179,7 @@
       </div>
       <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
       <div id="illum" style="color:#000;font-size:16px;">—</div>
+      <div id="day-rating" style="font-weight:bold;font-size:18px;color:#003366;margin-top:6px;">—</div>
     </div>
   </div>
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
@@ -194,141 +192,149 @@
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const lat = 32.4619, lng = -93.3486;
-    const now = new Date();
-    const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+    const nowLocal = new Date();
+    const fmtLocal = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
     // ---- SUN TIMES ----
-    let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
-    const today = now.toISOString().slice(0,10);
-    if (!sun || sun.date !== today) {
+    let sunData = JSON.parse(localStorage.getItem('sunCache') || 'null');
+    const todayStr = nowLocal.toISOString().slice(0,10);
+    if (!sunData || sunData.date !== todayStr) {
       fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
         .then(r => r.json())
         .then(j => {
           if (j.status === "OK") {
-            sun = {date: today, data: j.results};
-            localStorage.setItem('sunCache', JSON.stringify(sun));
+            sunData = {date: todayStr, data: j.results};
+            localStorage.setItem('sunCache', JSON.stringify(sunData));
           }
         })
         .catch(() => {});
     }
-    if (sun) {
-      document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
-      document.getElementById('rise').textContent   = fmt(new Date(sun.data.sunrise));
-      document.getElementById('set').textContent    = fmt(new Date(sun.data.sunset));
-      document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
+    if (sunData) {
+      document.getElementById('first').textContent = fmtLocal(new Date(sunData.data.civil_twilight_begin));
+      document.getElementById('rise').textContent  = fmtLocal(new Date(sunData.data.sunrise));
+      document.getElementById('set').textContent   = fmtLocal(new Date(sunData.data.sunset));
+      document.getElementById('last').textContent  = fmtLocal(new Date(sunData.data.civil_twilight_end));
     }
 
-    // ---- TRUE MOON TRANSIT / ANTITRANSIT ----
-    const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-1);
-    const end = new Date(start); end.setDate(end.getDate()+2);
-    let overhead = null, underfoot = null;
+    // ---- MOON TRANSIT / ANTITRANSIT IN UTC ----
+    const startUTC = new Date(Date.UTC(nowLocal.getUTCFullYear(), nowLocal.getUTCMonth(), nowLocal.getUTCDate()-1));
+    const endUTC = new Date(startUTC.getTime() + 3*24*60*60000); // 3 days in ms
+    let moonOverheadUTC = null, moonUnderfootUTC = null;
     let maxAlt = -90, minAlt = 90;
-    for (let t = start.getTime(); t <= end.getTime(); t += 60000) {
+
+    for (let t = startUTC.getTime(); t <= endUTC.getTime(); t += 60000) {
       const pos = SunCalc.getMoonPosition(new Date(t), lat, lng);
-      if (pos.altitude > maxAlt) { maxAlt = pos.altitude; overhead = new Date(t); }
-      if (pos.altitude < minAlt) { minAlt = pos.altitude; underfoot = new Date(t); }
+      if (pos.altitude > maxAlt) { maxAlt = pos.altitude; moonOverheadUTC = new Date(t); }
+      if (pos.altitude < minAlt) { minAlt = pos.altitude; moonUnderfootUTC = new Date(t); }
     }
 
-    // ---- JOHN ALDEN KNIGHT OFFSET TABLE ----
+    // ---- KNIGHT TABLE OFFSET ----
     const KNIGHT_OFFSET = {
       0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
       12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
       22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
     };
-    const illumData = SunCalc.getMoonIllumination(now);
-    const moonAge = Math.round(illumData.phase * 29.53);
+    const moonIllumData = SunCalc.getMoonIllumination(nowLocal);
+    const moonAge = Math.round(moonIllumData.phase * 29.53);
     const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
-
-    // ---- APPLY OFFSET AND SORT ----
     const OFFSET_SIGN = 1;
-    const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
+    const applyKnightUTC = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN*offsetMinutes*60000) : null;
 
-    const centers = [];
-    if (underfoot) centers.push(underfoot);
-    if (overhead) centers.push(overhead);
-    centers.sort((a,b) => a.getTime() - b.getTime());
+    const majorCentersUTC = [];
+    if (moonUnderfootUTC) majorCentersUTC.push(moonUnderfootUTC);
+    if (moonOverheadUTC) majorCentersUTC.push(moonOverheadUTC);
+    majorCentersUTC.sort((a,b) => a.getTime() - b.getTime());
+    const major1UTC = majorCentersUTC[0] ? applyKnightUTC(majorCentersUTC[0]) : null;
+    const major2UTC = majorCentersUTC[1] ? applyKnightUTC(majorCentersUTC[1]) : null;
 
-    const major1Center = centers[0] ? applyKnight(centers[0]) : null;
-    const major2Center = centers[1] ? applyKnight(centers[1]) : null;
-
-    const mkRange = (center, minutes) => {
-      if (!center) return '—';
-      const s = new Date(center.getTime() - minutes*60000);
-      const e = new Date(center.getTime() + minutes*60000);
-      return `${fmt(s)}–${fmt(e)}`;
+    const mkRangeLocal = (centerUTC, minutes) => {
+      if (!centerUTC) return '—';
+      const s = new Date(centerUTC.getTime() - minutes*60000);
+      const e = new Date(centerUTC.getTime() + minutes*60000);
+      return `${fmtLocal(s)}–${fmtLocal(e)}`;
     };
 
-    // ---- Display majors (bold = better period) ----
-    document.getElementById('maj1').innerHTML = mkRange(major1Center,60);
-    document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
+    document.getElementById('maj1').innerHTML = mkRangeLocal(major1UTC,60);
+    document.getElementById('maj2').innerHTML = `<b>${mkRangeLocal(major2UTC,60)}</b>`;
 
-    // ---- MINOR PERIODS (fixed) ----
-    const mtToday = SunCalc.getMoonTimes(now, lat, lng, true);
-    const mtTomorrow = SunCalc.getMoonTimes(new Date(now.getTime() + 86400000), lat, lng, true);
-    const mtYesterday = SunCalc.getMoonTimes(new Date(now.getTime() - 86400000), lat, lng, true);
+    // ---- MINOR PERIODS (moonrise/moonset ± 30 min) ----
+    const mtToday = SunCalc.getMoonTimes(nowLocal, lat, lng, true);
+    const tomorrow = new Date(nowLocal); tomorrow.setDate(tomorrow.getDate()+1);
+    const mtTomorrow = SunCalc.getMoonTimes(tomorrow, lat, lng, true);
 
-    const allMinors = [];
-    if (mtYesterday.set && mtYesterday.set > new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) {
-        allMinors.push(mtYesterday.set);
-    }
-    if (mtToday.rise) allMinors.push(mtToday.rise);
-    if (mtToday.set) allMinors.push(mtToday.set);
-    if (mtTomorrow.rise && mtTomorrow.rise < new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0)) {
-        allMinors.push(mtTomorrow.rise);
-    }
+    const allMinorsUTC = [];
+    [mtToday, mtTomorrow].forEach(mt => {
+      if (mt.rise) allMinorsUTC.push(mt.rise);
+      if (mt.set) allMinorsUTC.push(mt.set);
+    });
 
-    allMinors.sort((a,b) => a.getTime() - b.getTime());
-    const min1Center = allMinors[0] || null;
-    const min2Center = allMinors[1] || null;
+    const startDay = new Date(nowLocal); startDay.setHours(0,0,0,0);
+    const endDay = new Date(startDay); endDay.setDate(endDay.getDate()+1);
 
-    document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
-    document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center, 30)}</b>`;
+    const dayMinorsUTC = allMinorsUTC.filter(t => t >= startDay && t < endDay);
+    dayMinorsUTC.sort((a,b) => a.getTime() - b.getTime());
+
+    const minor1UTC = dayMinorsUTC[0] || null;
+    const minor2UTC = dayMinorsUTC[1] || null;
+
+    document.getElementById('min1').innerHTML = mkRangeLocal(minor1UTC,30);
+    document.getElementById('min2').innerHTML = `<b>${mkRangeLocal(minor2UTC,30)}</b>`;
 
     // ---- RATING & MOON PHASE ----
-    const illum = Math.round(illumData.fraction * 100);
-    const score = illum <= 10 || illum >= 90 ? 4 :
-                  illum <= 25 || illum >= 75 ? 3 :
-                  illum <= 40 || illum >= 60 ? 2 :
-                  illum <= 50 || illum >= 50 ? 1 : 0;
-    const words = ['Poor','Fair','Good','Better','Best'];
-    const stars = '★'.repeat(score) + '☆'.repeat(4 - score);
+    const illumPercent = Math.round(moonIllumData.fraction*100);
+    const scoreStars = illumPercent <= 10 || illumPercent >= 90 ? 4 :
+                       illumPercent <= 25 || illumPercent >= 75 ? 3 :
+                       illumPercent <= 40 || illumPercent >= 60 ? 2 : 1;
+    const wordsStars = ['Poor','Fair','Good','Better','Best'];
     document.getElementById('rating').innerHTML = `
-      <div style="font-size:36px;color:#003366;">${stars}</div>
-      <div style="font-size:24px;color:#003366;">${words[score]}</div>
+      <div style="font-size:36px;color:#003366;">${'★'.repeat(scoreStars)}${'☆'.repeat(4-scoreStars)}</div>
+      <div style="font-size:24px;color:#003366;">${wordsStars[scoreStars]}</div>
     `;
 
-    const phase = illumData.phase;
+    // ---- DAY RATING (UNIQUE VARIABLES) ----
+    const solunarDayScore = illumPercent <= 10 || illumPercent >= 90 ? 4 :
+                            illumPercent <= 25 || illumPercent >= 75 ? 3 :
+                            illumPercent <= 40 || illumPercent >= 60 ? 2 : 1;
+    const solunarDayWords = ['Poor','Fair','Good','Better','Best'];
+    document.getElementById('day-rating').textContent = `Day Rating: ${solunarDayWords[solunarDayScore]}`;
+
+    // ---- MOON PHASE IMAGE ----
     const phaseName =
-      phase < 0.03 ? 'New Moon' :
-      phase < 0.25 ? 'Waxing Crescent' :
-      phase < 0.26 ? 'First Quarter' :
-      phase < 0.50 ? 'Waxing Gibbous' :
-      phase < 0.51 ? 'Full Moon' :
-      phase < 0.75 ? 'Waning Gibbous' :
-      phase < 0.76 ? 'Last Quarter' :
+      moonIllumData.phase < 0.03 ? 'New Moon' :
+      moonIllumData.phase < 0.25 ? 'Waxing Crescent' :
+      moonIllumData.phase < 0.26 ? 'First Quarter' :
+      moonIllumData.phase < 0.50 ? 'Waxing Gibbous' :
+      moonIllumData.phase < 0.51 ? 'Full Moon' :
+      moonIllumData.phase < 0.75 ? 'Waning Gibbous' :
+      moonIllumData.phase < 0.76 ? 'Last Quarter' :
       'Waning Crescent';
 
     document.getElementById('phase').textContent = phaseName;
-    document.getElementById('illum').textContent = `${illum}% Illuminated`;
-    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-    const pct = Math.round(illum / 5) * 5;
-    const moonFile = illum === 0 ? 'newmoon.png' :
-                     illum === 100 ? 'fullmoon.png' :
-                     `${dir}${pct}.png`;
+    document.getElementById('illum').textContent = `${illumPercent}% Illuminated`;
+
+    const dirMoon = phaseName.includes('Waxing') ? 'wax' : 'wane';
+    const pctMoon = Math.round(illumPercent/5)*5;
+    const moonFile = illumPercent === 0 ? 'newmoon.png' :
+                     illumPercent === 100 ? 'fullmoon.png' :
+                     `${dirMoon}${pctMoon}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
+    // ---- HEADER DATES ----
     document.getElementById('header-date').textContent =
-      now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+      nowLocal.toLocaleDateString('en-US',{month:'long',day:'numeric'});
     document.getElementById('date').textContent =
-      now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+      nowLocal.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
   }, 500);
 });
 </script>
 
 
 
+
 </body>
 </html>
+
 
 
 
