@@ -287,18 +287,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('min1').innerHTML = mkRange(min1Center,30);
     document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center,30)}</b>`;
 
-    // ---- RATING & MOON PHASE ----
-    const illum = Math.round(illumData.fraction * 100);
-    const score = illum <= 10 || illum >= 90 ? 4 :
-                  illum <= 25 || illum >= 75 ? 3 :
-                  illum <= 40 || illum >= 60 ? 2 :
-                  illum <= 50 || illum >= 50 ? 1 : 0;
-    const words = ['Poor','Fair','Good','Better','Best'];
-    const stars = '★'.repeat(score) + '☆'.repeat(4 - score);
-    document.getElementById('rating').innerHTML = `
-      <div style="font-size:36px;color:#003366;">${stars}</div>
-      <div style="font-size:24px;color:#003366;">${words[score]}</div>
-    `;
+    // ---- SOLUNAR.ORG-STYLE DAY RATING (independent) ----
+const illumFraction = illumData.fraction; // 0–1
+let dayScore = 0;
+
+// Reverse-engineered cutoffs
+if (illumFraction <= 0.01) dayScore = 5;
+else if (illumFraction <= 0.03) dayScore = 3;
+else if (illumFraction <= 0.05) dayScore = 2;
+else if (illumFraction <= 0.1) dayScore = 1;
+else if (illumFraction <= 0.8) dayScore = 0;
+else if (illumFraction <= 0.88) dayScore = 0;
+else if (illumFraction <= 0.94) dayScore = 2;
+else if (illumFraction <= 0.986) dayScore = 3;
+else if (illumFraction <= 0.999) dayScore = 4;
+else if (illumFraction === 1) dayScore = 5;
+
+// Display rating
+const ratingWords = ['Poor','Fair','Good','Better','Best','Excellent'];
+const ratingStars = '★★★★★'.slice(0, dayScore);
+document.getElementById('rating').innerHTML = `
+  <div style="font-size:36px;color:#003366;">${ratingStars}</div>
+  <div style="font-size:24px;color:#003366;">${ratingWords[dayScore]}</div>
+`;
+
 
     const phase = illumData.phase;
     const phaseName =
@@ -330,3 +342,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
