@@ -190,7 +190,7 @@
     Updated <span id="date">—</span> – Refresh for latest
   </p>
 </div>
-
+    
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
 
     // ---- APPLY OFFSET AND SORT ----
-    const OFFSET_SIGN = 1; // try 1 first; if majors are early, switch to -1
+    const OFFSET_SIGN = 1;
     const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
 
     const centers = [];
@@ -264,9 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('maj1').innerHTML = mkRange(major1Center,60);
     document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
 
-    // ---- MINOR PERIODS ----
-    // More robust logic: compute moon times for both today and tomorrow,
-    // sort, and pick the two that fall within today's 24-hour span
+    // ---- MINOR PERIODS (FIXED LOCAL-UTC ALIGNMENT) ----
     const mtToday = SunCalc.getMoonTimes(now, lat, lng, true);
     const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
     const mtTomorrow = SunCalc.getMoonTimes(tomorrow, lat, lng, true);
@@ -276,8 +274,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mt.rise) allMinors.push(mt.rise);
       if (mt.set) allMinors.push(mt.set);
     });
-    const startDay = new Date(now); startDay.setHours(0,0,0,0);
-    const endDay = new Date(startDay); endDay.setDate(endDay.getDate()+1);
+
+    // Compensate for UTC offset
+    const tzOffset = now.getTimezoneOffset() * 60000; // ms
+    const startDay = new Date(now.getTime() - tzOffset);
+    startDay.setUTCHours(0,0,0,0);
+    const endDay = new Date(startDay);
+    endDay.setUTCDate(endDay.getUTCDate() + 1);
+
     const dayMinors = allMinors.filter(t => t >= startDay && t < endDay);
     dayMinors.sort((a,b) => a.getTime() - b.getTime());
 
@@ -289,17 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- RATING & MOON PHASE ----
     const illum = Math.round(illumData.fraction * 100);
-    const score = illum <= 10 || illum >= 90 ? 4 :
-                  illum <= 25 || illum >= 75 ? 3 :
-                  illum <= 40 || illum >= 60 ? 2 :
-                  illum <= 50 || illum >= 50 ? 1 : 0;
-    const words = ['Poor','Fair','Good','Better','Best'];
-    const stars = '★'.repeat(score) + '☆'.repeat(4 - score);
-    document.getElementById('rating').innerHTML = `
-      <div style="font-size:36px;color:#003366;">${stars}</div>
-      <div style="font-size:24px;color:#003366;">${words[score]}</div>
-    `;
-
+    document.getElementById('illum').textContent = `${illum}% Illuminated`;
     const phase = illumData.phase;
     const phaseName =
       phase < 0.03 ? 'New Moon' :
@@ -310,20 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
       phase < 0.75 ? 'Waning Gibbous' :
       phase < 0.76 ? 'Last Quarter' :
       'Waning Crescent';
-
     document.getElementById('phase').textContent = phaseName;
-    document.getElementById('illum').textContent = `${illum}% Illuminated`;
-    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-    const pct = Math.round(illum / 5) * 5;
-    const moonFile = illum === 0 ? 'newmoon.png' :
-                     illum === 100 ? 'fullmoon.png' :
-                     `${dir}${pct}.png`;
-    document.getElementById('moon-img').src = `/images/${moonFile}`;
-
-    document.getElementById('header-date').textContent =
-      now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-    document.getElementById('date').textContent =
-      now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }, 500);
 });
 </script>
@@ -331,5 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
 </body>
 </html>
+
