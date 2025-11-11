@@ -191,16 +191,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- SUN TIMES ----
     let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
-    const todayStr = now.toISOString().slice(0,10);
-    if (!sun || sun.date !== todayStr) {
+    const today = now.toISOString().slice(0,10);
+    if (!sun || sun.date !== today) {
       fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
         .then(r => r.json())
         .then(j => {
           if (j.status === "OK") {
-            sun = {date: todayStr, data: j.results};
+            sun = {date: today, data: j.results};
             localStorage.setItem('sunCache', JSON.stringify(sun));
           }
-        }).catch(()=>{});
+        })
+        .catch(() => {});
     }
     if (sun) {
       document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
@@ -230,13 +231,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const moonAge = Math.round(illumData.phase * 29.53);
     const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
 
+    // ---- APPLY OFFSET AND SORT ----
     const OFFSET_SIGN = 1;
     const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
 
     const centers = [];
     if (underfoot) centers.push(underfoot);
     if (overhead) centers.push(overhead);
-    centers.sort((a,b)=>a.getTime()-b.getTime());
+    centers.sort((a,b) => a.getTime() - b.getTime());
 
     const major1Center = centers[0] ? applyKnight(centers[0]) : null;
     const major2Center = centers[1] ? applyKnight(centers[1]) : null;
@@ -248,60 +250,78 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${fmt(s)}–${fmt(e)}`;
     };
 
-    // ---- Display Majors ----
+    // ---- Display majors (bold = better period) ----
     document.getElementById('maj1').innerHTML = mkRange(major1Center,60);
     document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
 
-    // ---- Minor Periods ----
+    // ---- MINOR PERIODS (fixed) ----
     const mtToday = SunCalc.getMoonTimes(now, lat, lng, true);
-    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
-    const mtTomorrow = SunCalc.getMoonTimes(tomorrow, lat, lng, true);
+    const mtTomorrow = SunCalc.getMoonTimes(new Date(now.getTime() + 86400000), lat, lng, true);
+    const mtYesterday = SunCalc.getMoonTimes(new Date(now.getTime() - 86400000), lat, lng, true);
 
     const allMinors = [];
-    [mtToday, mtTomorrow].forEach(mt => { if(mt.rise) allMinors.push(mt.rise); if(mt.set) allMinors.push(mt.set); });
+    if (mtYesterday.set && mtYesterday.set > new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) {
+        allMinors.push(mtYesterday.set);
+    }
+    if (mtToday.rise) allMinors.push(mtToday.rise);
+    if (mtToday.set) allMinors.push(mtToday.set);
+    if (mtTomorrow.rise && mtTomorrow.rise < new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0)) {
+        allMinors.push(mtTomorrow.rise);
+    }
 
-    const startDay = new Date(now); startDay.setHours(0,0,0,0);
-    const endDay = new Date(startDay); endDay.setDate(endDay.getDate()+1);
+    allMinors.sort((a,b) => a.getTime() - b.getTime());
+    const min1Center = allMinors[0] || null;
+    const min2Center = allMinors[1] || null;
 
-    const dayMinors = allMinors.filter(t => t >= startDay && t < endDay).sort((a,b)=>a.getTime()-b.getTime());
-    const min1Center = dayMinors[0] || null;
-    const min2Center = dayMinors[1] || null;
+    document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
+    document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center, 30)}</b>`;
 
-    document.getElementById('min1').innerHTML = mkRange(min1Center,30);
-    document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center,30)}</b>`;
-
-    // ---- Rating & Moon Phase ----
-    const illum = Math.round(illumData.fraction*100);
-    const score = illum<=10||illum>=90?4:
-                  illum<=25||illum>=75?3:
-                  illum<=40||illum>=60?2:
-                  illum<=50||illum>=50?1:0;
+    // ---- RATING & MOON PHASE ----
+    const illum = Math.round(illumData.fraction * 100);
+    const score = illum <= 10 || illum >= 90 ? 4 :
+                  illum <= 25 || illum >= 75 ? 3 :
+                  illum <= 40 || illum >= 60 ? 2 :
+                  illum <= 50 || illum >= 50 ? 1 : 0;
     const words = ['Poor','Fair','Good','Better','Best'];
-    const stars = '★'.repeat(score)+'☆'.repeat(4-score);
+    const stars = '★'.repeat(score) + '☆'.repeat(4 - score);
     document.getElementById('rating').innerHTML = `
       <div style="font-size:36px;color:#003366;">${stars}</div>
       <div style="font-size:24px;color:#003366;">${words[score]}</div>
     `;
 
     const phase = illumData.phase;
-    const phaseName = phase<0.03?'New Moon':phase<0.25?'Waxing Crescent':phase<0.26?'First Quarter':phase<0.50?'Waxing Gibbous':phase<0.51?'Full Moon':phase<0.75?'Waning Gibbous':phase<0.76?'Last Quarter':'Waning Crescent';
+    const phaseName =
+      phase < 0.03 ? 'New Moon' :
+      phase < 0.25 ? 'Waxing Crescent' :
+      phase < 0.26 ? 'First Quarter' :
+      phase < 0.50 ? 'Waxing Gibbous' :
+      phase < 0.51 ? 'Full Moon' :
+      phase < 0.75 ? 'Waning Gibbous' :
+      phase < 0.76 ? 'Last Quarter' :
+      'Waning Crescent';
+
     document.getElementById('phase').textContent = phaseName;
     document.getElementById('illum').textContent = `${illum}% Illuminated`;
-
-    const dir = phaseName.includes('Waxing')?'wax':'wane';
-    const pct = Math.round(illum/5)*5;
-    const moonFile = illum===0?'newmoon.png':illum===100?'fullmoon.png':`${dir}${pct}.png`;
+    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+    const pct = Math.round(illum / 5) * 5;
+    const moonFile = illum === 0 ? 'newmoon.png' :
+                     illum === 100 ? 'fullmoon.png' :
+                     `${dir}${pct}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    document.getElementById('header-date').textContent =
+      now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    document.getElementById('date').textContent =
+      now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }, 500);
 });
 </script>
 
 
+
 </body>
 </html>
+
 
 
 
