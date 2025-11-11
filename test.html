@@ -37,26 +37,33 @@
   });
 </script>
 
-<!-- LAKE BISTINEAU WEATHER – FINAL, 100% NWS, AUTO-RETRY, NO ERROR MESSAGE -->
+<!-- LAKE BISTINEAU WEATHER – FINAL, 100% NWS, HORIZONTAL CARDS, WORKING POPUP -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#003366;font-size:28px;">
     Lake Bistineau Weather
   </h2>
-  <div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;">
-    <div id="daily-cards">Loading NWS data…</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;overflow-x:auto;padding:10px 0;">
+    <div id="daily-cards" style="display:flex;gap:20px;">Loading NWS data…</div>
   </div>
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:20px;">
     Powered by National Weather Service – <span id="weather-date">—</span>
   </p>
 </div>
 
+<!-- POPUP OVERLAY -->
+<div id="popup-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:998;" onclick="closePopup()"></div>
+
 <script>
+function closePopup() {
+  document.getElementById('popup-overlay').style.display = 'none';
+  document.querySelectorAll('[id^="popup-"]').forEach(p => p.style.display = 'none');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const lat = 32.4619, lon = -93.3486;
   const now = new Date();
   const today = now.toISOString().slice(0,10);
 
-  // AUTO-RETRY FUNCTION
   async function fetchNWS(attempt = 1) {
     let cache = JSON.parse(localStorage.getItem('nwsFullCache') || 'null');
     if (cache && cache.date === today && Date.now() - cache.time < 900000) {
@@ -65,9 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {headers: {'User-Agent': 'LakeBistineauSite/1.0'}}).then(r => r.json());
-      const grid = point.properties;
+      const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+        headers: {'User-Agent': 'LakeBistineauSite/1.0 (louisianajedi@gmail.com)'}
+      }).then(r => r.json());
 
+      const grid = point.properties;
       const [dailyRes, hourlyRes] = await Promise.all([
         fetch(grid.forecast, {headers: {'User-Agent': 'LakeBistineauSite/1.0'}}),
         fetch(grid.forecastHourly, {headers: {'User-Agent': 'LakeBistineauSite/1.0'}})
@@ -80,20 +89,20 @@ document.addEventListener('DOMContentLoaded', () => {
       renderNWS(data);
     } catch (e) {
       if (attempt <= 5) {
-        document.getElementById('daily-cards').innerHTML = `Loading NWS… (attempt ${attempt}/5)`;
+        document.getElementById('daily-cards').innerHTML = `Loading NWS… (${attempt}/5)`;
         setTimeout(() => fetchNWS(attempt + 1), 3000);
       } else {
-        document.getElementById('daily-cards').innerHTML = '<p style="color:#666;text-align:center;">NWS slow – using cached data</p>';
-        if (cache) renderNWS(cache.data); // fall back to yesterday's cache if needed
+        document.getElementById('daily-cards').innerHTML = '<div style="color:#666;">Using cached data</div>';
+        if (cache) renderNWS(cache.data);
       }
     }
   }
 
   function renderNWS(data) {
-    const dailyPeriods = data.daily.periods;
     const hourlyPeriods = data.hourly.periods;
+    const dailyPeriods = data.daily.periods;
 
-    // GROUP HOURLY BY DATE
+    // Group hourly by date
     const hourlyByDate = {};
     hourlyPeriods.forEach(p => {
       const date = p.startTime.split('T')[0];
@@ -102,52 +111,62 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const dates = Object.keys(hourlyByDate).slice(0,5);
-    const cardsHTML = dates.map((date, i) => {
+    let cardsHTML = '';
+
+    dates.forEach((date, i) => {
       const hours = hourlyByDate[date];
       const temps = hours.map(h => h.temperature);
       const high = Math.max(...temps);
       const low = Math.min(...temps);
       const dayName = i === 0 ? 'Today' : new Date(date).toLocaleDateString('en-US', {weekday:'short'});
-      const icon = hours.find(h => h.isDaytime)?.icon || hours[0].icon;
+      const iconPeriod = hours.find(h => h.isDaytime) || hours[0];
+      const icon = iconPeriod.icon;
 
+      // 24-hour popup rows
       const rows = [];
       for (let h = 0; h < 24; h++) {
-        const period = hours.find(p => new Date(p.startTime).getHours() === h) || {temperature:'—', probabilityOfPrecipitation:{value:0}, icon:'https://api.weather.gov/icons/land/day/skc?size=small'};
+        const p = hours.find(x => new Date(x.startTime).getHours() === h) || {
+          temperature: '—', probabilityOfPrecipitation: {value:0}, icon: 'https://api.weather.gov/icons/land/day/skc?size=small', shortForecast: 'No data'
+        };
         const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
         const ampm = h < 12 ? 'AM' : 'PM';
         rows.push(`
-          <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">
-            <span>${displayH} ${ampm}</span>
-            <img src="${period.icon.replace('large', 'small')}" width="32">
-            <span>${period.temperature}°</span>
-            <span>${period.probabilityOfPrecipitation.value || 0}%</span>
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;align-items:center;">
+            <span style="width:50px;">${displayH} ${ampm}</span>
+            <img src="${p.icon.replace('large', 'small')}" width="32" height="32">
+            <span style="width:50px;text-align:right;font-weight:bold;">${p.temperature}°</span>
+            <span style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</span>
           </div>
         `);
       }
 
-      return `
-        <div style="background:#f8fdff;border-radius:12px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;width:150px;"
-             onclick="document.getElementById('popup-${i}').style.display='block'">
-          <div style="font-weight:bold;margin-bottom:8px;">${dayName}</div>
-          <img src="${icon.replace('large', 'medium')}" width="60">
+      cardsHTML += `
+        <div style="background:#f8fdff;border-radius:12px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;flex:0 0 150px;"
+             onclick="openPopup(${i})">
+          <div style="font-weight:bold;margin-bottom:8px;color:#003366;">${dayName}</div>
+          <img src="${icon.replace('large', 'medium')}" width="60" height="60">
           <div style="font-size:20px;margin:8px 0;"><b>${high}°</b>/<span style="color:#666;">${low}°</span></div>
-          <div style="font-size:13px;color:#333;">${hours[0].shortForecast}</div>
+          <div style="font-size:13px;color:#333;height:36px;overflow:hidden;">${iconPeriod.shortForecast}</div>
 
-          <div id="popup-${i}" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:999;width:340px;max-height:85vh;">
+          <!-- POPUP -->
+          <div id="popup-${i}" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;width:340px;max-height:85vh;">
             <div style="padding:15px;background:#003366;color:white;border-radius:12px 12px 0 0;text-align:center;position:relative;">
               <b>${dayName}, ${new Date(date).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</b>
-              <span onclick="this.parentElement.parentElement.style.display='none'" style="position:absolute;right:12px;top:12px;cursor:pointer;font-size:24px;">×</span>
+              <span onclick="closePopup()" style="position:absolute;right:12px;top:12px;cursor:pointer;font-size:28px;font-weight:bold;">×</span>
             </div>
             <div style="max-height:65vh;overflow-y:auto;">${rows.join('')}</div>
-            <button onclick="document.getElementById('popup-${i}').style.display='none'"
-                    style="width:100%;padding:12px;background:#003366;color:white;border:none;border-radius:0 0 12px 12px;cursor:pointer;font-size:16px;">Close</button>
+            <button onclick="closePopup()" style="width:100%;padding:12px;background:#003366;color:white;border:none;border-radius:0 0 12px 12px;cursor:pointer;font-size:16px;">Close</button>
           </div>
-        </div>
-      `;
-    }).join('');
+        </div>`;
+    });
 
     document.getElementById('daily-cards').innerHTML = cardsHTML;
     document.getElementById('weather-date').textContent = now.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+
+  function openPopup(i) {
+    document.getElementById('popup-overlay').style.display = 'block';
+    document.getElementById(`popup-${i}`).style.display = 'block';
   }
 
   fetchNWS();
@@ -331,6 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
