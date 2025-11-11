@@ -37,13 +37,13 @@
   });
 </script>
 
-<!-- LAKE BISTINEAU WEATHER – FINAL, 6 CARDS, POPUP WORKS, CORRECT DAYS -->
+<!-- LAKE BISTINEAU WEATHER – FINAL: 7 CARDS, NO SCROLL, POPUP WORKS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#003366;font-size:28px;">
     Lake Bistineau Weather
   </h2>
-  <div style="overflow-x:auto;padding:10px 0;">
-    <div id="daily-cards" style="display:flex;gap:20px;min-width:960px;">Loading NWS data…</div>
+  <div style="overflow:hidden;">
+    <div id="daily-cards" style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">Loading NWS data…</div>
   </div>
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:20px;">
     Powered by National Weather Service – <span id="weather-date">—</span>
@@ -89,10 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
       renderNWS(data);
     } catch (e) {
       if (attempt <= 5) {
-        document.getElementById('daily-cards').innerHTML = `<div style="padding:20px;color:#666;">Loading NWS… (${attempt}/5)</div>`;
+        document.getElementById('daily-cards').innerHTML = `Loading NWS… (${attempt}/5)`;
         setTimeout(() => fetchNWS(attempt + 1), 3000);
       } else {
-        document.getElementById('daily-cards').innerHTML = '<div style="padding:20px;color:#666;">Using cached data</div>';
+        document.getElementById('daily-cards').innerHTML = '<div style="color:#666;">Using cached data</div>';
         if (cache) renderNWS(cache.data);
       }
     }
@@ -109,10 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
       hourlyByDate[date].push(p);
     });
 
-    // Get next 6 dates starting TODAY
+    // Generate next 7 dates (Today + 6 more)
     const dates = [];
     const tempDate = new Date(today);
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       dates.push(tempDate.toISOString().slice(0,10));
       tempDate.setDate(tempDate.getDate() + 1);
     }
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dates.forEach((date, i) => {
       const hours = hourlyByDate[date] || [];
-      if (hours.length === 0) return; // skip if no data
+      if (hours.length === 0) return;
 
       const temps = hours.map(h => h.temperature);
       const high = Math.max(...temps);
@@ -150,17 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       cardsHTML += `
-        <div style="background:#f8fdff;border-radius:12px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;flex:0 0 150px;"
+        <div style="background:#f8fdff;border-radius:12px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;width:130px;flex:0 0 auto;"
              onclick="openPopup(${i})">
-          <div style="font-weight:bold;margin-bottom:8px;color:#003366;">${dayName}</div>
-          <img src="${icon.replace('large', 'medium')}" width="60" height="60">
-          <div style="font-size:20px;margin:8px 0;"><b>${high}°</b>/<span style="color:#666;">${low}°</span></div>
-          <div style="font-size:13px;color:#333;height:36px;overflow:hidden;">${iconPeriod.shortForecast}</div>
+          <div style="font-weight:bold;margin-bottom:8px;color:#003366;font-size:14px;">${dayName}</div>
+          <img src="${icon.replace('large', 'medium')}" width="56" height="56">
+          <div style="font-size:19px;margin:8px 0;"><b>${high}°</b>/<span style="color:#666;">${low}°</span></div>
+          <div style="font-size:12px;color:#333;height:32px;overflow:hidden;line-height:1.3;">
+            ${iconPeriod.shortForecast}
+          </div>
 
           <!-- POPUP -->
           <div id="popup-${i}" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;width:340px;max-height:85vh;">
             <div style="padding:15px;background:#003366;color:white;border-radius:12px 12px 0 0;text-align:center;position:relative;">
-              <b>${dayName}, ${new Date(date).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</b>
+              <b style="font-size:16px;">${dayName}, ${new Date(date).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</b>
               <span onclick="closePopup()" style="position:absolute;right:12px;top:12px;cursor:pointer;font-size:28px;font-weight:bold;">×</span>
             </div>
             <div style="max-height:65vh;overflow-y:auto;">${rows.join('')}</div>
@@ -329,8 +331,10 @@ if (illum >= 99 || illum <= 1) {
   dayRatingScore = 1; // Poor
 }
 
-const dayWords = ['Poor', 'Average', 'Good', 'Better', 'Best'];
-const dayStars = '★'.repeat(dayRatingScore) + '☆'.repeat(5 - dayRatingScore);
+const dayWords = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
+// Shift stars so "Poor" = 0 stars, "Fair" = 1 star, ..., "Best" = 4 stars
+const starCount = dayRatingScore - 1;
+const dayStars = '★'.repeat(starCount);
 
 document.getElementById('rating').innerHTML = `
   <div style="font-size:36px;color:#003366;">${dayStars}</div>
@@ -370,6 +374,7 @@ document.getElementById('rating').innerHTML = `
 
 </body>
 </html>
+
 
 
 
