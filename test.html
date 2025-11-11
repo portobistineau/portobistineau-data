@@ -37,13 +37,13 @@
   });
 </script>
 
-<!-- LAKE BISTINEAU WEATHER – FINAL, 100% NWS, HORIZONTAL CARDS, WORKING POPUP -->
+<!-- LAKE BISTINEAU WEATHER – FINAL, 6 CARDS, POPUP WORKS, CORRECT DAYS -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#003366;font-size:28px;">
     Lake Bistineau Weather
   </h2>
-  <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;overflow-x:auto;padding:10px 0;">
-    <div id="daily-cards" style="display:flex;gap:20px;">Loading NWS data…</div>
+  <div style="overflow-x:auto;padding:10px 0;">
+    <div id="daily-cards" style="display:flex;gap:20px;min-width:960px;">Loading NWS data…</div>
   </div>
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:20px;">
     Powered by National Weather Service – <span id="weather-date">—</span>
@@ -89,10 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
       renderNWS(data);
     } catch (e) {
       if (attempt <= 5) {
-        document.getElementById('daily-cards').innerHTML = `Loading NWS… (${attempt}/5)`;
+        document.getElementById('daily-cards').innerHTML = `<div style="padding:20px;color:#666;">Loading NWS… (${attempt}/5)</div>`;
         setTimeout(() => fetchNWS(attempt + 1), 3000);
       } else {
-        document.getElementById('daily-cards').innerHTML = '<div style="color:#666;">Using cached data</div>';
+        document.getElementById('daily-cards').innerHTML = '<div style="padding:20px;color:#666;">Using cached data</div>';
         if (cache) renderNWS(cache.data);
       }
     }
@@ -100,9 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderNWS(data) {
     const hourlyPeriods = data.hourly.periods;
-    const dailyPeriods = data.daily.periods;
 
-    // Group hourly by date
+    // Group by date
     const hourlyByDate = {};
     hourlyPeriods.forEach(p => {
       const date = p.startTime.split('T')[0];
@@ -110,11 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
       hourlyByDate[date].push(p);
     });
 
-    const dates = Object.keys(hourlyByDate).slice(0,5);
+    // Get next 6 dates starting TODAY
+    const dates = [];
+    const tempDate = new Date(today);
+    for (let i = 0; i < 6; i++) {
+      dates.push(tempDate.toISOString().slice(0,10));
+      tempDate.setDate(tempDate.getDate() + 1);
+    }
+
     let cardsHTML = '';
 
     dates.forEach((date, i) => {
-      const hours = hourlyByDate[date];
+      const hours = hourlyByDate[date] || [];
+      if (hours.length === 0) return; // skip if no data
+
       const temps = hours.map(h => h.temperature);
       const high = Math.max(...temps);
       const low = Math.min(...temps);
@@ -122,11 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const iconPeriod = hours.find(h => h.isDaytime) || hours[0];
       const icon = iconPeriod.icon;
 
-      // 24-hour popup rows
+      // 24-hour popup
       const rows = [];
       for (let h = 0; h < 24; h++) {
         const p = hours.find(x => new Date(x.startTime).getHours() === h) || {
-          temperature: '—', probabilityOfPrecipitation: {value:0}, icon: 'https://api.weather.gov/icons/land/day/skc?size=small', shortForecast: 'No data'
+          temperature: '—', probabilityOfPrecipitation: {value:0}, 
+          icon: 'https://api.weather.gov/icons/land/day/skc?size=small', shortForecast: 'No data'
         };
         const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
         const ampm = h < 12 ? 'AM' : 'PM';
@@ -350,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
