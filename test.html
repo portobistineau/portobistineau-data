@@ -77,18 +77,10 @@
       localStorage.setItem('nwsCache', JSON.stringify(data));
     }
 
-    // --- Current Conditions ---
+    // --- Current Observation (for temperature, feels-like, pressure) ---
     const p = data.obs;
     const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
     const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-
-    // Wind parsing
-    const windRaw = p.windSpeed?.value; // in m/s
-    const wind = windRaw !== null && !isNaN(windRaw) ? Math.round(windRaw * 2.23694) : 0;
-    const windDirDeg = p.windDirection?.value;
-    const dir = windDirDeg !== null && !isNaN(windDirDeg)
-      ? ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDirDeg/22.5)%16]
-      : '';
 
     const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
     let trend = '';
@@ -102,13 +94,23 @@
 
     const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 
-    // --- Use most recent hourly forecast for current conditions icon and description ---
+    // --- Closest hourly forecast (for icon, condition, wind) ---
     const nowDate = now.getTime();
-    const closestHourly = data.hourly.periods.reduce((a,b) => 
+    const closestHourly = data.hourly.periods.reduce((a,b) =>
       Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
     );
-    const currentIcon = closestHourly?.icon?.replace('medium','medium') || '';
+
+    const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
     const currentForecast = closestHourly?.shortForecast || '';
+
+    // Parse wind speed and direction from forecast string (e.g., "10 mph", "5 to 10 mph")
+    let windSpeedAvg = 0;
+    if (closestHourly?.windSpeed) {
+      const nums = closestHourly.windSpeed.match(/\d+/g)?.map(Number) || [];
+      if (nums.length === 1) windSpeedAvg = nums[0];
+      else if (nums.length === 2) windSpeedAvg = Math.round((nums[0] + nums[1]) / 2);
+    }
+    const windDir = closestHourly?.windDirection || '';
 
     const currentHTML = `
       <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
@@ -119,7 +121,7 @@
         </div>
         <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
         <div style="font-size:14px;line-height:1.6;">
-          Wind ${wind} mph ${dir}<br>
+          Wind ${windSpeedAvg} mph ${windDir}<br>
           Pressure ${pressure} inHg ${trend}<br>
         </div>
       </div>`;
@@ -195,14 +197,9 @@
       document.getElementById('dayDetail').style.display = 'block';
       document.getElementById('overlay').style.display = 'block';
     };
-
   })();
   </script>
 </div>
-
-
-
-
     
 <!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
@@ -390,6 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
