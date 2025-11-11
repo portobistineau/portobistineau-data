@@ -186,12 +186,14 @@ window.showDetail = function(dayIndex) {
 </div>
 
     
-<!-- TODAY’S BITE FORECAST – FINAL, KNIGHT TABLE (PUBLIC DOMAIN, EXACT SOLUNAR.ORG) -->
+<!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Times for <span id="header-date">—</span>
   </h2>
+
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <!-- LEFT COLUMN: TIMES -->
     <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
       <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
         <b>First Light</b> <div id="first" style="text-align:right;">Calculating…</div>
@@ -207,6 +209,8 @@ window.showDetail = function(dayIndex) {
         <b>Bold</b> periods indicate the stronger feeding time of each group.
       </p>
     </div>
+
+    <!-- RIGHT COLUMN: MOON / RATING -->
     <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
       <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Calculating…</div>
       <div id="moon-bg" style="width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
@@ -216,6 +220,7 @@ window.showDetail = function(dayIndex) {
       <div id="illum" style="color:#000;font-size:16px;">—</div>
     </div>
   </div>
+
   <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
     Updated <span id="date">—</span> – Refresh for latest
   </p>
@@ -261,19 +266,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pos.altitude < minAlt) { minAlt = pos.altitude; underfoot = new Date(t); }
     }
 
-    // ---- JOHN ALDEN KNIGHT OFFSET TABLE ----
+    // ---- KNIGHT OFFSET TABLE ----
     const KNIGHT_OFFSET = {
       0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
       12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
       22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
     };
-    const illumData = SunCalc.getMoonIllumination(now);
+
+    // ---- MOON ILLUMINATION (LOCAL MIDNIGHT FIX) ----
+    const localMidnight = new Date();
+    localMidnight.setHours(0, 0, 0, 0);
+    const illumData = SunCalc.getMoonIllumination(localMidnight);
     const moonAge = Math.round(illumData.phase * 29.53);
     const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
 
-    // ---- APPLY OFFSET AND SORT ----
-    const OFFSET_SIGN = 1;
-    const applyKnight = dt => dt ? new Date(dt.getTime() + OFFSET_SIGN * offsetMinutes * 60000) : null;
+    const applyKnight = dt => dt ? new Date(dt.getTime() + offsetMinutes * 60000) : null;
 
     const centers = [];
     if (underfoot) centers.push(underfoot);
@@ -290,58 +297,48 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${fmt(s)}–${fmt(e)}`;
     };
 
-    // ---- Display majors (bold = better period) ----
-    document.getElementById('maj1').innerHTML = mkRange(major1Center,60);
-    document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center,60)}</b>`;
+    document.getElementById('maj1').innerHTML = mkRange(major1Center, 60);
+    document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center, 60)}</b>`;
 
-    // ---- MINOR PERIODS (fixed) ----
-    const mtToday = SunCalc.getMoonTimes(now, lat, lng, true);
-    const mtTomorrow = SunCalc.getMoonTimes(new Date(now.getTime() + 86400000), lat, lng, true);
-    const mtYesterday = SunCalc.getMoonTimes(new Date(now.getTime() - 86400000), lat, lng, true);
+    // ---- FIXED MINOR PERIOD LOGIC ----
+    const todayStart = new Date(now);
+    todayStart.setHours(0,0,0,0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setHours(23,59,59,999);
 
-    const allMinors = [];
-    if (mtYesterday.set && mtYesterday.set > new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) {
-        allMinors.push(mtYesterday.set);
-    }
-    if (mtToday.rise) allMinors.push(mtToday.rise);
-    if (mtToday.set) allMinors.push(mtToday.set);
-    if (mtTomorrow.rise && mtTomorrow.rise < new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0)) {
-        allMinors.push(mtTomorrow.rise);
-    }
+    const mtToday = SunCalc.getMoonTimes(todayStart, lat, lng, true);
+    const mtTomorrow = SunCalc.getMoonTimes(new Date(todayStart.getTime() + 86400000), lat, lng, true);
 
-    allMinors.sort((a,b) => a.getTime() - b.getTime());
-    const min1Center = allMinors[0] || null;
-    const min2Center = allMinors[1] || null;
+    const minorCenters = [];
+    if (mtToday.rise && mtToday.rise >= todayStart && mtToday.rise <= todayEnd) minorCenters.push(mtToday.rise);
+    if (mtToday.set && mtToday.set >= todayStart && mtToday.set <= todayEnd) minorCenters.push(mtToday.set);
+    if (mtTomorrow.rise && mtTomorrow.rise < new Date(todayEnd.getTime() + 2*3600000))
+      minorCenters.push(mtTomorrow.rise);
+
+    minorCenters.sort((a,b)=>a-b);
+    const min1Center = minorCenters[0] || null;
+    const min2Center = minorCenters[1] || null;
 
     document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
     document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center, 30)}</b>`;
 
-    // ---- DAY RATING (based on solunar.org pattern) ----
-const illum = Math.round(illumData.fraction * 100);
-let dayRatingScore;
+    // ---- RATING ----
+    const illum = Math.round(illumData.fraction * 100);
+    let score = 1;
+    if (illum >= 99 || illum <= 1) score = 5;
+    else if (illum >= 95 || illum <= 5) score = 4;
+    else if (illum >= 90 || illum <= 10) score = 3;
+    else if (illum >= 80 || illum <= 20) score = 2;
+    else score = 1;
 
-if (illum >= 99 || illum <= 1) {
-  dayRatingScore = 5; // Best
-} else if (illum >= 95 || illum <= 5) {
-  dayRatingScore = 4; // Better
-} else if (illum >= 90 || illum <= 10) {
-  dayRatingScore = 3; // Good
-} else if (illum >= 80 || illum <= 20) {
-  dayRatingScore = 2; // Average
-} else {
-  dayRatingScore = 1; // Poor
-}
+    const labels = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
+    const stars = '★'.repeat(score - 1);
+    document.getElementById('rating').innerHTML = `
+      <div style="font-size:36px;color:#003366;">${stars}</div>
+      <div style="font-size:24px;color:#003366;">${labels[score - 1]}</div>
+    `;
 
-const dayWords = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
-// Shift stars so "Poor" = 0 stars, "Fair" = 1 star, ..., "Best" = 4 stars
-const starCount = dayRatingScore - 1;
-const dayStars = '★'.repeat(starCount);
-
-document.getElementById('rating').innerHTML = `
-  <div style="font-size:36px;color:#003366;">${dayStars}</div>
-  <div style="font-size:24px;color:#003366;">${dayWords[dayRatingScore - 1]}</div>
-`;
-
+    // ---- MOON PHASE / IMAGE ----
     const phase = illumData.phase;
     const phaseName =
       phase < 0.03 ? 'New Moon' :
@@ -362,10 +359,9 @@ document.getElementById('rating').innerHTML = `
                      `${dir}${pct}.png`;
     document.getElementById('moon-img').src = `/images/${moonFile}`;
 
-    document.getElementById('header-date').textContent =
-      now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-    document.getElementById('date').textContent =
-      now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    // ---- DATE LABELS ----
+    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }, 500);
 });
 </script>
@@ -373,8 +369,10 @@ document.getElementById('rating').innerHTML = `
 
 
 
+
 </body>
 </html>
+
 
 
 
