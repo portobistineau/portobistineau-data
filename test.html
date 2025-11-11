@@ -313,18 +313,29 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
     document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center, 30)}</b>`;
 
-    // ---- RATING & MOON PHASE ----
-    const illum = Math.round(illumData.fraction * 100);
-    const score = illum <= 10 || illum >= 90 ? 4 :
-                  illum <= 25 || illum >= 75 ? 3 :
-                  illum <= 40 || illum >= 60 ? 2 :
-                  illum <= 50 || illum >= 50 ? 1 : 0;
-    const words = ['Poor','Fair','Good','Better','Best'];
-    const stars = '★'.repeat(score) + '☆'.repeat(4 - score);
-    document.getElementById('rating').innerHTML = `
-      <div style="font-size:36px;color:#003366;">${stars}</div>
-      <div style="font-size:24px;color:#003366;">${words[score]}</div>
-    `;
+    // ---- DAY RATING (based on solunar.org pattern) ----
+const illum = Math.round(illumData.fraction * 100);
+let dayRatingScore;
+
+if (illum >= 99 || illum <= 1) {
+  dayRatingScore = 5; // Best
+} else if (illum >= 95 || illum <= 5) {
+  dayRatingScore = 4; // Better
+} else if (illum >= 90 || illum <= 10) {
+  dayRatingScore = 3; // Good
+} else if (illum >= 80 || illum <= 20) {
+  dayRatingScore = 2; // Average
+} else {
+  dayRatingScore = 1; // Poor
+}
+
+const dayWords = ['Poor', 'Average', 'Good', 'Better', 'Best'];
+const dayStars = '★'.repeat(dayRatingScore) + '☆'.repeat(5 - dayRatingScore);
+
+document.getElementById('rating').innerHTML = `
+  <div style="font-size:36px;color:#003366;">${dayStars}</div>
+  <div style="font-size:24px;color:#003366;">${dayWords[dayRatingScore - 1]}</div>
+`;
 
     const phase = illumData.phase;
     const phaseName =
@@ -359,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
