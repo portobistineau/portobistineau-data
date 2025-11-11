@@ -37,7 +37,7 @@
   });
 </script>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (FINAL: TRUE 00:00-23:59 DAILY HIGHS/LOWS) -->
+<!-- Weather - NATIONAL WEATHER SERVICE (FINAL: NEVER STUCK ON LOADING) -->
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
   <div id="bistineauWeather">Loading NWS data...</div>
@@ -47,118 +47,121 @@
   (async () => {
     const lat = 32.4066, lon = -93.3906;
     const today = new Date().toISOString().slice(0,10);
+    
     // FULLY CACHED – ONE FETCH PER DAY
     let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
     if (!data || data.date !== today) {
-      document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+      document.getElementById('bistineauWeather').innerHTML = 'Fetching NWS forecast...';
       let grid;
       try {
-        const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`).then(r => r.json());
+        const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+          headers: {'User-Agent': 'LakeBistineauSite/1.0 (louisianajedi@gmail.com)'}
+        }).then(r => r.json());
         grid = point.properties;
       } catch(e) { 
-        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; 
+        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:#666;">Using cached data...</div>';
+        if (data) render(data);
         return; 
       }
-      const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
-        fetch(grid.observationStations),
-        fetch(grid.forecast),
-        fetch(grid.forecastHourly)
-      ]);
-      const stations = await stationsRes.json();
-      const station = stations.observationStations[0];
-      const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
-      const daily = await dailyRes.json();
-      const hourly = await hourlyRes.json();
-      data = {date: today, grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties};
-      localStorage.setItem('nwsCache', JSON.stringify(data));
+
+      try {
+        const [dailyRes, hourlyRes] = await Promise.all([
+          fetch(grid.forecast, {headers: {'User-Agent': 'LakeBistineauSite/1.0'}}),
+          fetch(grid.forecastHourly, {headers: {'User-Agent': 'LakeBistineauSite/1.0'}})
+        ]);
+        const daily = await dailyRes.json();
+        const hourly = await hourlyRes.json();
+        data = {date: today, daily: daily.properties, hourly: hourly.properties};
+        localStorage.setItem('nwsCache', JSON.stringify(data));
+      } catch(e) {
+        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:#666;">Using cached data...</div>';
+        if (data) render(data);
+        return;
+      }
     }
+    render(data);
 
-    // CURRENT OBSERVED (unchanged)
-    const p = data.obs;
-    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-    const wind = Math.round(p.windSpeed.value * 2.23694) || 0;
-    const windDir = p.windDirection.value || 0;
-    const dir = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(windDir/22.5)%16];
-    const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
-    let trend = '';
-    const change = p.pressureChange?.value;
-    if (change !== null) {
-      const inches = change / 3386.39;
-      if (Math.abs(inches) < 0.02) trend = '(steady)';
-      else if (inches > 0) trend = '(rising)';
-      else trend = '(falling)';
-    }
-    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
-        <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
-        <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
-        <div style="font-size:14px;line-height:1.6;">
-          Wind ${wind} mph ${dir}<br>
-          Pressure ${pressure} inHg ${trend}<br>
-        </div>
-      </div>`;
+    function render(data) {
+      // CURRENT TEMP FROM HOURLY (NEVER FAILS)
+      const now = new Date();
+      const recent = data.hourly.periods
+        .filter(p => new Date(p.startTime) <= now)
+        .sort((a,b) => new Date(b.startTime) - new Date(a.startTime))[0];
+      const currentTemp = recent ? recent.temperature : '—';
+      const wind = recent ? recent.windSpeed.replace(' mph','') : '—';
+      const dir = recent ? recent.windDirection : '—';
+      const pressure = recent && recent.barometricPressure ? (recent.barometricPressure.value / 3386.39).toFixed(2) : '—';
+      const timeStr = recent ? new Date(recent.startTime).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}) : '—';
 
-    // GROUP HOURLY BY CALENDAR DATE (00:00–23:59)
-    const hourlyByDate = {};
-    data.hourly.properties.periods.forEach(p => {
-      const date = p.startTime.split('T')[0];
-      if (!hourlyByDate[date]) hourlyByDate[date] = [];
-      hourlyByDate[date].push(p);
-    });
-
-    // BUILD 7-DAY CARDS USING TRUE 24H HIGHS/LOWS
-    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
-    const dates = Object.keys(hourlyByDate).slice(0,7);
-    dates.forEach((date, i) => {
-      const hours = hourlyByDate[date];
-      const temps = hours.map(h => h.temperature);
-      const hi = Math.max(...temps);
-      const lo = Math.min(...temps);
-      const dayName = i === 0 ? 'Today' : new Date(date).toLocaleDateString('en-US', {weekday: 'short'});
-      const iconPeriod = hours.find(h => h.isDaytime) || hours[0];
-      const icon = iconPeriod.icon.replace('large', 'medium');
-
-      forecastHTML += `
-        <div onclick="showDetail('${date}')" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
-          <div style="font-weight:bold;color:#003366;">${dayName}</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-            <img src="${icon}" width="48" height="48">
-          </div>
-          <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
-          <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-            ${iconPeriod.shortForecast}
+      const currentHTML = `
+        <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+          <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
+          <div style="color:#666;margin-bottom:8px;">As of ${timeStr}</div>
+          <div style="font-size:14px;line-height:1.6;">
+            Wind ${wind} mph ${dir}<br>
+            Pressure ${pressure} inHg<br>
           </div>
         </div>`;
-    });
-    forecastHTML += '</div>';
-    document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
 
-    // POPUP – FIXED SPACING + USES EXACT DATE
-    window.showDetail = function(date) {
-      const periods = hourlyByDate[date] || [];
-      const dayName = date === today ? 'Today' : new Date(date).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
-      let detailHTML = `<h3 style="margin-top:0;text-align:center;">${dayName}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-      periods.forEach(p => {
-        const time = new Date(p.startTime).toLocaleTimeString('en-US',{hour:'numeric'});
-        const temp = p.temperature;
-        const windStr = p.windSpeed.replace(' mph', '');
-        const dir = p.windDirection;
-        detailHTML += `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
-            <div style="width:50px;">${time}</div>
-            <img src="${p.icon.replace('large', 'small')}" width="32" height="32">
-            <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-            <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
-            <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
+      // TRUE 24H HIGHS/LOWS
+      const hourlyByDate = {};
+      data.hourly.periods.forEach(p => {
+        const date = p.startTime.split('T')[0];
+        if (!hourlyByDate[date]) hourlyByDate[date] = [];
+        hourlyByDate[date].push(p);
+      });
+
+      let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
+      const dates = Object.keys(hourlyByDate).slice(0,7);
+      dates.forEach((date, i) => {
+        const hours = hourlyByDate[date];
+        const temps = hours.map(h => h.temperature);
+        const hi = Math.max(...temps);
+        const lo = Math.min(...temps);
+        const dayName = i === 0 ? 'Today' : new Date(date).toLocaleDateString('en-US', {weekday: 'short'});
+        const iconPeriod = hours.find(h => h.isDaytime) || hours[0];
+        const icon = iconPeriod.icon.replace('large', 'medium');
+
+        forecastHTML += `
+          <div onclick="showDetail('${date}')" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="font-weight:bold;color:#003366;">${dayName}</div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+              <img src="${icon}" width="48" height="48">
+            </div>
+            <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
+            <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+              ${iconPeriod.shortForecast}
+            </div>
           </div>`;
       });
-      detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
-      document.getElementById('dayDetail').innerHTML = detailHTML;
-      document.getElementById('dayDetail').style.display = 'block';
-      document.getElementById('overlay').style.display = 'block';
-    };
+      forecastHTML += '</div>';
+      document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
+
+      // POPUP
+      window.showDetail = function(date) {
+        const periods = hourlyByDate[date] || [];
+        const dayName = date === today ? 'Today' : new Date(date).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+        let detailHTML = `<h3 style="margin-top:0;text-align:center;">${dayName}</h3><div style="max-height:60vh;overflow-y:auto;">`;
+        periods.forEach(p => {
+          const time = new Date(p.startTime).toLocaleTimeString('en-US',{hour:'numeric'});
+          const temp = p.temperature;
+          const windStr = p.windSpeed.replace(' mph', '');
+          const dir = p.windDirection;
+          detailHTML += `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
+              <div style="width:50px;">${time}</div>
+              <img src="${p.icon.replace('large', 'small')}" width="32" height="32">
+              <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
+              <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
+              <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
+            </div>`;
+        });
+        detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
+        document.getElementById('dayDetail').innerHTML = detailHTML;
+        document.getElementById('dayDetail').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+      };
+    }
   })();
   </script>
 </div>
@@ -353,6 +356,7 @@ document.getElementById('rating').innerHTML = `
 
 </body>
 </html>
+
 
 
 
