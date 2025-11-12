@@ -365,20 +365,29 @@ document.addEventListener('DOMContentLoaded', () => {
       phase < 0.76 ? 'Last Quarter' :
       'Waning Crescent';
 
-    // ---- MOON IMAGE WITH CUSTOM RANGES (NO ROUNDING) ----
+    // ---- MOON PHASE / ILLUMINATION / IMAGE ----
+
+// Display phase name and illumination percentage
+document.getElementById('phase').textContent = phaseName;
+document.getElementById('illum').textContent = `${illum}% Illuminated`;
+
+// Determine moon image
 let moonFile = '';
 
 if (illum === 0) {
+  // New Moon
   moonFile = 'newmoon.png';
 } else if (illum === 100) {
+  // Full Moon
   moonFile = 'fullmoon.png';
 } else if (phaseName.includes('First Quarter')) {
   moonFile = 'firstquart.png';
 } else if (phaseName.includes('Last Quarter')) {
   moonFile = 'lastquart.png';
 } else {
+  // Waxing or Waning
   const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-  let pct = illum; // use exact value
+  let pct = illum; // Use exact illumination value
 
   // Custom ranges for missing images
   if (pct > 45 && pct < 50) pct = 45;
@@ -390,7 +399,9 @@ if (illum === 0) {
   moonFile = `${dir}${pct}.png`;
 }
 
+// Set the image source
 document.getElementById('moon-img').src = `/images/${moonFile}`;
+
 
 
     // ---- DATE LABELS ----
@@ -406,6 +417,7 @@ document.getElementById('moon-img').src = `/images/${moonFile}`;
 
 </body>
 </html>
+
 
 
 
