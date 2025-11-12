@@ -1,0 +1,57 @@
+name: Update Solunar Data
+
+# Controls when the action will run.
+on:
+  # Allows manual run from the GitHub Actions tab (best way to test)
+  workflow_dispatch:
+  
+  # Trigger on push to the 'dev' branch
+  push:
+    branches:
+      - dev
+      
+  # Schedule to run every day at 01:00 UTC, but only on the main branch (or the one it's merged into later)
+  # NOTE: To prevent the dev branch from running daily schedules, we typically limit it to main later.
+  # For now, we will leave the cron job enabled for initial testing.
+  schedule:
+    - cron: '0 1 * * *'
+
+# Defines the jobs that will run in this workflow
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    # Only run the steps if the branch is 'dev'
+    if: github.ref == 'refs/heads/dev'
+
+    # Permissions needed for the job (CRUCIAL for committing files)
+    permissions:
+      contents: write # Allows the job to write/commit files
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for commit operations
+          ref: dev # Explicitly check out the dev branch
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' 
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyephem
+
+      - name: Run Solunar Calculation Script
+        run: python calculate_solunar.py
+
+      - name: Commit New Data File
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: solunar_data.json 
+          commit_message: "🤖 AUTO: Update solunar data cache on dev branch"
+          commit_user_name: 'github-actions[bot]'
+          commit_user_email: 'github-actions[bot]@users.noreply.github.com'
