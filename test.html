@@ -365,14 +365,33 @@ document.addEventListener('DOMContentLoaded', () => {
       phase < 0.76 ? 'Last Quarter' :
       'Waning Crescent';
 
-    document.getElementById('phase').textContent = phaseName;
-    document.getElementById('illum').textContent = `${illum}% Illuminated`;
-    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-    const pct = Math.round(illum / 5) * 5;
-    const moonFile = illum === 0 ? 'newmoon.png' :
-                     illum === 100 ? 'fullmoon.png' :
-                     `${dir}${pct}.png`;
-    document.getElementById('moon-img').src = `/images/${moonFile}`;
+    // ---- MOON IMAGE WITH CUSTOM RANGES (NO ROUNDING) ----
+let moonFile = '';
+
+if (illum === 0) {
+  moonFile = 'newmoon.png';
+} else if (illum === 100) {
+  moonFile = 'fullmoon.png';
+} else if (phaseName.includes('First Quarter')) {
+  moonFile = 'firstquart.png';
+} else if (phaseName.includes('Last Quarter')) {
+  moonFile = 'lastquart.png';
+} else {
+  const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+  let pct = illum; // use exact value
+
+  // Custom ranges for missing images
+  if (pct > 45 && pct < 50) pct = 45;
+  else if (pct > 50 && pct < 55) pct = 55;
+
+  // Specific exception for waning
+  if (dir === 'wane' && pct === 33) pct = 32;
+
+  moonFile = `${dir}${pct}.png`;
+}
+
+document.getElementById('moon-img').src = `/images/${moonFile}`;
+
 
     // ---- DATE LABELS ----
     document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
@@ -387,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
