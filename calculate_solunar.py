@@ -24,13 +24,16 @@ def calculate_data():
         date = start_date + timedelta(days=i)
         location.date = date
 
-        # Calculate Moon Transit (a Major Period)
-        # Note: This is a simplification; a full solunar system needs more complex calculations (upper/lower transit, moonrise/set).
-        next_transit = location.next_moontransit()
+        # Calculate Moon Transit (a Major Period) - FIX IS HERE
+        moon = ephem.Moon() # Define the Moon object
+        location.next_transit(moon) # Calculate and set the time
         
+        # Now use the Moon object's datetime property for the time
+        next_transit_dt = ephem.date(moon.transit_time).datetime().strftime("%Y-%m-%d %H:%M:%S UTC")
+
         data.append({
             "date": date.strftime("%Y-%m-%d"),
-            "major_time_utc": str(next_transit),
+            "major_time_utc": next_transit_dt,
             "info": "This is a placeholder for a full solunar calculation."
         })
     
