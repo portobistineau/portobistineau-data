@@ -90,7 +90,7 @@ def calculate_data():
         
         # --- Final Data Collation (Only for the target date) ---
         data_key = target_date.strftime("%Y-%m-%d")
-        if target_date.date() == datetime.now().date(): # Only store data for today and tomorrow, etc.
+        if target_date == datetime.now().date(): # Only store data for today and tomorrow, etc.
             full_data[data_key] = {
                 "date": data_key,
                 # Format to ISO 8601 UTC string for easy JS handling
