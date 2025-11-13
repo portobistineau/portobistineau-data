@@ -273,17 +273,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ----------------------------------------------------------------------
-    // --- START: NEW ACCURATE SOLUNAR DATA INTEGRATION ---
-    // ----------------------------------------------------------------------
+// --- START: NEW ACCURATE SOLUNAR DATA INTEGRATION ---
+// ----------------------------------------------------------------------
 
-    const todayKey = now.toISOString().slice(0, 10); // e.g., "2025-11-13"
+const todayKey = now.toISOString().slice(0, 10); // e.g., "2025-11-13"
 
-    fetch('/solunar_data.json')
-      .then(response => {
-        if (!response.ok) throw new Error("Could not fetch data.");
-        return response.json();
-      })
-      .then(fullData => {
+// --- ADD CACHE-BUSTING HERE ---
+const timestamp = new Date().getTime();
+fetch(`/solunar_data.json?t=${timestamp}`) // Use the new unique URL here
+  .then(response => {
+    if (!response.ok) throw new Error("Could not fetch data.");
+    return response.json();
+  })
+  .then(fullData => {
         const dayData = fullData[todayKey];
         if (!dayData) throw new Error("Data missing for today.");
 
@@ -491,6 +493,7 @@ document.getElementById('moon-img').src = `/images/${moonFile}`;
 
 </body>
 </html>
+
 
 
 
