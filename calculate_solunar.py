@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, time
 import json
 from pytz import timezone # Import timezone for robust date handling
 
-# --- Configuration (Minden, LA) ---
+# --- Configuration (Lake Bistineau, LA) ---
 LATITUDE = '32.4619'  
 LONGITUDE = '-93.3486'
 OUTPUT_FILE = 'solunar_data.json'
@@ -51,7 +51,7 @@ def calculate_data():
         location.date = search_start
         
         all_major_events = []
-        for _ in range(4): # Find up to 4 events
+        for _ in range(6): # Find up to 6 events (3 Transits, 3 Anti-transits)
             
             t = location.next_transit(moon)
             all_major_events.append(t.datetime())
