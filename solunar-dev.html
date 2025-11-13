@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 const moonAge = dayData.moon_age;
-                const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
+                const offsetMinutes = 0; // TEMPORARILY SET TO ZERO FOR TESTING
                 
                 // Function to apply the Knight offset after converting from UTC string
                 const applyKnight = utcStr => {
@@ -374,25 +374,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 // ---- MOON PHASE / IMAGE (Using accurate JSON data) ----
                 const phaseFraction = dayData.moon_age / 29.53; // Reconstruct phase fraction (0 to 1)
                 
-                // --- CORRECTED PHASE NAMING LOGIC ---
-                let phaseName;
-                if (phaseFraction < 0.03 || phaseFraction > 0.97) {
-                    phaseName = 'New Moon';
-                } else if (phaseFraction < 0.25) {
-                    phaseName = 'Waxing Crescent';
-                } else if (phaseFraction < 0.26) {
-                    phaseName = 'First Quarter';
-                } else if (phaseFraction < 0.50) {
-                    phaseName = 'Waxing Gibbous';
-                } else if (phaseFraction < 0.53) {
-                    phaseName = 'Full Moon';
-                } else if (phaseFraction < 0.75) {
-                    phaseName = 'Waning Gibbous';
-                } else if (phaseFraction < 0.76) {
-                    phaseName = 'Last Quarter';
-                } else {
-                    phaseName = 'Waning Crescent'; 
-                }
+                // --- CORRECTED PHASE NAMING LOGIC (Using Illumination for Full/New Moon) ---
+let phaseName;
+const actualIllum = Math.round(illum); // Use the rounded illumination
+
+if (actualIllum >= 99) { // Illumination-based check for Full Moon
+    phaseName = 'Full Moon';
+} else if (actualIllum <= 1) { // Illumination-based check for New Moon
+    phaseName = 'New Moon';
+} else if (phaseFraction < 0.25) {
+    phaseName = 'Waxing Crescent';
+} else if (phaseFraction < 0.26) {
+    phaseName = 'First Quarter';
+} else if (phaseFraction < 0.50) {
+    phaseName = 'Waxing Gibbous';
+} else if (phaseFraction < 0.53) { // Now only catches fractions slightly above 0.5, which is correct
+    phaseName = 'Waning Gibbous';
+} else if (phaseFraction < 0.75) {
+    phaseName = 'Waning Gibbous'; // Consolidated Gibbous period
+} else if (phaseFraction < 0.76) {
+    phaseName = 'Last Quarter';
+} else {
+    phaseName = 'Waning Crescent'; 
+}
                 
                 // Display phase name and illumination percentage
                 document.getElementById('phase').textContent = phaseName;
@@ -443,6 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
