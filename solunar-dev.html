@@ -342,17 +342,29 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         
         // ---- MOON PHASE / IMAGE (Use the more accurate moon_age and illum) ----
-        const phase = dayData.moon_age / 29.53; // Reconstruct phase fraction
-        const phaseName =
-          phase < 0.03 ? 'New Moon' :
-          phase < 0.25 ? 'Waxing Crescent' :
-          phase < 0.26 ? 'First Quarter' :
-          phase < 0.50 ? 'Waxing Gibbous' :
-          phase < 0.51 ? 'Full Moon' :
-          phase < 0.75 ? 'Waning Gibbous' :
-          phase < 0.76 ? 'Last Quarter' :
-          'Waning Crescent';
-
+        const phaseFraction = dayData.moon_age / 29.53; // Reconstruct phase fraction (0 to 1)
+        
+        // --- CORRECTED PHASE NAMING LOGIC ---
+        let phaseName;
+        if (phaseFraction < 0.03 || phaseFraction > 0.97) {
+            phaseName = 'New Moon';
+        } else if (phaseFraction < 0.25) {
+            phaseName = 'Waxing Crescent';
+        } else if (phaseFraction < 0.26) {
+            phaseName = 'First Quarter';
+        } else if (phaseFraction < 0.50) {
+            phaseName = 'Waxing Gibbous';
+        } else if (phaseFraction < 0.53) {
+            phaseName = 'Full Moon';
+        } else if (phaseFraction < 0.75) {
+            phaseName = 'Waning Gibbous';
+        } else if (phaseFraction < 0.76) {
+            phaseName = 'Last Quarter';
+        } else {
+            // This captures the remaining phase: 0.76 up to 0.97 (Waning Crescent)
+            phaseName = 'Waning Crescent'; 
+        }
+        
         // Display phase name and illumination percentage
         document.getElementById('phase').textContent = phaseName;
         document.getElementById('illum').textContent = `${Math.round(illum)}% Illuminated`;
@@ -479,6 +491,7 @@ document.getElementById('moon-img').src = `/images/${moonFile}`;
 
 </body>
 </html>
+
 
 
 
