@@ -243,247 +243,197 @@
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
-// Utility function to convert UTC string to local time (CST will happen automatically)
-const fmt = d => d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
-
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const lat = 32.4619, lng = -93.3486;
-    const now = new Date();
-    
-    // ---- SUN TIMES (Keep this block) ----
-    let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
-    const today = now.toISOString().slice(0,10);
-    if (!sun || sun.date !== today) {
-      fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
-        .then(r => r.json())
-        .then(j => {
-          if (j.status === "OK") {
-            sun = {date: today, data: j.results};
-            localStorage.setItem('sunCache', JSON.stringify(sun));
-          }
-        })
-        .catch(() => {});
-    }
-    if (sun) {
-      document.getElementById('first').textContent = fmt(new Date(sun.data.civil_twilight_begin));
-      document.getElementById('rise').textContent   = fmt(new Date(sun.data.sunrise));
-      document.getElementById('set').textContent    = fmt(new Date(sun.data.sunset));
-      document.getElementById('last').textContent   = fmt(new Date(sun.data.civil_twilight_end));
-    }
+// --------------------------------------------------------------------------------
+// --- GLOBAL UTILITY FUNCTION: TIME CONVERSION ---
+// This function takes the UTC ISO string from the JSON and displays it as LOCAL time (e.g., CST).
+// --------------------------------------------------------------------------------
+function formatLocalTime(utcTimeString) {
+    if (!utcTimeString) return 'N/A';
     
-    // ----------------------------------------------------------------------
-// --- START: NEW ACCURATE SOLUNAR DATA INTEGRATION ---
-// ----------------------------------------------------------------------
-
-const todayKey = now.toISOString().slice(0, 10); // e.g., "2025-11-13"
-
-// --- ADD CACHE-BUSTING HERE ---
-const timestamp = new Date().getTime();
-fetch(`/solunar_data.json?t=${timestamp}`) // Use the new unique URL here
-  .then(response => {
-    if (!response.ok) throw new Error("Could not fetch data.");
-    return response.json();
-  })
-  .then(fullData => {
-        const dayData = fullData[todayKey];
-        if (!dayData) throw new Error("Data missing for today.");
-
-        // ---- KNIGHT OFFSET TABLE (Keep this table definition) ----
-        const KNIGHT_OFFSET = {
-          0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
-          12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
-          22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
-        };
-
-        const moonAge = dayData.moon_age;
-        const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
-        
-        // Function to apply the Knight offset after converting from UTC string
-        const applyKnight = utcStr => {
-            if (!utcStr) return null;
-            const dt = new Date(utcStr);
-            return new Date(dt.getTime() + offsetMinutes * 60000);
-        };
-
-        // Apply offset to Majors 
-        const major1Center = applyKnight(dayData.major_1_utc);
-        const major2Center = applyKnight(dayData.major_2_utc);
-        
-        // Apply offset to Minors
-        const min1Center = applyKnight(dayData.minor_1_utc);
-        const min2Center = applyKnight(dayData.minor_2_utc);
-
-        const mkRange = (center, minutes) => {
-          if (!center) return '—';
-          const s = new Date(center.getTime() - minutes*60000);
-          const e = new Date(center.getTime() + minutes*60000);
-          return `${fmt(s)}–${fmt(e)}`;
-        };
-
-        // Display the accurate, adjusted times
-        document.getElementById('maj1').innerHTML = mkRange(major1Center, 60);
-        document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center, 60)}</b>`;
-        document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
-        document.getElementById('min2').innerHTML = `<b>${mkRange(min2Center, 30)}</b>`;
-
-        // ---- RATING (Update rating and phase using accurate JSON data) ----
-        const illum = dayData.moon_illum;
-        let score = 1;
-        if (illum >= 99 || illum <= 1) score = 5;
-        else if (illum >= 95 || illum <= 5) score = 4;
-        else if (illum >= 90 || illum <= 10) score = 3;
-        else if (illum >= 80 || illum <= 20) score = 2;
-        else score = 1;
-
-        const labels = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
-        const stars = '★'.repeat(score - 1);
-        document.getElementById('rating').innerHTML = `
-          <div style="font-size:36px;color:#003366;">${stars}</div>
-          <div style="font-size:24px;color:#003366;">${labels[score - 1]}</div>
-        `;
-        
-        // ---- MOON PHASE / IMAGE (Use the more accurate moon_age and illum) ----
-        const phaseFraction = dayData.moon_age / 29.53; // Reconstruct phase fraction (0 to 1)
-        
-        // --- CORRECTED PHASE NAMING LOGIC ---
-        let phaseName;
-        if (phaseFraction < 0.03 || phaseFraction > 0.97) {
-            phaseName = 'New Moon';
-        } else if (phaseFraction < 0.25) {
-            phaseName = 'Waxing Crescent';
-        } else if (phaseFraction < 0.26) {
-            phaseName = 'First Quarter';
-        } else if (phaseFraction < 0.50) {
-            phaseName = 'Waxing Gibbous';
-        } else if (phaseFraction < 0.53) {
-            phaseName = 'Full Moon';
-        } else if (phaseFraction < 0.75) {
-            phaseName = 'Waning Gibbous';
-        } else if (phaseFraction < 0.76) {
-            phaseName = 'Last Quarter';
-        } else {
-            // This captures the remaining phase: 0.76 up to 0.97 (Waning Crescent)
-            phaseName = 'Waning Crescent'; 
-        }
-        
-        // Display phase name and illumination percentage
-        document.getElementById('phase').textContent = phaseName;
-        document.getElementById('illum').textContent = `${Math.round(illum)}% Illuminated`;
-        
-        // Determine moon image (This logic remains the same, just using new 'illum' and 'phaseName')
-        let moonFile = '';
-        // ... (Keep your original logic for setting moonFile based on phaseName/illum here)
-        if (illum === 0) {
-            moonFile = 'newmoon.png';
-        } else if (illum === 100) {
-            moonFile = 'fullmoon.png';
-        } else if (phaseName.includes('First Quarter')) {
-            moonFile = 'firstquart.png';
-        } else if (phaseName.includes('Last Quarter')) {
-            moonFile = 'lastquart.png';
-        } else {
-            const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-            let pct = Math.round(illum); 
-
-            // Custom ranges for missing images
-            if (pct > 45 && pct < 50) pct = 45;
-            else if (pct > 50 && pct < 55) pct = 55;
-            if (dir === 'wane' && pct === 33) pct = 32;
-
-            moonFile = `${dir}${pct}.png`;
-        }
-
-        document.getElementById('moon-img').src = `/images/${moonFile}`;
-        
-      })
-      .catch(error => {
-        console.error("Error fetching solunar data:", error);
-        // Fallback: If JSON fails, use the old SunCalc Moon Illumination (optional)
-        const localMidnight = new Date();
-        localMidnight.setHours(0, 0, 0, 0);
-        const illumData = SunCalc.getMoonIllumination(localMidnight);
-        // ... re-run old rating/phase logic here if needed for a complete fallback
-      });
-
-    // ----------------------------------------------------------------------
-    // --- END: NEW ACCURATE SOLUNAR DATA INTEGRATION ---
-    // ----------------------------------------------------------------------
-
-    // ---- FIXED MINOR PERIOD LOGIC ----
-    // This original section is now deleted, as the Minors are calculated above.
+    // Creates a Date object from the UTC string. The browser automatically handles the 'Z' (UTC).
+    const date = new Date(utcTimeString); 
     
-    // ---- RATING ----
-    const illum = Math.round(illumData.fraction * 100);
-    let score = 1;
-    if (illum >= 99 || illum <= 1) score = 5;
-    else if (illum >= 95 || illum <= 5) score = 4;
-    else if (illum >= 90 || illum <= 10) score = 3;
-    else if (illum >= 80 || illum <= 20) score = 2;
-    else score = 1;
-
-    const labels = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
-    const stars = '★'.repeat(score - 1);
-    document.getElementById('rating').innerHTML = `
-      <div style="font-size:36px;color:#003366;">${stars}</div>
-      <div style="font-size:24px;color:#003366;">${labels[score - 1]}</div>
-    `;
-
-    // ---- MOON PHASE / IMAGE ----
-    const phase = illumData.phase;
-    const phaseName =
-      phase < 0.03 ? 'New Moon' :
-      phase < 0.25 ? 'Waxing Crescent' :
-      phase < 0.26 ? 'First Quarter' :
-      phase < 0.50 ? 'Waxing Gibbous' :
-      phase < 0.51 ? 'Full Moon' :
-      phase < 0.75 ? 'Waning Gibbous' :
-      phase < 0.76 ? 'Last Quarter' :
-      'Waning Crescent';
-
-    // ---- MOON PHASE / ILLUMINATION / IMAGE ----
-
-// Display phase name and illumination percentage
-document.getElementById('phase').textContent = phaseName;
-document.getElementById('illum').textContent = `${illum}% Illuminated`;
-
-// Determine moon image
-let moonFile = '';
-
-if (illum === 0) {
-  // New Moon
-  moonFile = 'newmoon.png';
-} else if (illum === 100) {
-  // Full Moon
-  moonFile = 'fullmoon.png';
-} else if (phaseName.includes('First Quarter')) {
-  moonFile = 'firstquart.png';
-} else if (phaseName.includes('Last Quarter')) {
-  moonFile = 'lastquart.png';
-} else {
-  // Waxing or Waning
-  const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-  let pct = illum; // Use exact illumination value
-
-  // Custom ranges for missing images
-  if (pct > 45 && pct < 50) pct = 45;
-  else if (pct > 50 && pct < 55) pct = 55;
-
-  // Specific exception for waning
-  if (dir === 'wane' && pct === 33) pct = 32;
-
-  moonFile = `${dir}${pct}.png`;
+    // toLocaleTimeString forces the time to be displayed in the user's local timezone (CST)
+    return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+    });
 }
 
-// Set the image source
-document.getElementById('moon-img').src = `/images/${moonFile}`;
+document.addEventListener('DOMContentLoaded', () => {
+    // We add a slight delay to allow the HTML structure to fully render
+    setTimeout(() => {
+        const lat = 32.4619, lng = -93.3486;
+        const now = new Date();
+        
+        // --- FIX 1: ROBUST LOCAL DATE KEY (Ensures we pull the right data from the JSON) ---
+        // This constructs the date key based on local time components (Year, Month, Date)
+        const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            .toISOString().slice(0, 10); // e.g., "2025-11-12"
+
+        // ---- SUN TIMES (Fetch sun times, still needed for First/Last Light, Sunrise/Sunset) ----
+        let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
+        const today = now.toISOString().slice(0, 10);
+        
+        if (!sun || sun.date !== today) {
+            fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
+                .then(r => r.json())
+                .then(j => {
+                    if (j.status === "OK") {
+                        sun = {date: today, data: j.results};
+                        localStorage.setItem('sunCache', JSON.stringify(sun));
+                        // Update display after successful fetch
+                        if (sun) updateSunTimes(sun);
+                    }
+                })
+                .catch(() => {});
+        } else {
+             // If sun data is already cached, display it immediately
+             updateSunTimes(sun);
+        }
+
+        function updateSunTimes(sunData) {
+            // FIX 2: Use the robust formatLocalTime for all sun times
+            document.getElementById('first').textContent = formatLocalTime(sunData.data.civil_twilight_begin);
+            document.getElementById('rise').textContent   = formatLocalTime(sunData.data.sunrise);
+            document.getElementById('set').textContent    = formatLocalTime(sunData.data.sunset);
+            document.getElementById('last').textContent   = formatLocalTime(sunData.data.civil_twilight_end);
+        }
 
 
+        // ----------------------------------------------------------------------
+        // --- START: NEW ACCURATE SOLUNAR DATA INTEGRATION (JSON FETCH) ---
+        // ----------------------------------------------------------------------
 
-    // ---- DATE LABELS ----
-    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  }, 500);
+        // Use cache-busting logic to ensure the latest JSON file is fetched
+        const timestamp = new Date().getTime();
+        fetch(`/solunar_data.json?t=${timestamp}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Could not fetch data.");
+                return response.json();
+            })
+            .then(fullData => {
+                const dayData = fullData[todayKey];
+                if (!dayData) throw new Error("Data missing for today.");
+
+                // ---- KNIGHT OFFSET TABLE (No change needed here) ----
+                const KNIGHT_OFFSET = {
+                    0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
+                    12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
+                    22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
+                };
+
+                const moonAge = dayData.moon_age;
+                const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60;
+                
+                // Function to apply the Knight offset after converting from UTC string
+                const applyKnight = utcStr => {
+                    if (!utcStr) return null;
+                    const dt = new Date(utcStr);
+                    return new Date(dt.getTime() + offsetMinutes * 60000);
+                };
+
+                // Apply offset to Majors and Minors 
+                const major1Center = applyKnight(dayData.major_1_utc);
+                const major2Center = applyKnight(dayData.major_2_utc);
+                const min1Center = applyKnight(dayData.minor_1_utc);
+                const min2Center = applyKnight(dayData.minor_2_utc);
+
+                const mkRange = (center, minutes) => {
+                    if (!center) return '—';
+                    const s = new Date(center.getTime() - minutes*60000);
+                    const e = new Date(center.getTime() + minutes*60000);
+                    
+                    // FIX 3: Use the robust formatLocalTime for time ranges
+                    return `${formatLocalTime(s)}–${formatLocalTime(e)}`; 
+                };
+
+                // Display the accurate, adjusted times
+                document.getElementById('maj1').innerHTML = mkRange(major1Center, 60);
+                document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center, 60)}</b>`;
+                document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
+                document.getElementById('min2').innerHTML = dayData.minor_2_utc ? `<b>${mkRange(min2Center, 30)}</b>` : '—'; // Check minor_2_utc directly
+
+                // ---- RATING (Using accurate JSON data) ----
+                const illum = dayData.moon_illum;
+                let score = 1;
+                if (illum >= 99 || illum <= 1) score = 5;
+                else if (illum >= 95 || illum <= 5) score = 4;
+                else if (illum >= 90 || illum <= 10) score = 3;
+                else if (illum >= 80 || illum <= 20) score = 2;
+                else score = 1;
+
+                const labels = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
+                const stars = '★'.repeat(score - 1);
+                document.getElementById('rating').innerHTML = `
+                    <div style="font-size:36px;color:#003366;">${stars}</div>
+                    <div style="font-size:24px;color:#003366;">${labels[score - 1]}</div>
+                `;
+                
+                // ---- MOON PHASE / IMAGE (Using accurate JSON data) ----
+                const phaseFraction = dayData.moon_age / 29.53; // Reconstruct phase fraction (0 to 1)
+                
+                // --- CORRECTED PHASE NAMING LOGIC ---
+                let phaseName;
+                if (phaseFraction < 0.03 || phaseFraction > 0.97) {
+                    phaseName = 'New Moon';
+                } else if (phaseFraction < 0.25) {
+                    phaseName = 'Waxing Crescent';
+                } else if (phaseFraction < 0.26) {
+                    phaseName = 'First Quarter';
+                } else if (phaseFraction < 0.50) {
+                    phaseName = 'Waxing Gibbous';
+                } else if (phaseFraction < 0.53) {
+                    phaseName = 'Full Moon';
+                } else if (phaseFraction < 0.75) {
+                    phaseName = 'Waning Gibbous';
+                } else if (phaseFraction < 0.76) {
+                    phaseName = 'Last Quarter';
+                } else {
+                    phaseName = 'Waning Crescent'; 
+                }
+                
+                // Display phase name and illumination percentage
+                document.getElementById('phase').textContent = phaseName;
+                document.getElementById('illum').textContent = `${Math.round(illum)}% Illuminated`;
+                
+                // Determine moon image
+                let moonFile = '';
+                if (illum < 1) { // Check if illumination is near zero for New Moon
+                    moonFile = 'newmoon.png';
+                } else if (illum > 99) { // Check if illumination is near 100 for Full Moon
+                    moonFile = 'fullmoon.png';
+                } else if (phaseName.includes('First Quarter')) {
+                    moonFile = 'firstquart.png';
+                } else if (phaseName.includes('Last Quarter')) {
+                    moonFile = 'lastquart.png';
+                } else {
+                    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
+                    let pct = Math.round(illum); 
+
+                    // Custom ranges for missing images (Keep this custom logic if needed for your assets)
+                    if (pct > 45 && pct < 50) pct = 45;
+                    else if (pct > 50 && pct < 55) pct = 55;
+                    if (dir === 'wane' && pct === 33) pct = 32;
+
+                    moonFile = `${dir}${pct}.png`;
+                }
+
+                document.getElementById('moon-img').src = `/images/${moonFile}`;
+                
+            })
+            .catch(error => {
+                // If fetching the JSON fails (which is the source of all the accurate data), log the error
+                console.error("Error fetching accurate solunar data:", error);
+            });
+
+        // ----------------------------------------------------------------------
+        // --- DATE LABELS (No change needed here) ----
+        // ----------------------------------------------------------------------
+        document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+        document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    }, 500);
 });
 </script>
 
@@ -493,6 +443,7 @@ document.getElementById('moon-img').src = `/images/${moonFile}`;
 
 </body>
 </html>
+
 
 
 
