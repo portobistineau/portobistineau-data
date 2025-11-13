@@ -52,6 +52,8 @@ jobs:
       - name: Commit New Data File
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
+        # Set the push option to force the update
+          push_options: --force
           file_pattern: solunar_data.json 
           commit_message: "🤖 AUTO: Update solunar data cache on dev branch"
           commit_user_name: 'github-actions[bot]'
