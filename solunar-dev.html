@@ -250,6 +250,7 @@
 function formatLocalTime(utcTimeString) {
     if (!utcTimeString) return 'N/A';
     
+    // Creates a Date object from the UTC string. The browser handles the 'Z' (UTC).
     const date = new Date(utcTimeString); 
     
     // toLocaleTimeString forces the time to be displayed in the user's local timezone (CST)
@@ -267,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         
         // --- ROBUST LOCAL DATE KEY FIX ---
-        // This ensures the key matches the local date of the user, preventing off-by-one errors.
         const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate())
             .toISOString().slice(0, 10); 
 
@@ -291,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function updateSunTimes(sunData) {
-            // Using the robust formatLocalTime for all sun times
             document.getElementById('first').textContent = formatLocalTime(sunData.data.civil_twilight_begin);
             document.getElementById('rise').textContent   = formatLocalTime(sunData.data.sunrise);
             document.getElementById('set').textContent    = formatLocalTime(sunData.data.sunset);
@@ -307,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const timestamp = new Date().getTime();
         fetch(`/solunar_data.json?t=${timestamp}`)
             .then(response => {
+                // Must handle null values for major/minor events
                 if (!response.ok) throw new Error("Could not fetch data.");
                 return response.json();
             })
@@ -314,52 +314,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dayData = fullData[todayKey];
                 if (!dayData) throw new Error("Data missing for today.");
 
-                // ---- KNIGHT OFFSET TABLE (KEPT FOR REFERENCE/EASY REVERSION) ----
-                const KNIGHT_OFFSET = {
-                    0:0,1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,
-                    12:60,13:62,14:63,15:64,16:63,17:62,18:60,19:55,20:50,21:45,
-                    22:40,23:35,24:30,25:25,26:20,27:15,28:10,29:5,30:0
-                };
-
-                const moonAge = dayData.moon_age;
-                // --- ACCURACY FIX: OFFSET IS TEMPORARILY ZEROED OUT ---
-                const offsetMinutes = 0; // The accurate, base calculation is used.
-
-                // Function to apply the Knight offset (which is 0) to the center time
+                // ---- KNIGHT OFFSET (Zeroed out for base accuracy) ----
+                const offsetMinutes = 0; 
+                
+                // Function to apply the offset (which is 0)
                 const applyKnight = utcStr => {
                     if (!utcStr) return null;
                     const dt = new Date(utcStr);
-                    // This now returns the base UTC time plus 0 minutes as a Date object
                     return new Date(dt.getTime() + offsetMinutes * 60000); 
                 };
 
-                // Get center times as Date objects (no offset applied)
+                // Function to create the time range from the center time
+                const mkRange = (center, minutes) => {
+                    if (!center) return '—'; // Check for null/missing event
+                    const s = new Date(center.getTime() - minutes*60000);
+                    const e = new Date(center.getTime() + minutes*60000);
+                    
+                    return `${formatLocalTime(s)}–${formatLocalTime(e)}`; 
+                };
+
+                // Get center times as Date objects (null if missing)
                 const major1Center = applyKnight(dayData.major_1_utc);
                 const major2Center = applyKnight(dayData.major_2_utc);
                 const min1Center = applyKnight(dayData.minor_1_utc);
                 const min2Center = applyKnight(dayData.minor_2_utc);
 
-                // Function to create the time range from the center time
-                const mkRange = (center, minutes) => {
-                    if (!center) return '—';
-                    const s = new Date(center.getTime() - minutes*60000);
-                    const e = new Date(center.getTime() + minutes*60000);
-                    
-                    // Use the robust formatting function
-                    return `${formatLocalTime(s)}–${formatLocalTime(e)}`; 
-                };
-
-                // Display the accurate, un-offset times
+                // Display the accurate times (showing dashes if null)
                 document.getElementById('maj1').innerHTML = mkRange(major1Center, 60);
                 document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center, 60)}</b>`;
                 document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
                 document.getElementById('min2').innerHTML = dayData.minor_2_utc ? `<b>${mkRange(min2Center, 30)}</b>` : '—'; 
 
-                // ---- RATING AND MOON PHASE (FINAL FIX) ----
+                // ----------------------------------------------------------------
+                // ---- RATING AND MOON PHASE (FINAL LOGIC USING DECIMAL MOON_AGE) ----
+                // ----------------------------------------------------------------
                 const illum = dayData.moon_illum;
-                const actualIllum = Math.round(illum);
-                
-                // RATING LOGIC
+                const actualIllum = Math.round(illum); // For display
+                const moonAge = dayData.moon_age; // Precise decimal value (e.g., 14.7)
+
+                // RATING LOGIC (based on illumination)
                 let score = 1;
                 if (illum >= 99 || illum <= 1) score = 5;
                 else if (illum >= 95 || illum <= 5) score = 4;
@@ -374,33 +367,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="font-size:24px;color:#003366;">${labels[score - 1]}</div>
                 `;
                 
-                // MOON PHASE NAMING LOGIC
-                const phaseFraction = dayData.moon_age / 29.53;
+                // MOON PHASE NAMING LOGIC (Using precise Moon Age)
+                // Boundaries are based on 29.53 day cycle:
+                // Full Moon ~14.77, First Quarter ~7.38, Last Quarter ~22.15
                 let phaseName;
 
-                if (actualIllum >= 99) {
+                if (actualIllum >= 99.5) { // Full Moon
                     phaseName = 'Full Moon';
-                } else if (actualIllum <= 1) {
+                } else if (actualIllum <= 0.5) { // New Moon
                     phaseName = 'New Moon';
-                } else if (phaseFraction < 0.25) {
-                    phaseName = 'Waxing Crescent';
-                } else if (phaseFraction < 0.26) {
+                } 
+                // --- QUARTER MOONS (Age between 7.3 and 7.5 OR 22.0 and 22.3) ---
+                else if (moonAge > 7.3 && moonAge < 7.6) {
                     phaseName = 'First Quarter';
-                } else if (phaseFraction < 0.50) {
-                    phaseName = 'Waxing Gibbous';
-                } else if (phaseFraction < 0.75) {
-                    phaseName = 'Waning Gibbous';
-                } else if (phaseFraction < 0.76) {
+                } else if (moonAge > 21.9 && moonAge < 22.3) { 
                     phaseName = 'Last Quarter';
+                } 
+                // --- STANDARD PHASES (Waxing/Waning determined by 14.7-day split) ---
+                else if (moonAge < 14.77) {
+                    // Waxing side (Age 0 to 14.77)
+                    if (illum < 50) { 
+                        phaseName = 'Waxing Crescent';
+                    } else {
+                        phaseName = 'Waxing Gibbous'; 
+                    }
                 } else {
-                    phaseName = 'Waning Crescent'; 
+                    // Waning side (Age 14.77 to 29.5)
+                    if (illum < 50) { 
+                        phaseName = 'Waning Crescent';
+                    } else {
+                        phaseName = 'Waning Gibbous'; 
+                    }
                 }
                 
                 // Display phase name and illumination percentage
                 document.getElementById('phase').textContent = phaseName;
                 document.getElementById('illum').textContent = `${actualIllum}% Illuminated`;
                 
-                // Determine moon image
+                // Determine moon image (Image logic remains the same)
                 let moonFile = '';
                 if (actualIllum < 1) { 
                     moonFile = 'newmoon.png';
@@ -440,44 +444,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
