@@ -324,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const moonAge = dayData.moon_age;
                 // --- ACCURACY FIX: OFFSET IS TEMPORARILY ZEROED OUT ---
                 const offsetMinutes = 0; // The accurate, base calculation is used.
-                // const offsetMinutes = KNIGHT_OFFSET[moonAge] || 60; // Original line
 
                 // Function to apply the Knight offset (which is 0) to the center time
                 const applyKnight = utcStr => {
@@ -445,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
