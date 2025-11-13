@@ -43,7 +43,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyephem
+          # ADD 'pytz' here
+          pip install pyephem pytz
 
       - name: Run Solunar Calculation Script
         run: python calculate_solunar.py
