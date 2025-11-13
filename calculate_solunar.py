@@ -1,112 +1,133 @@
 import ephem
 from datetime import datetime, timedelta, time
 import json
+import pytz # Import pytz for proper timezone handling if needed later
 
-# --- Configuration (Set your time and location) ---
-# NOTE: The date calculation here needs to handle your local timezone correctly!
+# --- Configuration ---
+# Your location for Minden, Louisiana:
 LATITUDE = '32.4619'  
 LONGITUDE = '-93.3486'
 OUTPUT_FILE = 'solunar_data.json'
-DAYS_TO_CALCULATE = 3
+# We calculate for 3 days starting from today to ensure future data is available
+DAYS_TO_CALCULATE = 3 
 
 def calculate_data():
     full_data = {}
     
-    # 1. Start the calculation one day prior to ensure we catch all transits/rises
-    start_date = datetime.now().date() - timedelta(days=1)
+    # Start the calculation from the current date
+    start_date = datetime.now().date() 
 
-    for i in range(DAYS_TO_CALCULATE + 2): # Calculate for a 4 day window to handle boundary conditions
+    for i in range(DAYS_TO_CALCULATE):
         target_date = start_date + timedelta(days=i)
         
-        # --- Define Observer and Celestial Bodies ---
+        # Set the observer time to the START of the target day (00:00:00 UTC)
+        # Note: PyEphem uses UTC implicitly for its date/time calculations.
+        start_of_day = datetime.combine(target_date, time(0, 0, 0))
+        
         location = ephem.Observer()
         location.lat = LATITUDE
         location.lon = LONGITUDE
-        location.date = target_date # Set starting point for search
-
+        location.date = start_of_day
+        
         moon = ephem.Moon()
-        sun = ephem.Sun()
         
-        # --- Calculate Moon Phase and Illumination (Once Per Day) ---
-        # Note: PyEphem gives the phase *relative to* the date set on the observer.
+        # --- Moon Phase and Illumination ---
+        # Compute the moon for the start of the day
         moon.compute(location)
-        illum = moon.moon_phase * 100 # moon_phase is the fraction illuminated
-        # For a full phase name, you'd need external logic/lookup table
-
+        illum = moon.moon_phase * 100 
+        moon_age = round(moon.moon_phase * 29.53) 
+        
         # --- Major Periods (Transit/Anti-transit) ---
-        majors = []
-        
-        # Search forward for the next two Upper Transits (Meridian Crossing)
-        # and the next two Lower Transits (Anti-Meridian) from the start of the day
-        t1 = location.next_transit(moon)
-        t2 = location.next_antitransit(moon)
-        
-        # Find the next two transits/anti-transits, sort them, and filter to the target date
-        # This requires more complex root finding or iterative search over the 48-hour period
-        
-        # For now, let's keep the simple approach and fix the date filtering:
-        
-        # A simple method: calculate 4 major events starting from the day before
-        start_search = target_date - timedelta(hours=12) # Search from midday before
-        location.date = start_search
-        
         major_events = []
-        for _ in range(4):
-            # Calculate next transit (Upper)
-            t = location.next_transit(moon, start=location.date)
-            major_events.append(t.datetime())
-            location.date = t + ephem.minute # Advance search by one minute
+        
+        # 1. Find the FIRST event (Transit or Anti-transit) after 00:00 UTC
+        try:
+            e1_t = location.next_transit(moon, start=start_of_day)
+            e1_a = location.next_antitransit(moon, start=start_of_day)
             
-            # Calculate next anti-transit (Lower)
-            a = location.next_antitransit(moon, start=location.date)
-            major_events.append(a.datetime())
-            location.date = a + ephem.minute
+            first_event = min(e1_t, e1_a)
+            if first_event.datetime().date() == target_date:
+                major_events.append(first_event.datetime())
+            else:
+                # If the first event is tomorrow, skip to the next event
+                location.date = first_event + ephem.minute
+        except Exception:
+            pass # Handle case where an event might be missed
             
-        # Filter and sort to events that fall on the target date (00:00:00 to 23:59:59)
-        major_events = sorted([
-            dt for dt in major_events if dt.date() == target_date
-        ])
+        # 2. Find the SECOND event (Transit or Anti-transit) after the first one
+        if major_events:
+            location.date = major_events[-1] + timedelta(minutes=1)
+            
+            try:
+                e2_t = location.next_transit(moon, start=location.date)
+                e2_a = location.next_antitransit(moon, start=location.date)
+                
+                second_event = min(e2_t, e2_a)
+                if second_event.datetime().date() == target_date:
+                    major_events.append(second_event.datetime())
+            except Exception:
+                pass
+
+        major_events.sort()
         
         # --- Minor Periods (Moonrise/Moonset) ---
-        minors = []
+        minor_events = []
         
-        # PyEphem sometimes struggles with the exact time of rise/set if it's near the pole/horizon
+        # 1. Find the FIRST Moonrise/Moonset after 00:00 UTC
         try:
-            r = location.next_rising(moon)
-            minors.append(r.datetime())
+            r1 = location.next_rising(moon, start=start_of_day)
+            minor_events.append(r1.datetime())
         except ephem.AlwaysUpError: pass
         except ephem.NeverUpError: pass
         
         try:
-            s = location.next_setting(moon)
-            minors.append(s.datetime())
+            s1 = location.next_setting(moon, start=start_of_day)
+            minor_events.append(s1.datetime())
         except ephem.AlwaysUpError: pass
         except ephem.NeverUpError: pass
         
-        # Filter and sort minor events for the target date
-        minor_events = sorted([
-            dt for dt in minors if dt.date() == target_date
-        ])
-        
-        # --- Final Data Collation (Only for the target date) ---
+        # 2. Find the SECOND Moonrise/Moonset after the first one
+        if minor_events:
+            next_start = max(minor_events) + timedelta(minutes=1)
+            location.date = next_start 
+            
+            try:
+                r2 = location.next_rising(moon, start=location.date)
+                if r2.datetime().date() == target_date:
+                    minor_events.append(r2.datetime())
+            except ephem.AlwaysUpError: pass
+            except ephem.NeverUpError: pass
+            
+            try:
+                s2 = location.next_setting(moon, start=location.date)
+                if s2.datetime().date() == target_date:
+                    minor_events.append(s2.datetime())
+            except ephem.AlwaysUpError: pass
+            except ephem.NeverUpError: pass
+
+        minor_events.sort()
+
+        # --- Final Data Collation ---
         data_key = target_date.strftime("%Y-%m-%d")
-        if target_date == datetime.now().date(): # Only store data for today and tomorrow, etc.
+        
+        # Only store data if we found at least one major event on the target day
+        if len(major_events) > 0 and major_events[0].date() == target_date:
             full_data[data_key] = {
                 "date": data_key,
                 # Format to ISO 8601 UTC string for easy JS handling
-                "major_1_utc": major_events[0].isoformat() + "Z" if len(major_events) > 0 else None,
+                "major_1_utc": major_events[0].isoformat() + "Z",
                 "major_2_utc": major_events[1].isoformat() + "Z" if len(major_events) > 1 else None,
                 "minor_1_utc": minor_events[0].isoformat() + "Z" if len(minor_events) > 0 else None,
                 "minor_2_utc": minor_events[1].isoformat() + "Z" if len(minor_events) > 1 else None,
                 "moon_illum": round(illum, 1),
-                "moon_age": round(moon.moon_phase * 29.53), # Age in days (0-30)
+                "moon_age": moon_age, 
             }
 
-    # Write the data to a JSON file (Filtered data will be stored)
+    # Write the data to a JSON file
     with open(OUTPUT_FILE, 'w') as f:
         json.dump(full_data, f, indent=4)
         
-    print(f"Successfully calculated and saved data to {OUTPUT_FILE}")
+    print(f"Successfully calculated and saved {len(full_data)} days of data to {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     calculate_data()
