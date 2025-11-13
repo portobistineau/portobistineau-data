@@ -12,6 +12,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # --- ADD THIS BLOCK ---
+    permissions:
+      contents: write
+    # -----------------------
+
     steps:
       - uses: actions/checkout@v4
       
