@@ -1,16 +1,16 @@
 import ephem
 from datetime import datetime, timedelta, time
 import json
-from pytz import timezone
+import pytz # <-- FINAL FIX: Import the entire pytz package
 
 # --- Configuration (Lake Bistineau, LA) ---
 LATITUDE = '32.4619' 
 LONGITUDE = '-93.3486'
 OUTPUT_FILE = 'solunar_data.json'
-DAYS_TO_CALCULATE = 180  # <-- SET TO 180 DAYS 
+DAYS_TO_CALCULATE = 180 # <-- SET TO 180 DAYS 
 
 # Define the local time zone offset (CST is 6 hours behind UTC)
-CST_TZ = timezone('America/Chicago')
+CST_TZ = pytz.timezone('America/Chicago') # <-- CORRECTED: Use pytz.timezone
 CST_OFFSET = timedelta(hours=6)
 
 def calculate_data():
@@ -25,8 +25,7 @@ def calculate_data():
         
         # --- Define the UTC 24-hour window corresponding to the target CST day ---
         
-        # 00:00:00 CST is 06:00:00 UTC (during standard time)
-        # Note: This logic correctly handles Daylight Saving Time transitions, as datetime objects manage the offset implicitly.
+        # Localize the start of the CST day (00:00:00 CST) and convert to naive UTC datetime
         target_start_utc = CST_TZ.localize(datetime.combine(target_date_cst, time(0, 0, 0))).astimezone(pytz.utc).replace(tzinfo=None)
         target_end_utc = target_start_utc + timedelta(days=1) - timedelta(seconds=1)
         
