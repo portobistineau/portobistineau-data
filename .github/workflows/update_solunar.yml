@@ -10,9 +10,7 @@ on:
     branches:
       - dev
       
-  # Schedule to run every day at 01:00 UTC, but only on the main branch (or the one it's merged into later)
-  # NOTE: To prevent the dev branch from running daily schedules, we typically limit it to main later.
-  # For now, we will leave the cron job enabled for initial testing.
+  # Schedule to run every day at 01:00 UTC (We can change this to weekly cron later)
   schedule:
     - cron: '0 1 * * *'
 
@@ -43,8 +41,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          # ADD 'pytz' here
-          pip install pyephem pytz
+          pip install -r requirements.txt # <-- INSTALLS pyephem and pytz from file
 
       - name: Run Solunar Calculation Script
         run: python calculate_solunar.py
@@ -52,9 +49,9 @@ jobs:
       - name: Commit New Data File
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-        # Set the push option to force the update
+          # Set the push option to force the update
           push_options: --force
-          file_pattern: solunar_data.json 
+          file_pattern: solunar_data.json  
           commit_message: "🤖 AUTO: Update solunar data cache on dev branch"
           commit_user_name: 'github-actions[bot]'
           commit_user_email: 'github-actions[bot]@users.noreply.github.com'
