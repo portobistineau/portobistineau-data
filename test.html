@@ -306,7 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const timestamp = new Date().getTime();
         fetch(`/solunar_data.json?t=${timestamp}`)
             .then(response => {
-                // Must handle null values for major/minor events
                 if (!response.ok) throw new Error("Could not fetch data.");
                 return response.json();
             })
@@ -326,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Function to create the time range from the center time
                 const mkRange = (center, minutes) => {
-                    if (!center) return '—'; // Check for null/missing event
+                    if (!center) return '—'; // <-- Handles null/missing event from JSON
                     const s = new Date(center.getTime() - minutes*60000);
                     const e = new Date(center.getTime() + minutes*60000);
                     
@@ -354,47 +353,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // RATING LOGIC (based on illumination)
                 let score = 1;
-                if (illum >= 99 || illum <= 1) score = 5;
-                else if (illum >= 95 || illum <= 5) score = 4;
-                else if (illum >= 90 || illum <= 10) score = 3;
-                else if (illum >= 80 || illum <= 20) score = 2;
+                if (illum >= 99 || illum <= 1) score = 4;
+                else if (illum >= 95 || illum <= 5) score = 3;
+                else if (illum >= 90 || illum <= 10) score = 2;
                 else score = 1;
 
-                const labels = ['Poor', 'Fair', 'Good', 'Better', 'Best'];
-                const stars = '★'.repeat(score - 1);
+                const labels = ['Average', 'Good', 'Better', 'Best'];
+                const stars = '★'.repeat(score);
                 document.getElementById('rating').innerHTML = `
                     <div style="font-size:36px;color:#003366;">${stars}</div>
-                    <div style="font-size:24px;color:#003366;">${labels[score - 1]}</div>
+                    <div style="font-size:24px;color:#003366;">${labels[score-1]}</div>
                 `;
                 
-                // MOON PHASE NAMING LOGIC (Using precise Moon Age)
-                // Boundaries are based on 29.53 day cycle:
-                // Full Moon ~14.77, First Quarter ~7.38, Last Quarter ~22.15
+                // MOON PHASE NAMING LOGIC (Using precise Moon Age for boundaries)
+                // FINAL FIX: Pushing the midpoint boundary to 14.70 to force the current Waning Moon into the correct half.
                 let phaseName;
 
-                if (actualIllum >= 99.5) { // Full Moon
+                if (actualIllum >= 99.5) { 
                     phaseName = 'Full Moon';
-                } else if (actualIllum <= 0.5) { // New Moon
+                } else if (actualIllum <= 0.5) { 
                     phaseName = 'New Moon';
                 } 
-                // --- QUARTER MOONS (Age between 7.3 and 7.5 OR 22.0 and 22.3) ---
+                // --- QUARTER MOONS ---
                 else if (moonAge > 7.3 && moonAge < 7.6) {
                     phaseName = 'First Quarter';
                 } else if (moonAge > 21.9 && moonAge < 22.3) { 
                     phaseName = 'Last Quarter';
                 } 
-                // --- STANDARD PHASES (Waxing/Waning determined by 14.7-day split) ---
-                else if (moonAge < 14.77) {
-                    // Waxing side (Age 0 to 14.77)
+                // --- STANDARD PHASES (Waxing/Waning determined by 14.70-day split) ---
+                else if (moonAge < 14.70) {
+                    // Waxing side (Age 0 to 14.70)
                     if (illum < 50) { 
                         phaseName = 'Waxing Crescent';
                     } else {
                         phaseName = 'Waxing Gibbous'; 
                     }
                 } else {
-                    // Waning side (Age 14.77 to 29.5)
+                    // Waning side (Age 14.70 to 29.5)
                     if (illum < 50) { 
-                        phaseName = 'Waning Crescent';
+                        phaseName = 'Waning Crescent'; 
                     } else {
                         phaseName = 'Waning Gibbous'; 
                     }
@@ -441,7 +438,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 });
 </script>
-
 
 
 </body>
