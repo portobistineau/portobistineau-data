@@ -1,57 +1,46 @@
-name: Update Solunar Data
+name: Generate Solunar Data
 
-# Controls when the action will run.
 on:
-  # Allows manual run from the GitHub Actions tab (best way to test)
-  workflow_dispatch:
-  
-  # Trigger on push to the 'dev' branch
-  push:
-    branches:
-      - dev
-      
-  # Schedule to run every day at 01:00 UTC (We can change this to weekly cron later)
+  # 1. Schedule the job to run every Sunday at 4:00 AM UTC
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '0 4 * * 0' 
+  
+  # 2. Also run the job manually on pushes to the 'main' branch
+  push:
+    branches: [ "main" ] 
 
-# Defines the jobs that will run in this workflow
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    # Only run the steps if the branch is 'dev'
-    if: github.ref == 'refs/heads/dev'
-
-    # Permissions needed for the job (CRUCIAL for committing files)
-    permissions:
-      contents: write # Allows the job to write/commit files
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for commit operations
-          ref: dev # Explicitly check out the dev branch
-          
+      - uses: actions/checkout@v4
+      
+      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x' 
+          python-version: '3.x'
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt # <-- INSTALLS pyephem and pytz from file
+      # Install Python Dependencies (pyephem and pytz)
+      - name: Install dependencies
+        run: pip install pyephem pytz
 
-      - name: Run Solunar Calculation Script
+      # Execute the calculation script
+      - name: Run calculation script
         run: python calculate_solunar.py
 
-      - name: Commit New Data File
-        uses: stefanzweifel/git-auto-commit-action@v5
+      # Commit and push the generated JSON file
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add solunar_data.json
+          git commit -m "Automated data refresh" || echo "No changes to commit"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          # Set the push option to force the update
-          push_options: --force
-          file_pattern: solunar_data.json  
+          branch: ${{ github.ref_name }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           commit_message: "🤖 AUTO: Update solunar data cache on dev branch"
           commit_user_name: 'github-actions[bot]'
           commit_user_email: 'github-actions[bot]@users.noreply.github.com'
