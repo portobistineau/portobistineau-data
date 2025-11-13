@@ -2,7 +2,7 @@ import ephem
 from datetime import datetime, timedelta, time
 import json
 
-# --- Configuration (Minden, LA) ---
+# --- Configuration (Lake Bistineau, LA) ---
 LATITUDE = '32.4619'  
 LONGITUDE = '-93.3486'
 OUTPUT_FILE = 'solunar_data.json'
