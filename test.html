@@ -439,21 +439,55 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-    <!-- ==================================== -->
-<!-- LATEST VIDEO - 100% WORKING (Non-Live) -->
-<!-- ==================================== -->
-<!-- LATEST LAKE REPORT – TITLE + VIDEO IN ONE WHITE CARD -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
   <h2 style="text-align:center;color:#000;font-size:28px;margin:0 0 20px;">Latest Lake Report</h2>
   <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;">
-    <iframe id="latest-video" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" 
-            src="https://www.youtube.com/embed?listType=playlist&list=UUg-udKvya42o1Sw1XvhgpnQ&rel=0" 
+    <iframe id="latest-video-embed" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" 
+            src="" 
             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
             allowfullscreen></iframe>
   </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL API KEY
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    
+    // Your specific Channel ID (The UC... ID, NOT the UU... playlist ID)
+    const CHANNEL_ID = 'UCg-udKvya42o1Sw1XvhgpnQ'; 
+    
+    const SEARCH_QUERY = 'Report OR Update'; // Search for either "Report" OR "Update"
+    const EMBED_ELEMENT_ID = 'latest-video-embed';
+
+    // 1. Build the API URL to search your channel for specific keywords, ordered by date
+    const apiUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&type=video&q=${SEARCH_QUERY}&order=date&maxResults=1&part=id`;
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const iframe = document.getElementById(EMBED_ELEMENT_ID);
+
+            // Ensure we got a valid search result
+            if (data.items && data.items.length > 0) {
+                const latestVideoId = data.items[0].id.videoId;
+                
+                // Construct the single video embed URL
+                // We do NOT use listType=playlist, so the video will stop.
+                const embedUrl = `https://www.youtube.com/embed/${latestVideoId}?rel=0&autoplay=1`;
+                
+                iframe.src = embedUrl;
+            } else {
+                console.error("YouTube API could not find a matching video.");
+                iframe.src = 'https://www.youtube.com/embed?list=PL_DEFAULT_PLACEHOLDER'; // Fallback link
+            }
+        })
+        .catch(error => console.error('YouTube Fetch Error:', error));
+});
+</script>
+
 </body>
 </html>
+
 
 
