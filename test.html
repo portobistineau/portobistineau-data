@@ -83,11 +83,20 @@
       localStorage.setItem('nwsCache', JSON.stringify(data));
     }
 
-    // --- Current Observation (for temperature, feels-like, pressure) ---
-    const p = data.obs;
-    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
+    // --- Closest hourly forecast (for icon, condition, wind, and NOW TEMPERATURE) ---
+    const nowDate = now.getTime();
+    const closestHourly = data.hourly.periods.reduce((a,b) =>
+      Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+    );
 
+    // *** FIX: Get current temp from the closest HOURLY FORECAST (more reliable update) ***
+    const currentTemp = closestHourly.temperature; // This is already in F
+    const feels = currentTemp; // Use currentTemp since 'apparentTemperature' is rare in hourly forecast
+    // *** FIX: Use current clock time for "As of" stamp ***
+    const timeStr = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+
+    // --- Observation Data (for pressure/trend only, as it's the only source) ---
+    const p = data.obs;
     const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
     let trend = '';
     const change = p.pressureChange?.value;
@@ -97,14 +106,6 @@
       else if (inches > 0) trend = '(rising)';
       else trend = '(falling)';
     }
-
-    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-
-    // --- Closest hourly forecast (for icon, condition, wind) ---
-    const nowDate = now.getTime();
-    const closestHourly = data.hourly.periods.reduce((a,b) =>
-      Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
-    );
 
     const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
     const currentForecast = closestHourly?.shortForecast || '';
@@ -127,8 +128,8 @@
         </div>
         <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
         <div style="font-size:14px;line-height:1.6;">
-          Wind ${windSpeedAvg} mph ${windDir}<br>
           Pressure ${pressure} inHg ${trend}<br>
+          Wind ${windSpeedAvg} mph ${windDir}<br>
         </div>
       </div>`;
 
@@ -157,7 +158,7 @@
       const lo = dayHours.length ? Math.min(...dayHours.map(p=>p.temperature)) : night.temperature;
 
       forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;flex-grow: 1;">
+        <div onclick="showDetail(${i})" style="cursor:pointer;width:90px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
           <div style="font-weight:bold;color:#003366;">${dayName}</div>
           <div style="flex:1;display:flex;align-items:center;justify-content:center;">
             <img src="${icon}" width="48" height="48">
@@ -457,6 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
