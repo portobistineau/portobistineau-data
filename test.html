@@ -157,7 +157,7 @@
       const lo = dayHours.length ? Math.min(...dayHours.map(p=>p.temperature)) : night.temperature;
 
       forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
+        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;flex-grow: 1;">
           <div style="font-weight:bold;color:#003366;">${dayName}</div>
           <div style="flex:1;display:flex;align-items:center;justify-content:center;">
             <img src="${icon}" width="48" height="48">
@@ -457,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
