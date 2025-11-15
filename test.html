@@ -210,61 +210,67 @@
     
 <!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
-  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
-    Solunar Data for <span id="header-date">—</span>
-  </h2>
+  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
+    Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
+  </h2>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
-      
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="flex:2;background:#f8fdff;padding:25px;border-radius:12px;">
+
       <div style="display:flex;gap:30px;line-height:1.35;font-size:16px;">
-        
+
         <div style="flex:1;">
           <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Sun Data</h3>
           <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
-            <b>First Light</b> <div id="first" style="text-align:right;">Calculating…</div>
-            <b>Sunrise</b> <div id="rise" style="text-align:right;">Calculating…</div>
-            <b>Sunset</b> <div id="set" style="text-align:right;">Calculating…</div>
-            <b>Last Light</b> <div id="last" style="text-align:right;">Calculating…</div>
+            <b>First Light</b> <div id="first" style="text-align:right;font-weight:normal;">Calculating…</div>
+            <b>Sunrise</b> <div id="rise" style="text-align:right;font-weight:normal;">Calculating…</div>
+            <b>Sunset</b> <div id="set" style="text-align:right;font-weight:normal;">Calculating…</div>
+            <b>Last Light</b> <div id="last" style="text-align:right;font-weight:normal;">Calculating…</div>
           </div>
         </div>
-        
+
         <div style="flex:1;">
           <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Moon Data</h3>
           <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
-            <b>Rise</b> <div id="moon-rise" style="text-align:right;">Calculating…</div>
-            <b>Set</b> <div id="moon-set" style="text-align:right;">Calculating…</div>
-            <b>Overhead</b> <div id="moon-overhead" style="text-align:right;">Calculating…</div>
-            <b>Underfoot</b> <div id="moon-underfoot" style="text-align:right;">Calculating…</div>
+            <b>Rise</b> <div id="moon-rise" style="text-align:right;font-weight:normal;">Calculating…</div>
+            <b>Set</b> <div id="moon-set" style="text-align:right;font-weight:normal;">Calculating…</div>
+            <b>Overhead</b> <div id="moon-overhead" style="text-align:right;font-weight:normal;">Calculating…</div>
+            <b>Underfoot</b> <div id="moon-underfoot" style="text-align:right;font-weight:normal;">Calculating…</div>
           </div>
         </div>
       </div>
 
       <hr style="margin: 20px 0 15px 0; border: 0; border-top: 1px solid #ccc;">
-      
+
       <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
-        <b>Major Period 1</b> <div id="maj1" style="text-align:right;">Calculating…</div>
-        <b>Major Period 2</b> <div id="maj2" style="text-align:right;">Calculating…</div>
-        <b>Minor Period 1</b> <div id="min1" style="text-align:right;">Calculating…</div>
-        <b>Minor Period 2</b> <div id="min2" style="text-align:right;">Calculating…</div>
-      </div>
-      
-      
-    </div>
+        <b>Major Period 1</b> <div id="maj1" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Major Period 2</b> <div id="maj2" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Minor Period 1</b> <div id="min1" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Minor Period 2</b> <div id="min2" style="text-align:right;font-weight:normal;">Calculating…</div>
+      </div>
 
-        <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
-      <div id="rating" style="font-size:30px;color:#000;line-height:1.5;">Calculating…</div>
-      <div id="moon-bg" style="width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
-        <img id="moon-img" src="" width="90" height="90" style="border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-      </div>
-      <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
-      <div id="illum" style="color:#000;font-size:16px;">—</div>
-    </div>
-  </div>
 
-    <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
-    Updated <span id="date">—</span> – Refresh for latest
-  </p>
+    </div>
+
+    <div style="flex:1;background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+
+      <div style="margin-top: -15px;"> 
+          <div id="rating" style="font-size:30px;color:#000000;line-height:1.5;">Calculating…</div>
+          <div style="font-size: 18px; color: #000000; font-weight: bold; margin-top: -10px;">Average</div>
+      </div>
+
+      <div id="moon-bg" style="position:relative; width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
+        <img id="moon-img" src="" width="90" height="90" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+      </div>
+
+      <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
+      <div id="illum" style="color:#000;font-size:16px;">—</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
+    Updated <span id="date">—</span> – Refresh for latest
+  </p>
 </div>
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
@@ -477,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
