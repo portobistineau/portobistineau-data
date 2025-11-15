@@ -1,7 +1,7 @@
 import ephem
 from datetime import datetime, timedelta, time
 import json
-import pytz 
+import pytz
 
 # --- Configuration (Lake Bistineau, LA) ---
 LATITUDE = '32.4619' 
@@ -22,7 +22,6 @@ def get_last_new_moon_utc(location):
     last_new_moon_moment = ephem.previous_new_moon(location.date).datetime()
     return last_new_moon_moment
 # ----------------------------------------
-
 
 def calculate_data():
     full_data = {}
@@ -47,87 +46,122 @@ def calculate_data():
         
         # --- Define the UTC 24-hour window corresponding to the target CST day ---
         target_start_utc = CST_TZ.localize(datetime.combine(target_date_cst, time(0, 0, 0))).astimezone(pytz.utc).replace(tzinfo=None)
-        target_end_utc = target_start_utc + timedelta(days=1) - timedelta(seconds=1)
+        target_end_utc = target_start_utc + timedelta(days=1)
         
         # --- Define Observer and Celestial Bodies ---
         location = ephem.Observer()
         location.lat = LATITUDE
         location.lon = LONGITUDE
         
-        # --- Search Events (Major/Minor) ---
+        # Search window is wider than the target day to catch events that cross midnight
         search_start = target_start_utc - timedelta(hours=12)
         
-        all_major_events = []
-        all_minor_events = []
+        # Lists for Solunar Periods (combined Transit/Antitransit and Rise/Set)
+        all_major_events = [] 
+        all_minor_events = [] 
         
-        # 1. Find Major Events (Transit/Anti-transit)
+        # Variables for Moon Data Display (specific events)
+        moon_rise_utc = None
+        moon_set_utc = None
+        moon_overhead_utc = None
+        moon_underfoot_utc = None
+        
+        # Set initial search date for all searches
         location.date = search_start
-        for _ in range(6): 
+
+        # --- 1. Find Transits (Major Period Basis & Overhead/Underfoot) ---
+        
+        # Search for the first two transits/antitransits that fall within or near the day
+        for _ in range(6): # Loop to find up to 6 events
+            
+            # Find next Upper Transit (Overhead)
             try:
                 t = location.next_transit(moon)
-                all_major_events.append(t.datetime())
+                if t.datetime() < target_end_utc:
+                    all_major_events.append(t.datetime())
+                    if t.datetime() >= target_start_utc and not moon_overhead_utc:
+                        moon_overhead_utc = t.datetime()
                 location.date = t + ephem.minute
             except StopIteration: break
             
+            # Find next Lower Transit (Underfoot)
             try:
                 a = location.next_antitransit(moon)
-                all_major_events.append(a.datetime())
+                if a.datetime() < target_end_utc:
+                    all_major_events.append(a.datetime())
+                    if a.datetime() >= target_start_utc and not moon_underfoot_utc:
+                        moon_underfoot_utc = a.datetime()
                 location.date = a + ephem.minute
             except StopIteration: break
             
-        # 2. Find Minor Events (Rise/Set)
+        # --- 2. Find Rise and Set (Minor Period Basis) ---
+        
+        # Search for first rising event
         location.date = search_start
-        for _ in range(3): 
-            try:
-                r = location.next_rising(moon)
+        try:
+            r = location.next_rising(moon, start=location.date)
+            if r.datetime() < target_end_utc:
                 all_minor_events.append(r.datetime())
-                location.date = r + ephem.minute
-            except Exception: pass
-            
-            try:
-                s = location.next_setting(moon)
+                if r.datetime() >= target_start_utc:
+                    moon_rise_utc = r.datetime()
+        except Exception: pass # Circumpolar or other error
+        
+        # Search for first setting event
+        location.date = search_start
+        try:
+            s = location.next_setting(moon, start=location.date)
+            if s.datetime() < target_end_utc:
                 all_minor_events.append(s.datetime())
-                location.date = s + ephem.minute
-            except Exception: pass
+                if s.datetime() >= target_start_utc:
+                    moon_set_utc = s.datetime()
+        except Exception: pass # Circumpolar or other error
 
-        # Filter: Keep only the events that fall within the UTC boundaries of the CST day
-        major_events = sorted([
+        # Filter and sort: This determines the chronological order for Major/Minor 1 and 2
+        major_events_filtered = sorted([
             dt for dt in all_major_events 
-            if dt >= target_start_utc and dt <= target_end_utc
+            if dt >= target_start_utc and dt < target_end_utc
         ])
         
-        minor_events = sorted([
+        minor_events_filtered = sorted([
             dt for dt in all_minor_events 
-            if dt >= target_start_utc and dt <= target_end_utc
+            if dt >= target_start_utc and dt < target_end_utc
         ])
         
-        # --- Moon Phase, Illumination, and Age Calculation (FIXED) ---
+        # Helper to format datetime objects or return None
+        def format_utc(dt):
+            if isinstance(dt, datetime):
+                # Ensure it's timezone-aware UTC before formatting
+                return dt.isoformat() + "Z"
+            return None
+
+        # --- Moon Phase, Illumination, and Age Calculation ---
         location.date = target_start_utc
         moon.compute(location)
-        illum = moon.moon_phase * 100 
+        illum = moon.moon_phase * 100
         
         # CRITICAL FIX: CALCULATE AGE RELATIVE TO NEW MOON EPOCH
         time_elapsed = target_start_utc - last_new_moon_utc
-        # Convert total elapsed seconds to total days
-        moon_age_calculated = time_elapsed.total_seconds() / 86400.0 
-        
-        # Use modulus to ensure the age cycles between 0.0 and 29.53
-        # Store with 1 decimal place for precision
-        moon_age = round(moon_age_calculated % LUNAR_CYCLE_DAYS, 1) 
+        moon_age_calculated = time_elapsed.total_seconds() / 86400.0
+        moon_age = round(moon_age_calculated % LUNAR_CYCLE_DAYS, 1)
 
-        # --- Final Data Collation (FIXED: Includes every day and uses None for missing events) ---
+        # --- Final Data Collation ---
         data_key = target_date_cst.strftime("%Y-%m-%d")
 
         full_data[data_key] = {
             "date": data_key,
             
-            # Major events (Use None if not found.)
-            "major_1_utc": major_events[0].isoformat() + "Z" if len(major_events) > 0 else None,
-            "major_2_utc": major_events[1].isoformat() + "Z" if len(major_events) > 1 else None,
+            # Major/Minor period centers (as before, based on chronological order of transits/rise/set)
+            "major_1_utc": format_utc(major_events_filtered[0]) if len(major_events_filtered) > 0 else None,
+            "major_2_utc": format_utc(major_events_filtered[1]) if len(major_events_filtered) > 1 else None,
             
-            # Minor events (Use None if not found.)
-            "minor_1_utc": minor_events[0].isoformat() + "Z" if len(minor_events) > 0 else None,
-            "minor_2_utc": minor_events[1].isoformat() + "Z" if len(minor_events) > 1 else None,
+            "minor_1_utc": format_utc(minor_events_filtered[0]) if len(minor_events_filtered) > 0 else None,
+            "minor_2_utc": format_utc(minor_events_filtered[1]) if len(minor_events_filtered) > 1 else None,
+            
+            # NEW: Specific Moon Event Times for display
+            "moon_rise_utc": format_utc(moon_rise_utc),
+            "moon_set_utc": format_utc(moon_set_utc),
+            "moon_overhead_utc": format_utc(moon_overhead_utc),
+            "moon_underfoot_utc": format_utc(moon_underfoot_utc),
             
             # Moon data
             "moon_illum": round(illum, 1),
