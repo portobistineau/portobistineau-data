@@ -280,15 +280,15 @@
 // --------------------------------------------------------------------------------
 function formatLocalTime(utcTimeString) {
     if (!utcTimeString) return 'N/A';
-    
+
     // Creates a Date object from the UTC string. The browser handles the 'Z' (UTC).
-    const date = new Date(utcTimeString); 
-    
+    const date = new Date(utcTimeString);
+
     // toLocaleTimeString forces the time to be displayed in the user's local timezone (CST)
-    return date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit', 
-        hour12: true 
+    return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
     });
 }
 
@@ -297,15 +297,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const lat = 32.4619, lng = -93.3486;
         const now = new Date();
-        
+
         // --- ROBUST LOCAL DATE KEY FIX ---
         const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-            .toISOString().slice(0, 10); 
+            .toISOString().slice(0, 10);
 
         // ---- SUN TIMES (Needed for First/Last Light, Sunrise/Sunset) ----
         let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
         const today = now.toISOString().slice(0, 10);
-        
+
         if (!sun || sun.date !== today) {
             fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
                 .then(r => r.json())
@@ -318,14 +318,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .catch(() => {});
         } else {
-             updateSunTimes(sun);
+              updateSunTimes(sun);
         }
 
         function updateSunTimes(sunData) {
             document.getElementById('first').textContent = formatLocalTime(sunData.data.civil_twilight_begin);
-            document.getElementById('rise').textContent   = formatLocalTime(sunData.data.sunrise);
-            document.getElementById('set').textContent    = formatLocalTime(sunData.data.sunset);
-            document.getElementById('last').textContent   = formatLocalTime(sunData.data.civil_twilight_end);
+            document.getElementById('rise').textContent   = formatLocalTime(sunData.data.sunrise);
+            document.getElementById('set').textContent    = formatLocalTime(sunData.data.sunset);
+            document.getElementById('last').textContent   = formatLocalTime(sunData.data.civil_twilight_end);
         }
 
 
@@ -343,15 +343,22 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(fullData => {
                 const dayData = fullData[todayKey];
                 if (!dayData) throw new Error("Data missing for today.");
+                
+                // --- MODIFIED --- START: 1. FILL 4 MOON DATA POINTS
+                document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
+                document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
+                document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
+                document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
+                // --- MODIFIED --- END: 1. FILL 4 MOON DATA POINTS
 
                 // ---- KNIGHT OFFSET (Zeroed out for base accuracy) ----
-                const offsetMinutes = 0; 
-                
+                const offsetMinutes = 0;
+
                 // Function to apply the offset (which is 0)
                 const applyKnight = utcStr => {
                     if (!utcStr) return null;
                     const dt = new Date(utcStr);
-                    return new Date(dt.getTime() + offsetMinutes * 60000); 
+                    return new Date(dt.getTime() + offsetMinutes * 60000);
                 };
 
                 // Function to create the time range from the center time
@@ -359,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!center) return '—'; // <-- Handles null/missing event from JSON
                     const s = new Date(center.getTime() - minutes*60000);
                     const e = new Date(center.getTime() + minutes*60000);
-                    
-                    return `${formatLocalTime(s)}–${formatLocalTime(e)}`; 
+
+                    return `${formatLocalTime(s)}–${formatLocalTime(e)}`;
                 };
 
                 // Get center times as Date objects (null if missing)
@@ -370,10 +377,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const min2Center = applyKnight(dayData.minor_2_utc);
 
                 // Display the accurate times (showing dashes if null)
+                // --- MODIFIED --- 2. REMOVE BOLD TAGS from major/minor periods
                 document.getElementById('maj1').innerHTML = mkRange(major1Center, 60);
-                document.getElementById('maj2').innerHTML = `<b>${mkRange(major2Center, 60)}</b>`;
+                document.getElementById('maj2').innerHTML = mkRange(major2Center, 60); // Removed <b> tags
                 document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
-                document.getElementById('min2').innerHTML = dayData.minor_2_utc ? `<b>${mkRange(min2Center, 30)}</b>` : '—'; 
+                document.getElementById('min2').innerHTML = dayData.minor_2_utc ? mkRange(min2Center, 30) : '—'; // Removed <b> tags
 
                 // ----------------------------------------------------------------
                 // ---- RATING AND MOON PHASE (FINAL LOGIC USING DECIMAL MOON_AGE) ----
@@ -391,52 +399,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const labels = ['Average', 'Good', 'Better', 'Best'];
                 const stars = '★'.repeat(score);
-                document.getElementById('rating').innerHTML = `
-                    <div style="font-size:36px;color:#003366;">${stars}</div>
-                    <div style="font-size:24px;color:#003366;">${labels[score-1]}</div>
-                `;
                 
+                // --- MODIFIED --- 3. CHANGE STAR AND WORD RATING COLOR TO BLACK
+                document.getElementById('rating').innerHTML = `
+                    <div style="font-size:36px;color:#000000;">${stars}</div>
+                    <div style="font-size:24px;color:#000000;">${labels[score-1]}</div>
+                `;
+                // --- MODIFIED --- END: 3. CHANGE STAR AND WORD RATING COLOR TO BLACK
+
+
                 // MOON PHASE NAMING LOGIC (Using precise Moon Age for boundaries)
                 // FINAL FIX: Pushing the midpoint boundary to 14.70 to force the current Waning Moon into the correct half.
                 let phaseName;
 
-                if (actualIllum >= 99.5) { 
+                if (actualIllum >= 99.5) {
                     phaseName = 'Full Moon';
-                } else if (actualIllum <= 0.5) { 
+                } else if (actualIllum <= 0.5) {
                     phaseName = 'New Moon';
-                } 
+                }
                 // --- QUARTER MOONS ---
                 else if (moonAge > 7.3 && moonAge < 7.6) {
                     phaseName = 'First Quarter';
-                } else if (moonAge > 21.9 && moonAge < 22.3) { 
+                } else if (moonAge > 21.9 && moonAge < 22.3) {
                     phaseName = 'Last Quarter';
-                } 
+                }
                 // --- STANDARD PHASES (Waxing/Waning determined by 14.70-day split) ---
                 else if (moonAge < 14.70) {
                     // Waxing side (Age 0 to 14.70)
-                    if (illum < 50) { 
+                    if (illum < 50) {
                         phaseName = 'Waxing Crescent';
                     } else {
-                        phaseName = 'Waxing Gibbous'; 
+                        phaseName = 'Waxing Gibbous';
                     }
                 } else {
                     // Waning side (Age 14.70 to 29.5)
-                    if (illum < 50) { 
-                        phaseName = 'Waning Crescent'; 
+                    if (illum < 50) {
+                        phaseName = 'Waning Crescent';
                     } else {
-                        phaseName = 'Waning Gibbous'; 
+                        phaseName = 'Waning Gibbous';
                     }
                 }
-                
+
                 // Display phase name and illumination percentage
                 document.getElementById('phase').textContent = phaseName;
                 document.getElementById('illum').textContent = `${actualIllum}% Illuminated`;
-                
+
                 // Determine moon image (Image logic remains the same)
                 let moonFile = '';
-                if (actualIllum < 1) { 
+                if (actualIllum < 1) {
                     moonFile = 'newmoon.png';
-                } else if (actualIllum > 99) { 
+                } else if (actualIllum > 99) {
                     moonFile = 'fullmoon.png';
                 } else if (phaseName.includes('First Quarter')) {
                     moonFile = 'firstquart.png';
@@ -444,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     moonFile = 'lastquart.png';
                 } else {
                     const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-                    let pct = actualIllum; 
+                    let pct = actualIllum;
 
                     // Custom ranges for missing images
                     if (pct > 45 && pct < 50) pct = 45;
@@ -455,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 document.getElementById('moon-img').src = `/images/${moonFile}`;
-                
+
             })
             .catch(error => {
                 console.error("Error fetching accurate solunar data:", error);
@@ -464,7 +476,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----------------------------------------------------------------------
         // --- DATE LABELS (No changes needed) ----
         // ----------------------------------------------------------------------
+        const currentYear = now.getFullYear();
         document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+        // --- MODIFIED --- Populate the year in the header
+        document.getElementById('header-year').textContent = currentYear;
         document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
     }, 500);
 });
@@ -482,6 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
