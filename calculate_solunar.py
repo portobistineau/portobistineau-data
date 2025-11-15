@@ -45,6 +45,7 @@ def calculate_data():
         target_date_cst = start_date_cst + timedelta(days=i)
         
         # --- Define the UTC 24-hour window corresponding to the target CST day ---
+        # target_start_utc is roughly 05:00 UTC (12:00 AM CST)
         target_start_utc = CST_TZ.localize(datetime.combine(target_date_cst, time(0, 0, 0))).astimezone(pytz.utc).replace(tzinfo=None)
         target_end_utc = target_start_utc + timedelta(days=1)
         
@@ -80,6 +81,7 @@ def calculate_data():
                 if t.datetime() < target_end_utc:
                     all_major_events.append(t.datetime())
                     if t.datetime() >= target_start_utc and not moon_overhead_utc:
+                        # Only assign for display if it occurs within the target UTC day window
                         moon_overhead_utc = t.datetime()
                 location.date = t + ephem.minute
             except StopIteration: break
@@ -90,43 +92,79 @@ def calculate_data():
                 if a.datetime() < target_end_utc:
                     all_major_events.append(a.datetime())
                     if a.datetime() >= target_start_utc and not moon_underfoot_utc:
+                        # Only assign for display if it occurs within the target UTC day window
                         moon_underfoot_utc = a.datetime()
                 location.date = a + ephem.minute
             except StopIteration: break
             
-        # --- 2. Find Rise and Set (Minor Period Basis) ---
+        # --- 2. Find Rise and Set (Minor Period Basis & Display FIX) ---
         
-        # Search for first rising event
-        location.date = search_start
-        try:
-            r = location.next_rising(moon, start=location.date)
-            if r.datetime() < target_end_utc:
-                all_minor_events.append(r.datetime())
-                if r.datetime() >= target_start_utc:
-                    moon_rise_utc = r.datetime()
-        except Exception: pass # Circumpolar or other error
-        
-        # Search for first setting event
-        location.date = search_start
-        try:
-            s = location.next_setting(moon, start=location.date)
-            if s.datetime() < target_end_utc:
-                all_minor_events.append(s.datetime())
-                if s.datetime() >= target_start_utc:
-                    moon_set_utc = s.datetime()
-        except Exception: pass # Circumpolar or other error
+        # We search a 48-hour window (from 12h before start to 36h after start) to ensure we capture all potential events.
+        search_start_dt = target_start_utc - timedelta(hours=12)
+        search_end_dt = target_end_utc + timedelta(hours=24) 
 
-        # Filter and sort: This determines the chronological order for Major/Minor 1 and 2
+        current_date = search_start_dt
+        rises_list = []
+        sets_list = []
+
+        # Collect up to 3 Rising events within the extended window
+        for _ in range(3):
+            try:
+                r = location.next_rising(moon, start=current_date)
+                r_dt = r.datetime()
+                
+                if r_dt < search_end_dt:
+                    rises_list.append(r_dt)
+                    all_minor_events.append(r_dt)
+                    current_date = r_dt + timedelta(minutes=1)
+                else:
+                    break
+            except StopIteration: break
+            except Exception: break
+            
+        # Reset and collect up to 3 Setting events within the extended window
+        current_date = search_start_dt
+        for _ in range(3):
+            try:
+                s = location.next_setting(moon, start=current_date)
+                s_dt = s.datetime()
+                
+                if s_dt < search_end_dt:
+                    sets_list.append(s_dt)
+                    all_minor_events.append(s_dt)
+                    current_date = s_dt + timedelta(minutes=1)
+                else:
+                    break
+            except StopIteration: break
+            except Exception: break
+            
+        # Filter Major/Minor Events for the Period Centers 
         major_events_filtered = sorted([
             dt for dt in all_major_events 
             if dt >= target_start_utc and dt < target_end_utc
         ])
         
+        # Minor Period Centers MUST fall within the target 24h UTC window
         minor_events_filtered = sorted([
             dt for dt in all_minor_events 
             if dt >= target_start_utc and dt < target_end_utc
         ])
         
+        # Assign Display Variables (First rise/set that occurs ON OR AFTER the target CST day starts)
+        
+        # Moon Rise Display: Find the first rise event *on or after* the target CST day start
+        for dt in sorted(rises_list):
+            if dt >= target_start_utc:
+                moon_rise_utc = dt
+                break
+                
+        # Moon Set Display: Find the first set event *on or after* the target CST day start
+        for dt in sorted(sets_list):
+            if dt >= target_start_utc:
+                moon_set_utc = dt
+                break
+
+
         # Helper to format datetime objects or return None
         def format_utc(dt):
             if isinstance(dt, datetime):
@@ -157,7 +195,7 @@ def calculate_data():
             "minor_1_utc": format_utc(minor_events_filtered[0]) if len(minor_events_filtered) > 0 else None,
             "minor_2_utc": format_utc(minor_events_filtered[1]) if len(minor_events_filtered) > 1 else None,
             
-            # NEW: Specific Moon Event Times for display
+            # NEW: Specific Moon Event Times for display (Now fixed to capture cross-day events)
             "moon_rise_utc": format_utc(moon_rise_utc),
             "moon_set_utc": format_utc(moon_set_utc),
             "moon_overhead_utc": format_utc(moon_overhead_utc),
