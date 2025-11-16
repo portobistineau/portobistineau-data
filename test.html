@@ -210,7 +210,7 @@
   <div id="bistineauWeather">Loading NWS data...</div>
   <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
   <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
-  <script>
+ <script>
 // Helper function to check observation age (1 hour limit)
 function isObservationStale(timestamp) {
     const observationTime = new Date(timestamp).getTime();
@@ -232,62 +232,86 @@ function getWindDirection(deg) {
     const lat = 32.4066, lon = -93.3906;
     const CACHE_LIFETIME_MS = 15 * 60 * 1000; // 15 minutes for fresh API calls
     const now = new Date();
-
+    
     // --- 1. Caching: refresh if cache is older than 15 minutes ---
     let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
     const isCacheStale = !data || (Date.now() - data.fetchTimestamp > CACHE_LIFETIME_MS);
     
+    // Fallback if initial fetch fails
+    let hasData = false; 
+
     if (isCacheStale) {
         document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
         let grid;
         try {
             const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`).then(r => r.json());
             grid = point.properties;
-        } catch(e) { document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; return; }
+        } catch(e) { 
+            document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline or point lookup failed.</div>'; 
+            return; 
+        }
 
-        const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
-            fetch(grid.observationStations),
-            fetch(grid.forecast),
-            fetch(grid.forecastHourly)
-        ]);
+        try {
+            const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
+                fetch(grid.observationStations),
+                fetch(grid.forecast),
+                fetch(grid.forecastHourly)
+            ]);
 
-        const stations = await stationsRes.json();
-        const station = stations.observationStations[0];
-        const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
+            const stations = await stationsRes.json();
+            const station = stations.observationStations[0];
+            const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
 
-        const daily = await dailyRes.json();
-        const hourly = await hourlyRes.json();
+            const daily = await dailyRes.json();
+            const hourly = await hourlyRes.json();
 
-        // Save new data with a new timestamp
-        data = {
-            fetchTimestamp: Date.now(),
-            grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties
-        };
-        localStorage.setItem('nwsCache', JSON.stringify(data));
+            // Save new data with a new timestamp
+            data = {
+                fetchTimestamp: Date.now(),
+                grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties
+            };
+            localStorage.setItem('nwsCache', JSON.stringify(data));
+            hasData = true;
+
+        } catch(e) {
+            document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">Error fetching NWS forecasts. Please try again later.</div>';
+            return;
+        }
+    } else {
+        hasData = true;
     }
+    
+    if (!hasData) return; // Should be unreachable if the above logic is sound, but a safe guard.
 
     // --- 2. Current Observation (Temperature, Pressure, Wind, Time) ---
     const p = data.obs;
     
-    // --- 2a. Stale Data Check (Prevents showing old PM time in the AM) ---
+    // --- Determine Current Icon based on the closest hourly forecast ---
+    const nowDate = now.getTime();
+    const closestHourly = data.hourly.periods.reduce((a,b) =>
+        Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+    );
+    const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
+    
+    // --- 2a. Stale Data Check (Sets the content for the current conditions area) ---
+    let currentHTML = '';
+    
     if (isObservationStale(p.timestamp)) {
-        let errorHTML = `
+        currentHTML = `
             <div style="background:#fff0f0;padding:20px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(255,0,0,.1);">
                 <div style="font-size:18px;font-weight:bold;color:red;">⚠️ Stale Current Conditions ⚠️</div>
                 <div style="color:#666;margin-top:8px;">The latest weather station report is over an hour old. Displaying updated 7-day forecast only.</div>
             </div>`;
-        document.getElementById('bistineauWeather').innerHTML = errorHTML;
-        // Continue to 7-day cards generation below
     } else {
         // Data is fresh, calculate values
         const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
         const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
 
-        // 3. Current Wording/Wind Fixes: Use Observation Data (p)
-        const currentForecast = p.textDescription || 'N/A'; // Use description from observation
+        // Correct Wording/Wind: Use Observation Data (p)
+        const currentForecast = p.textDescription || 'N/A';
         const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
         
-        const currentWindSpeed = Math.round((p.windSpeed?.value || 0) * 2.237); // Convert m/s to mph
+        const currentWindSpeed = Math.round((p.windSpeed?.value || 0) * 2.237);
         const currentWindDir = getWindDirection(p.windDirection?.value);
 
         const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
@@ -300,15 +324,7 @@ function getWindDirection(deg) {
             else trend = '(falling)';
         }
 
-        // --- Closest hourly forecast (only for icon if observation lacks one) ---
-        const nowDate = now.getTime();
-        const closestHourly = data.hourly.periods.reduce((a,b) =>
-            Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
-        );
-        const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
-
-
-        const currentHTML = `
+        currentHTML = `
             <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
                 <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
                 <div style="margin:8px 0;">
@@ -321,10 +337,12 @@ function getWindDirection(deg) {
                     Pressure ${pressure} inHg ${trend}<br>
                 </div>
             </div>`;
-        document.getElementById('bistineauWeather').innerHTML = currentHTML;
     }
+    
+    // Initialize the weather container with the Current Conditions/Stale Message
+    document.getElementById('bistineauWeather').innerHTML = currentHTML;
 
-    // --- 4. 7-Day Forecast Cards (Icon Fix) ---
+    // --- 3. 7-Day Forecast Cards (Icon Fix) ---
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
     const dailyPeriods = data.daily.periods.slice(0, 14);
 
@@ -353,7 +371,7 @@ function getWindDirection(deg) {
         startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + i);
         const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
 
-        // Calculate High/Low from Hourly data for more accurate Hi/Lo range (original robust logic)
+        // Calculate High/Low from Hourly data
         const dayHours = data.hourly.periods.filter(p => {
             const t = new Date(p.startTime);
             return t >= startOfDay && t <= endOfDay;
@@ -376,12 +394,11 @@ function getWindDirection(deg) {
     }
     forecastHTML += '</div>';
     
-    // Append the forecast cards to the existing content
+    // FIX: APPEND the forecast cards so they show up after the current conditions (or error message)
     document.getElementById('bistineauWeather').innerHTML += forecastHTML;
 
-    // --- POPUP DETAIL VIEW (No changes needed here) ---
+    // --- POPUP DETAIL VIEW (Original logic preserved) ---
     window.showDetail = function(dayIndex) {
-        // ... (original showDetail logic) ...
         const startOfDay = new Date();
         startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + dayIndex);
         const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
@@ -416,6 +433,7 @@ function getWindDirection(deg) {
 </div>
 </body>
 </html>
+
 
 
 
