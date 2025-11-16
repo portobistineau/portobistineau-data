@@ -3,222 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Port O' Bistineau Fishing Report Test Page</title>
-    
-    <!-- PLACEHOLDER FOR EXISTING GLOBAL STYLES -->
+    <title>Port O' Bistineau Fishing Report</title>
+    <!-- Load Tailwind CSS for modern, utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background-color: #f0f4f8;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+        /* Custom Font Import: Inter is clean and modern */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         
-        header {
-            background-color: #003366;
-            color: white;
-            padding: 20px;
-            text-align: center;
+        :root {
+            --primary-blue: #003366;
+            --light-blue: #f0f4f8;
         }
 
-        /* --- NEW SOLUNAR STYLES --- */
-        /* This is the master style block for the Solunar card */
-        .solunar-card {
-            margin: 30px auto;
-            max-width: 1000px;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            font-family: Arial, sans-serif;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-blue);
         }
 
-        .solunar-main-flex {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        /* --- Solunar Specific Classes (Minimal custom CSS needed with Tailwind) --- */
+
+        /* Override for the star rating to ensure black color */
+        .solunar-star-rating div {
+            color: #000000 !important;
         }
 
-        .solunar-data-panel {
-            /* flex: 2 1 0% for PC ratio, takes 2/3 of the space */
-            flex: 2 1 0%;
-            background: #f8fdff;
-            padding: 25px;
-            border-radius: 12px;
-        }
-
-        .solunar-rating-panel {
-            /* flex: 1 1 0% for PC ratio, takes 1/3 of the space */
-            flex: 1 1 0%;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        /* Inner Data Sections (Sun/Moon) */
-        .solunar-inner-flex {
-            display: flex;
-            gap: 30px;
-            line-height: 1.35;
-            font-size: 16px;
-            flex-wrap: wrap; /* Allows Sun/Moon to stack on mobile */
-        }
-
-        .solunar-sun-data, .solunar-moon-data {
-            /* flex: 1 1 45% ensures they take up 45% on PC, and stack on mobile */
-            flex: 1 1 45%; 
-        }
-
+        /* Ensure the Sun/Moon grids align labels correctly */
         .solunar-grid {
             display: grid;
             grid-template-columns: max-content 1fr;
             gap: 8px 10px;
         }
-
-        .solunar-divider {
-            margin: 20px 0 15px 0; 
-            border: 0; 
-            border-top: 1px solid #ccc;
-        }
-
-        /* Rating/Moon Phase Adjustments */
-        .solunar-rating-text {
-            margin-top: -15px;
-        }
-        .solunar-star-rating {
-            font-size: 30px; 
-            color: #000000; 
-            line-height: 1.5;
-        }
-        .solunar-moon-container {
-            position: relative; 
-            width: 90px;
-            height: 90px;
-            background: #002244;
-            border-radius: 50%;
-            margin: 12px auto;
-            padding: 5px;
-        }
-        .solunar-moon-img {
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-            margin: auto; 
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .solunar-phase-text {
-            font-weight: bold;
-            font-size: 16px;
-            color: #000;
-            margin: 8px 0 4px;
-        }
-
-        .solunar-footer {
-            text-align: center;
-            color: #003366;
-            font-size: 12px;
-            margin-top: 22px;
-        }
-        
     </style>
 </head>
-<body>
+<body class="antialiased">
 
-    <header>
-        <h1>Port O' Bistineau Test Environment</h1>
-        <p>This page is a mirror of index.html for safe testing.</p>
+    <!-- HEADER: Site Title and Navigation (Tailwind) -->
+    <header class="bg-[#003366] text-white shadow-xl">
+        <div class="max-w-7xl mx-auto p-4 flex justify-between items-center">
+            <h1 class="text-3xl font-extrabold tracking-tight">Port O' Bistineau</h1>
+            <nav>
+                <a href="#" class="mx-2 hover:text-yellow-400 transition">Report</a>
+                <a href="#" class="mx-2 hover:text-yellow-400 transition">Map</a>
+                <a href="#" class="mx-2 hover:text-yellow-400 transition">About</a>
+            </nav>
+        </div>
     </header>
 
-    <!-- Placeholder for other content on your page -->
-    <main style="max-width:1000px;margin:20px auto;padding:0 20px;">
-        <p>Your main content, map, and other sections would go here...</p>
+    <!-- MAIN CONTENT AREA -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- SECTION 1: WELCOME & WATER CONDITIONS -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Current Conditions & Report</h2>
+            <p class="text-gray-600 mb-4">
+                Welcome to the official Port O' Bistineau Fishing Report Test Environment. Use this section to populate the latest water level, clarity, and temperature readings.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-medium text-gray-500">Water Level</p>
+                    <p class="text-xl font-semibold text-blue-700">141.5 ft (Falling)</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-medium text-gray-500">Clarity</p>
+                    <p class="text-xl font-semibold text-green-700">5 inches (Stained)</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-medium text-gray-500">Temperature</p>
+                    <p class="text-xl font-semibold text-red-700">68°F</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================== -->
+        <!-- START: SOLUNAR SECTION (Now styled entirely with Tailwind) -->
+        <!-- ==================================================================== -->
+
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-center text-2xl font-extrabold text-gray-900 mb-6">
+                Today's Solunar Forecast: <span id="header-date">—</span>, <span id="header-year">2025</span>
+            </h2>
+
+            <!-- MAIN CONTAINER: Use responsive grid/flex to stack columns on mobile -->
+            <div class="flex flex-col lg:flex-row gap-4">
+
+                <!-- LEFT PANEL: Data (Takes 2/3 on desktop) -->
+                <div class="lg:w-2/3 bg-blue-50 p-6 rounded-xl shadow-inner">
+
+                    <!-- INNER CONTAINER FOR SUN/MOON DATA (Responsive Flex) -->
+                    <div class="flex flex-wrap gap-x-8 gap-y-6 text-base leading-relaxed">
+
+                        <!-- Sun Data -->
+                        <div class="flex-1 min-w-[200px]">
+                            <h3 class="text-lg font-bold text-center text-gray-700 mb-3">Sun Data</h3>
+                            <div class="solunar-grid">
+                                <b>First Light</b> <div id="first" class="text-right font-normal">Calculating…</div>
+                                <b>Sunrise</b> <div id="rise" class="text-right font-normal">Calculating…</div>
+                                <b>Sunset</b> <div id="set" class="text-right font-normal">Calculating…</div>
+                                <b>Last Light</b> <div id="last" class="text-right font-normal">Calculating…</div>
+                            </div>
+                        </div>
+
+                        <!-- Moon Data -->
+                        <div class="flex-1 min-w-[200px]">
+                            <h3 class="text-lg font-bold text-center text-gray-700 mb-3">Moon Data</h3>
+                            <div class="solunar-grid">
+                                <b>Rise</b> <div id="moon-rise" class="text-right font-normal">Calculating…</div>
+                                <b>Set</b> <div id="moon-set" class="text-right font-normal">Calculating…</div>
+                                <b>Overhead</b> <div id="moon-overhead" class="text-right font-normal">Calculating…</div>
+                                <b>Underfoot</b> <div id="moon-underfoot" class="text-right font-normal">Calculating…</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="solunar-divider border-t border-gray-300 my-6">
+
+                    <!-- Major/Minor Periods -->
+                    <div class="solunar-grid text-base leading-relaxed">
+                        <h3 class="col-span-2 text-lg font-bold text-gray-700 mb-1">Peak Feeding Times</h3>
+                        <b>Major Period 1</b> <div id="maj1" class="text-right font-normal">Calculating…</div>
+                        <b>Major Period 2</b> <div id="maj2" class="text-right font-normal">Calculating…</div>
+                        <b>Minor Period 1</b> <div id="min1" class="text-right font-normal">Calculating…</div>
+                        <b>Minor Period 2</b> <div id="min2" class="text-right font-normal">Calculating…</div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL: Rating and Moon Phase (Takes 1/3 on desktop) -->
+                <div class="lg:w-1/3 bg-white p-6 rounded-xl shadow-md flex flex-col justify-center items-center text-center">
+                    
+                    <div class="solunar-rating-text mb-4">
+                        <!-- The rating content uses a custom class to override Tailwind color -->
+                        <div id="rating" class="solunar-star-rating text-3xl leading-none">Calculating…</div>
+                    </div>
+
+                    <!-- Moon Container -->
+                    <div id="moon-bg" class="relative w-[90px] h-[90px] bg-[#002244] rounded-full p-1.5 mx-auto">
+                        <img id="moon-img" src="" width="90" height="90" class="absolute inset-0 m-auto rounded-full shadow-2xl">
+                    </div>
+
+                    <div id="phase" class="font-bold text-lg text-gray-900 mt-3 mb-1">—</div>
+                    <div id="illum" class="text-gray-800 text-base">—</div>
+                </div>
+            </div>
+
+            <p class="text-center text-xs text-gray-500 mt-6">
+                Data Updated <span id="date">—</span> – Refresh for latest
+            </p>
+        </div>
+        
+        <!-- SECTION 3: MAP / DIRECTIONS PLACEHOLDER -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Port O' Bistineau Map & Access</h2>
+            <div class="h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 border border-dashed">
+                [Placeholder for Interactive Map or Directions]
+            </div>
+        </div>
+
     </main>
     
-    <!-- ==================================================================== -->
-    <!-- START: CLEANED SOLUNAR SECTION -->
-    <!-- ==================================================================== -->
-
-    <!-- TODAY’S BITE FORECAST – CLEANED UP WITH CSS CLASSES -->
-    <div class="solunar-card">
-      <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
-        Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
-      </h2>
-
-      <!-- MAIN CONTAINER: flex-wrap makes it responsive (stacking the two columns on small screens) -->
-      <div class="solunar-main-flex">
-
-        <!-- LEFT PANEL: Data (takes 2/3 space on PC) -->
-        <div class="solunar-data-panel">
-
-          <!-- INNER CONTAINER FOR SUN/MOON DATA (flex-wrap makes it responsive) -->
-          <div class="solunar-inner-flex">
-
-            <!-- Sun Data -->
-            <div class="solunar-sun-data">
-              <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Sun Data</h3>
-              <div class="solunar-grid">
-                <b>First Light</b> <div id="first" style="text-align:right;font-weight:normal;">Calculating…</div>
-                <b>Sunrise</b> <div id="rise" style="text-align:right;font-weight:normal;">Calculating…</div>
-                <b>Sunset</b> <div id="set" style="text-align:right;font-weight:normal;">Calculating…</div>
-                <b>Last Light</b> <div id="last" style="text-align:right;font-weight:normal;">Calculating…</div>
-              </div>
-            </div>
-
-            <!-- Moon Data -->
-            <div class="solunar-moon-data">
-              <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Moon Data</h3>
-              <div class="solunar-grid">
-                <b>Rise</b> <div id="moon-rise" style="text-align:right;font-weight:normal;">Calculating…</div>
-                <b>Set</b> <div id="moon-set" style="text-align:right;font-weight:normal;">Calculating…</div>
-                <b>Overhead</b> <div id="moon-overhead" style="text-align:right;font-weight:normal;">Calculating…</div>
-                <b>Underfoot</b> <div id="moon-underfoot" style="text-align:right;font-weight:normal;">Calculating…</div>
-              </div>
-            </div>
-          </div>
-
-          <hr class="solunar-divider">
-
-          <div class="solunar-grid" style="line-height:1.35;font-size:16px;">
-            <b>Major Period 1</b> <div id="maj1" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Major Period 2</b> <div id="maj2" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Minor Period 1</b> <div id="min1" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Minor Period 2</b> <div id="min2" style="text-align:right;font-weight:normal;">Calculating…</div>
-          </div>
-        </div>
-
-        <!-- RIGHT PANEL: Rating and Moon Phase (takes 1/3 space on PC) -->
-        <div class="solunar-rating-panel">
-          
-          <div class="solunar-rating-text">
-            <!-- The rating content is injected by JS, but the container uses a class -->
-            <div id="rating" class="solunar-star-rating">Calculating…</div>
-          </div>
-
-          <div id="moon-bg" class="solunar-moon-container">
-            <img id="moon-img" src="" width="90" height="90" class="solunar-moon-img">
-          </div>
-
-          <div id="phase" class="solunar-phase-text">—</div>
-          <div id="illum" style="color:#000;font-size:16px;">—</div>
-        </div>
-      </div>
-
-      <p class="solunar-footer">
-        Updated <span id="date">—</span> – Refresh for latest
-      </p>
-    </div>
-
-    <!-- ==================================================================== -->
-    <!-- END: CLEANED SOLUNAR SECTION -->
-    <!-- ==================================================================== -->
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-white text-center py-4 mt-10">
+        <p class="text-sm">© 2025 Port O' Bistineau Fishing. All rights reserved.</p>
+    </footer>
 
 
-    <!-- SCRIPTS (Should be placed at the bottom of the body for fastest load) -->
+    <!-- SCRIPTS (The JavaScript logic remains unchanged and is placed at the bottom) -->
     <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
     <script>
     // --------------------------------------------------------------------------------
@@ -345,10 +293,10 @@
                     const labels = ['Average', 'Good', 'Better', 'Best'];
                     const stars = '★'.repeat(score);
                     
-                    // --- 3. CHANGE STAR AND WORD RATING COLOR TO BLACK (uses .solunar-star-rating class)
+                    // --- Inject Star and Word Rating ---
                     document.getElementById('rating').innerHTML = `
-                        <div style="font-size:36px;color:#000000;">${stars}</div>
-                        <div style="font-size:24px;color:#000000;">${labels[score-1]}</div>
+                        <div class="text-4xl">${stars}</div>
+                        <div class="text-xl font-semibold">${labels[score-1]}</div>
                     `;
 
 
