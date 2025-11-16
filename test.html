@@ -211,12 +211,29 @@
   <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
   <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
   <script>
+// Helper function to check observation age (1 hour limit)
+function isObservationStale(timestamp) {
+    const observationTime = new Date(timestamp).getTime();
+    const currentTime = Date.now();
+    // Check if the observation is older than 60 minutes (3600000 milliseconds)
+    return (currentTime - observationTime) > 3600000;
+}
+
+// Helper function to convert degrees (0-360) to cardinal direction (N, NE, SW, etc.)
+function getWindDirection(deg) {
+    if (deg === null || isNaN(deg)) return '';
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const index = Math.round((deg % 360) / 45);
+    return directions[index % 8];
+}
+
+
 (async () => {
     const lat = 32.4066, lon = -93.3906;
-    const CACHE_LIFETIME_MS = 15 * 60 * 1000; // 15 minutes
+    const CACHE_LIFETIME_MS = 15 * 60 * 1000; // 15 minutes for fresh API calls
     const now = new Date();
 
-    // --- Caching: refresh if cache is older than 15 minutes ---
+    // --- 1. Caching: refresh if cache is older than 15 minutes ---
     let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
     const isCacheStale = !data || (Date.now() - data.fetchTimestamp > CACHE_LIFETIME_MS);
     
@@ -243,62 +260,71 @@
 
         // Save new data with a new timestamp
         data = {
-            fetchTimestamp: Date.now(), // Store the new timestamp
+            fetchTimestamp: Date.now(),
             grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties
         };
         localStorage.setItem('nwsCache', JSON.stringify(data));
     }
 
-    // --- Current Observation (for temperature, feels-like, pressure) ---
+    // --- 2. Current Observation (Temperature, Pressure, Wind, Time) ---
     const p = data.obs;
-    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
+    
+    // --- 2a. Stale Data Check (Prevents showing old PM time in the AM) ---
+    if (isObservationStale(p.timestamp)) {
+        let errorHTML = `
+            <div style="background:#fff0f0;padding:20px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(255,0,0,.1);">
+                <div style="font-size:18px;font-weight:bold;color:red;">⚠️ Stale Current Conditions ⚠️</div>
+                <div style="color:#666;margin-top:8px;">The latest weather station report is over an hour old. Displaying updated 7-day forecast only.</div>
+            </div>`;
+        document.getElementById('bistineauWeather').innerHTML = errorHTML;
+        // Continue to 7-day cards generation below
+    } else {
+        // Data is fresh, calculate values
+        const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
+        const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
 
-    const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
-    let trend = '';
-    const change = p.pressureChange?.value;
-    if (change !== null) {
-        const inches = change / 3386.39;
-        if (Math.abs(inches) < 0.02) trend = '(steady)';
-        else if (inches > 0) trend = '(rising)';
-        else trend = '(falling)';
+        // 3. Current Wording/Wind Fixes: Use Observation Data (p)
+        const currentForecast = p.textDescription || 'N/A'; // Use description from observation
+        const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+        
+        const currentWindSpeed = Math.round((p.windSpeed?.value || 0) * 2.237); // Convert m/s to mph
+        const currentWindDir = getWindDirection(p.windDirection?.value);
+
+        const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
+        let trend = '';
+        const change = p.pressureChange?.value;
+        if (change !== null) {
+            const inches = change / 3386.39;
+            if (Math.abs(inches) < 0.02) trend = '(steady)';
+            else if (inches > 0) trend = '(rising)';
+            else trend = '(falling)';
+        }
+
+        // --- Closest hourly forecast (only for icon if observation lacks one) ---
+        const nowDate = now.getTime();
+        const closestHourly = data.hourly.periods.reduce((a,b) =>
+            Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+        );
+        const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
+
+
+        const currentHTML = `
+            <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+                <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
+                <div style="margin:8px 0;">
+                    <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
+                    <div style="font-size:14px;color:#666;margin-top:4px;">${currentForecast}</div>
+                </div>
+                <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
+                <div style="font-size:14px;line-height:1.6;">
+                    Wind ${currentWindSpeed} mph ${currentWindDir}<br>
+                    Pressure ${pressure} inHg ${trend}<br>
+                </div>
+            </div>`;
+        document.getElementById('bistineauWeather').innerHTML = currentHTML;
     }
 
-    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-
-    // --- Closest hourly forecast (for icon, condition, wind) ---
-    const nowDate = now.getTime();
-    const closestHourly = data.hourly.periods.reduce((a,b) =>
-        Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
-    );
-
-    const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
-    const currentForecast = closestHourly?.shortForecast || '';
-
-    // Parse wind speed and direction from forecast string (e.g., "10 mph", "5 to 10 mph")
-    let windSpeedAvg = 0;
-    if (closestHourly?.windSpeed) {
-        const nums = closestHourly.windSpeed.match(/\d+/g)?.map(Number) || [];
-        if (nums.length === 1) windSpeedAvg = nums[0];
-        else if (nums.length === 2) windSpeedAvg = Math.round((nums[0] + nums[1]) / 2);
-    }
-    const windDir = closestHourly?.windDirection || '';
-
-    const currentHTML = `
-        <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
-            <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
-            <div style="margin:8px 0;">
-                <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
-                <div style="font-size:14px;color:#666;margin-top:4px;">${currentForecast}</div>
-            </div>
-            <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
-            <div style="font-size:14px;line-height:1.6;">
-                Wind ${windSpeedAvg} mph ${windDir}<br>
-                Pressure ${pressure} inHg ${trend}<br>
-            </div>
-        </div>`;
-
-    // --- 7-Day Forecast Cards ---
+    // --- 4. 7-Day Forecast Cards (Icon Fix) ---
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
     const dailyPeriods = data.daily.periods.slice(0, 14);
 
@@ -309,16 +335,25 @@
         dayDate.setDate(dayDate.getDate() + i);
         const dayName = i===0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday:'short' });
         
-        // FIX: Use the 'currentIcon' (hourly/accurate day/night) for Today's card (i===0)
-        // For future days, use the forecast day icon.
-        const icon = i === 0 
-            ? currentIcon 
-            : day.icon.replace('large','medium');
-
+        let icon;
+        if (i === 0) {
+            // Fix: Use the accurate hourly icon for 'Today's' card
+            icon = currentIcon;
+        } else {
+            // Fix: Use the forecast period's icon and check the isDaytime flag
+            icon = day.icon.replace('large','medium');
+            
+            if (!day.isDaytime) {
+                // Manually swap 'day' to 'night' in the URL if NWS reports it as a night period
+                icon = icon.replace('/day/', '/night/');
+            }
+        }
+        
         const startOfDay = new Date();
         startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + i);
         const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
 
+        // Calculate High/Low from Hourly data for more accurate Hi/Lo range (original robust logic)
         const dayHours = data.hourly.periods.filter(p => {
             const t = new Date(p.startTime);
             return t >= startOfDay && t <= endOfDay;
@@ -340,11 +375,13 @@
             </div>`;
     }
     forecastHTML += '</div>';
-
-    document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
+    
+    // Append the forecast cards to the existing content
+    document.getElementById('bistineauWeather').innerHTML += forecastHTML;
 
     // --- POPUP DETAIL VIEW (No changes needed here) ---
     window.showDetail = function(dayIndex) {
+        // ... (original showDetail logic) ...
         const startOfDay = new Date();
         startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + dayIndex);
         const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
@@ -379,5 +416,6 @@
 </div>
 </body>
 </html>
+
 
 
