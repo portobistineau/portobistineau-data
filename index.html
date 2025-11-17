@@ -211,44 +211,54 @@
   <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
   <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
   <script>
-  (async () => {
+  // Global for popup
+  window.lastWeatherData = null;
+
+  async function updateWeather() {
+    // ALWAYS CLEAR CACHE ON LOAD
+    localStorage.removeItem('nwsCache');
+
     const lat = 32.4066, lon = -93.3906;
     const now = new Date();
-    const today = now.toISOString().slice(0,10);
-    const hour = now.getHours();
 
-    // --- Hourly Caching: refresh if date or hour changed ---
-    let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
-    if (!data || data.date !== today || data.hour !== hour) {
-      document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
-      let grid;
-      try {
-        const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`).then(r => r.json());
-        grid = point.properties;
-      } catch(e) { document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>'; return; }
-
-      const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
-        fetch(grid.observationStations),
-        fetch(grid.forecast),
-        fetch(grid.forecastHourly)
-      ]);
-
-      const stations = await stationsRes.json();
-      const station = stations.observationStations[0];
-      const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
-
-      const daily = await dailyRes.json();
-      const hourly = await hourlyRes.json();
-
-      data = {date: today, hour, grid, obs: obs.properties, daily: daily.properties, hourly: hourly.properties};
-      localStorage.setItem('nwsCache', JSON.stringify(data));
+    document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+    let grid;
+    try {
+      const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+        headers: { 'User-Agent': 'LakeBistineauWeather/1.0 (contact@louisianajedi.com)' }
+      }).then(r => r.json());
+      grid = point.properties;
+    } catch(e) {
+      document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS down – try later</div>';
+      return;
     }
 
-    // --- Current Observation (for temperature, feels-like, pressure) ---
+    const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
+      fetch(grid.observationStations),
+      fetch(grid.forecast),
+      fetch(grid.forecastHourly)
+    ]);
+
+    const stations = await stationsRes.json();
+    const station = stations.observationStations[0];
+    const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
+    const daily = await dailyRes.json();
+    const hourly = await hourlyRes.json();
+
+    const data = {
+      grid,
+      obs: obs.properties,
+      daily: daily.properties,
+      hourly: hourly.properties
+    };
+
+    // STORE FOR POPUP
+    window.lastWeatherData = data;
+
+    // --- RENDER CURRENT ---
     const p = data.obs;
     const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
     const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-
     const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
     let trend = '';
     const change = p.pressureChange?.value;
@@ -258,19 +268,15 @@
       else if (inches > 0) trend = '(rising)';
       else trend = '(falling)';
     }
-
     const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 
-    // --- Closest hourly forecast (for icon, condition, wind) ---
     const nowDate = now.getTime();
     const closestHourly = data.hourly.periods.reduce((a,b) =>
       Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
     );
-
     const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
     const currentForecast = closestHourly?.shortForecast || '';
 
-    // Parse wind speed and direction from forecast string (e.g., "10 mph", "5 to 10 mph")
     let windSpeedAvg = 0;
     if (closestHourly?.windSpeed) {
       const nums = closestHourly.windSpeed.match(/\d+/g)?.map(Number) || [];
@@ -293,10 +299,9 @@
         </div>
       </div>`;
 
-    // --- 7-Day Forecast Cards ---
+    // --- 7-DAY FORECAST ---
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
     const dailyPeriods = data.daily.periods.slice(0, 14);
-
     for (let i = 0; i < 7; i++) {
       const day = dailyPeriods[i*2];
       const night = dailyPeriods[i*2 + 1] || day;
@@ -304,19 +309,15 @@
       dayDate.setDate(dayDate.getDate() + i);
       const dayName = i===0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday:'short' });
       const icon = day.icon.replace('large','medium');
-
       const startOfDay = new Date();
       startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + i);
       const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
-
       const dayHours = data.hourly.periods.filter(p => {
         const t = new Date(p.startTime);
         return t >= startOfDay && t <= endOfDay;
       });
-
       const hi = dayHours.length ? Math.max(...dayHours.map(p=>p.temperature)) : day.temperature;
       const lo = dayHours.length ? Math.min(...dayHours.map(p=>p.temperature)) : night.temperature;
-
       forecastHTML += `
         <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
           <div style="font-weight:bold;color:#003366;">${dayName}</div>
@@ -330,42 +331,50 @@
         </div>`;
     }
     forecastHTML += '</div>';
-
     document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
+  }
 
-    // --- POPUP DETAIL VIEW ---
-    window.showDetail = function(dayIndex) {
-      const startOfDay = new Date();
-      startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + dayIndex);
-      const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
+  // --- POPUP DETAIL ---
+  window.showDetail = function(dayIndex) {
+    const data = window.lastWeatherData;
+    if (!data) return;
 
-      const periods = data.hourly.periods.filter(p => {
-        const t = new Date(p.startTime);
-        return t >= startOfDay && t <= endOfDay;
-      });
+    const startOfDay = new Date();
+    startOfDay.setHours(0,0,0,0); 
+    startOfDay.setDate(startOfDay.getDate() + dayIndex);
+    const endOfDay = new Date(startOfDay); 
+    endOfDay.setHours(23,59,59,999);
 
-      let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-      periods.forEach(p => {
-        const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
-        const temp = p.temperature;
-        const windStr = p.windSpeed.replace(' mph','');
-        const dir = p.windDirection;
-        detailHTML += `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
-            <div style="width:50px;">${time}</div>
-            <img src="${p.icon.replace('large','small')}" width="32" height="32">
-            <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-            <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
-            <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
-          </div>`;
-      });
-      detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
-      document.getElementById('dayDetail').innerHTML = detailHTML;
-      document.getElementById('dayDetail').style.display = 'block';
-      document.getElementById('overlay').style.display = 'block';
-    };
-  })();
-  </script>
+    const periods = data.hourly.periods.filter(p => {
+      const t = new Date(p.startTime);
+      return t >= startOfDay && t <= endOfDay;
+    });
+
+    let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
+    periods.forEach(p => {
+      const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
+      const temp = p.temperature;
+      const windStr = p.windSpeed.replace(' mph','');
+      const dir = p.windDirection;
+      detailHTML += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
+          <div style="width:50px;">${time}</div>
+          <img src="${p.icon.replace('large','small')}" width="32" height="32">
+          <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
+          <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
+          <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
+        </div>`;
+    });
+    detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
+    document.getElementById('dayDetail').innerHTML = detailHTML;
+    document.getElementById('dayDetail').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  };
+
+  // --- AUTO-REFRESH EVERY 30 MIN ---
+  updateWeather(); // initial
+  setInterval(updateWeather, 30 * 60 * 1000);
+</script>
 </div>
 	  
 	  
@@ -891,6 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </body>
 
 </html>
+
 
 
 
