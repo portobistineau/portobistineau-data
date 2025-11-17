@@ -212,52 +212,44 @@
   <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
   <script>
   (async function updateWeather() {
+    // --- ALWAYS CLEAR CACHE ON LOAD ---
+    localStorage.removeItem('nwsCache');
+
     const lat = 32.4066, lon = -93.3906;
     const now = new Date();
-    const today = now.toISOString().slice(0,10);
-    const hour = now.getHours();
 
-    // --- Check if we need fresh data ---
-    let data = JSON.parse(localStorage.getItem('nwsCache') || 'null');
-    const shouldRefresh = !data || data.date !== today || data.hour !== hour;
-
-    if (shouldRefresh) {
-      document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
-      let grid;
-      try {
-        const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
-          headers: { 'User-Agent': 'LakeBistineauWeather/1.0 (louisianajedi)' }
-        }).then(r => r.json());
-        grid = point.properties;
-      } catch(e) {
-        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS offline – refresh later</div>';
-        return;
-      }
-
-      const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
-        fetch(grid.observationStations),
-        fetch(grid.forecast),
-        fetch(grid.forecastHourly)
-      ]);
-
-      const stations = await stationsRes.json();
-      const station = stations.observationStations[0];
-      const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
-      const daily = await dailyRes.json();
-      const hourly = await hourlyRes.json();
-
-      data = {
-        date: today,
-        hour,
-        grid,
-        obs: obs.properties,
-        daily: daily.properties,
-        hourly: hourly.properties
-      };
-      localStorage.setItem('nwsCache', JSON.stringify(data));
+    document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+    let grid;
+    try {
+      const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+        headers: { 'User-Agent': 'LakeBistineauWeather/1.0 (contact@louisianajedi.com)' }
+      }).then(r => r.json());
+      grid = point.properties;
+    } catch(e) {
+      document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS down – try later</div>';
+      return;
     }
 
-    // --- [Rest of your rendering code — unchanged] ---
+    const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
+      fetch(grid.observationStations),
+      fetch(grid.forecast),
+      fetch(grid.forecastHourly)
+    ]);
+
+    const stations = await stationsRes.json();
+    const station = stations.observationStations[0];
+    const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
+    const daily = await dailyRes.json();
+    const hourly = await hourlyRes.json();
+
+    const data = {
+      grid,
+      obs: obs.properties,
+      daily: daily.properties,
+      hourly: hourly.properties
+    };
+
+    // --- RENDER CURRENT + 7-DAY (unchanged) ---
     const p = data.obs;
     const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
     const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
@@ -335,20 +327,17 @@
     document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
   })();
 
-  // --- AUTO-REFRESH EVERY 60 MINUTES ---
-  setInterval(() => {
-    console.log('Auto-refreshing NWS weather data...');
-    updateWeather();
-  }, 60 * 60 * 1000); // 60 minutes
+  // --- AUTO-REFRESH EVERY 30 MINUTES ---
+  setInterval(updateWeather, 30 * 60 * 1000);
 
-  // --- POPUP DETAIL VIEW (unchanged) ---
+  // --- POPUP DETAIL (uses fresh data from memory) ---
   window.showDetail = function(dayIndex) {
-    const cached = JSON.parse(localStorage.getItem('nwsCache'));
-    if (!cached) return;
+    const data = window.lastWeatherData;
+    if (!data) return;
     const startOfDay = new Date();
     startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + dayIndex);
     const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
-    const periods = cached.hourly.periods.filter(p => {
+    const periods = data.hourly.periods.filter(p => {
       const t = new Date(p.startTime);
       return t >= startOfDay && t <= endOfDay;
     });
@@ -372,11 +361,24 @@
     document.getElementById('dayDetail').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
   };
+
+  // Store data globally for popup
+  window.lastWeatherData = null;
+  // Override after first render
+  const original = updateWeather;
+  updateWeather = async function() {
+    await original();
+    // Grab fresh data after render
+    const cached = JSON.parse(localStorage.getItem('nwsCache') || 'null');
+    if (cached) window.lastWeatherData = cached;
+  };
+  updateWeather(); // initial call
 </script>
 
 </div>
 </body>
 </html>
+
 
 
 
