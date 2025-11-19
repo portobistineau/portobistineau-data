@@ -379,245 +379,194 @@
 
 </div>
 <!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
-<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
-  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
-    Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
-  </h2>
+<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;"> <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;"> Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span> </h2>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+<div style="display:flex;gap:10px;flex-wrap:wrap;">
 
-    <div style="flex: 2 1 0%; background:#f8fdff;padding:25px;border-radius:12px;">
+<div style="flex: 2 1 0%; background:#f8fdff;padding:25px;border-radius:12px;color:#000;">
 
-      <div style="display:flex;gap:30px;line-height:1.35;font-size:16px;flex-wrap:wrap;">
+  <div style="display:flex;gap:30px;line-height:1.35;font-size:16px;flex-wrap:wrap;">
 
-        <div style="flex:1 1 45%;">
-          <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Sun Data</h3>
-          <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
-            <b>First Light</b> <div id="first" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Sunrise</b> <div id="rise" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Sunset</b> <div id="set" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Last Light</b> <div id="last" style="text-align:right;font-weight:normal;">Calculating…</div>
-          </div>
-        </div>
-
-        <div style="flex:1 1 45%;">
-          <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Moon Data</h3>
-          <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
-            <b>Rise</b> <div id="moon-rise" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Set</b> <div id="moon-set" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Overhead</b> <div id="moon-overhead" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Underfoot</b> <div id="moon-underfoot" style="text-align:right;font-weight:normal;">Calculating…</div>
-          </div>
-        </div>
-      </div>
-
-      <hr style="margin: 20px 0 15px 0; border: 0; border-top: 1px solid #ccc;">
-
-      <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
-        <b>Major Period 1</b> <div id="maj1" style="text-align:right;font-weight:normal;">Calculating…</div>
-        <b>Major Period 2</b> <div id="maj2" style="text-align:right;font-weight:normal;">Calculating…</div>
-        <b>Minor Period 1</b> <div id="min1" style="text-align:right;font-weight:normal;">Calculating…</div>
-        <b>Minor Period 2</b> <div id="min2" style="text-align:right;font-weight:normal;">Calculating…</div>
+    <div style="flex:1 1 45%;">
+      <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Sun Data</h3>
+      <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
+        <b>First Light</b> <div id="first" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Sunrise</b> <div id="rise" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Sunset</b> <div id="set" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Last Light</b> <div id="last" style="text-align:right;font-weight:normal;">Calculating…</div>
       </div>
     </div>
 
-    <div style="flex: 1 1 0%; background:white;padding:25px;border-radius:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
-      
-      <div style="margin-top: -15px;">
-        <div id="rating" style="font-size:30px;color:#000000;line-height:1.5;">Calculating…</div>
+    <div style="flex:1 1 45%;">
+      <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Moon Data</h3>
+      <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
+        <b>Rise</b> <div id="moon-rise" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Set</b> <div id="moon-set" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Overhead</b> <div id="moon-overhead" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <b>Underfoot</b> <div id="moon-underfoot" style="text-align:right;font-weight:normal;">Calculating…</div>
       </div>
-
-      <div id="moon-bg" style="position:relative; width:90px;height:90px;background:#002244;border-radius:50%;margin:12px auto;padding:5px;">
-        <img id="moon-img" src="" width="90" height="90" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-      </div>
-
-      <div id="phase" style="font-weight:bold;font-size:16px;color:#000;margin:8px 0 4px;">—</div>
-      <div id="illum" style="color:#000;font-size:16px;">—</div>
     </div>
   </div>
 
-  <p style="text-align:center;color:#003366;font-size:12px;margin-top:22px;">
-    Updated <span id="date">—</span> – Refresh for latest
-  </p>
+  <hr style="margin: 20px 0 15px 0; border: 0; border-top: 1px solid #ccc;">
+
+  <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
+    <b>Major Period 1</b> <div id="maj1" style="text-align:right;font-weight:normal;">Calculating…</div>
+    <b>Major Period 2</b> <div id="maj2" style="text-align:right;font-weight:normal;">Calculating…</div>
+    <b>Minor Period 1</b> <div id="min1" style="text-align:right;font-weight:normal;">Calculating…</div>
+    <b>Minor Period 2</b> <div id="min2" style="text-align:right;font-weight:normal;">Calculating…</div>
+  </div>
 </div>
 
+<div style="flex: 1 1 0%; background:#000000; padding:25px; border-radius:12px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+  
+  <div style="margin-top: -15px;">
+    <div id="rating" style="font-size:30px;line-height:1.5;min-height:90px;display:flex;flex-direction:column;justify-content:center;">Calculating…</div>
+  </div>
+
+  <div id="moon-bg" style="position:relative; width:110px;height:110px;margin:10px auto;padding:0;">
+    <img id="moon-img" src="" width="110" height="110" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; border-radius:50%;">
+  </div>
+
+  <div id="phase" style="font-weight:bold;font-size:18px;color:#ffffff;margin:12px 0 4px;">—</div>
+  <div id="illum" style="color:#dddddd;font-size:15px;">—</div>
+</div>
+</div>
+
+<p style="text-align:center;color:#666;font-size:12px;margin-top:22px;"> Updated <span id="date">—</span> – Refresh for latest </p> </div>
+
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
-<script>
-// --------------------------------------------------------------------------------
-// --- GLOBAL UTILITY FUNCTION: TIME CONVERSION ---
-// --------------------------------------------------------------------------------
-function formatLocalTime(utcTimeString) {
-    if (!utcTimeString) return 'N/A';
-    const date = new Date(utcTimeString);
-    return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    });
+
+<script> // -------------------------------------------------------------------------------- // --- GLOBAL UTILITY FUNCTION: TIME CONVERSION --- // -------------------------------------------------------------------------------- function formatLocalTime(utcTimeString) { if (!utcTimeString) return 'N/A'; const date = new Date(utcTimeString); return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }); }
+
+// -------------------------------------------------------------------------------- // --- NEW: NASA SVS IMAGE CALCULATOR --- // -------------------------------------------------------------------------------- function getNasaMoonURL(date) { const year = date.getUTCFullYear(); // NASA SVS ID Map const svsIds = { 2024: { id: 5187, base: 'a005100' }, 2025: { id: 5415, base: 'a005400' } };
+
+const yearData = svsIds[year];
+// Fallback for out of range years
+if (!yearData) return &#39;[https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg](https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg)&#39;;
+
+const startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+const diffMs = date - startOfYear;
+const diffHours = diffMs / (1000 * 60 * 60);
+
+let frameNum = Math.round(diffHours) + 1;
+const maxFrames = (year % 4 === 0) ? 8784 : 8760;
+if (frameNum &lt; 1) frameNum = 1;
+if (frameNum &gt; maxFrames) frameNum = maxFrames;
+
+const frameStr = frameNum.toString().padStart(4, &#39;0&#39;);
+return `https://svs.gsfc.nasa.gov/vis/a000000/${yearData.base}/a00${yearData.id}/frames/730x730_1x1_30p/moon.${frameStr}.jpg`;
 }
 
-// --------------------------------------------------------------------------------
-// --- NEW: NASA SVS IMAGE CALCULATOR ---
-// Generates the URL for the specific "Hour of the Year" frame from NASA SVS
-// --------------------------------------------------------------------------------
-function getNasaMoonURL(date) {
-    const year = date.getUTCFullYear();
-    
-    // NASA SVS ID Map (These IDs change every year)
-    // 2024: ID 5187
-    // 2025: ID 5415
-    // If we are out of range (e.g., 2026), we default to a static phase image or the last hour of 2025
-    const svsIds = {
-        2024: { id: 5187, base: 'a005100' },
-        2025: { id: 5415, base: 'a005400' } 
-    };
+document.addEventListener('DOMContentLoaded', () => { setTimeout(() => { const lat = 32.4619, lng = -93.3486; const now = new Date(); const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
 
-    const yearData = svsIds[year];
-    if (!yearData) {
-        // Fallback for future years if ID isn't updated yet:
-        // Returns a generic "Full Moon" from 2025 as a placeholder
-        return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg';
+    // --- 1. DATE HEADERS ---
+    document.getElementById(&#39;header-date&#39;).textContent = now.toLocaleDateString(&#39;en-US&#39;,{month:&#39;long&#39;,day:&#39;numeric&#39;});
+    document.getElementById(&#39;header-year&#39;).textContent = now.getFullYear();
+    document.getElementById(&#39;date&#39;).textContent = now.toLocaleDateString(&#39;en-US&#39;,{month:&#39;long&#39;,day:&#39;numeric&#39;,year:&#39;numeric&#39;});
+
+    // --- 2. SET NASA IMAGE ---
+    const moonImage = document.getElementById(&#39;moon-img&#39;);
+    moonImage.src = getNasaMoonURL(now);
+    moonImage.alt = &quot;Current Moon Phase (NASA SVS)&quot;;
+
+    // --- 3. SUN DATA ---
+    let sun = JSON.parse(localStorage.getItem(&#39;sunCache&#39;) || &#39;null&#39;);
+    const todayStr = now.toISOString().slice(0, 10);
+
+    if (!sun || sun.date !== todayStr) {
+        fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&amp;lng=${lng}&amp;formatted=0`)
+            .then(r =&gt; r.json())
+            .then(j =&gt; {
+                if (j.status === &quot;OK&quot;) {
+                    sun = {date: todayStr, data: j.results};
+                    localStorage.setItem(&#39;sunCache&#39;, JSON.stringify(sun));
+                    updateSunTimes(sun);
+                }
+            })
+            .catch(() =&gt; {});
+    } else {
+         updateSunTimes(sun);
     }
 
-    // Calculate "Hour of the Year" (1-based index)
-    const startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
-    const diffMs = date - startOfYear;
-    const diffHours = diffMs / (1000 * 60 * 60);
-    
-    // Round to nearest hour and add 1 (Files are named moon.0001.jpg to moon.8760.jpg)
-    let frameNum = Math.round(diffHours) + 1;
+    function updateSunTimes(sunData) {
+        document.getElementById(&#39;first&#39;).textContent = formatLocalTime(sunData.data.civil_twilight_begin);
+        document.getElementById(&#39;rise&#39;).textContent    = formatLocalTime(sunData.data.sunrise);
+        document.getElementById(&#39;set&#39;).textContent     = formatLocalTime(sunData.data.sunset);
+        document.getElementById(&#39;last&#39;).textContent    = formatLocalTime(sunData.data.civil_twilight_end);
+    }
 
-    // Clamp frame number to valid range (handle leap years vs non-leap)
-    const maxFrames = (year % 4 === 0) ? 8784 : 8760;
-    if (frameNum < 1) frameNum = 1;
-    if (frameNum > maxFrames) frameNum = maxFrames;
+    // --- 4. SOLUNAR DATA ---
+    const timestamp = new Date().getTime();
+    fetch(`/solunar_data.json?t=${timestamp}`)
+        .then(response =&gt; {
+            if (!response.ok) throw new Error(&quot;Could not fetch data.&quot;);
+            return response.json();
+        })
+        .then(fullData =&gt; {
+            const dayData = fullData[todayKey];
+            if (!dayData) throw new Error(&quot;Data missing for today.&quot;);
+            
+            document.getElementById(&#39;moon-rise&#39;).textContent = formatLocalTime(dayData.moon_rise_utc);
+            document.getElementById(&#39;moon-set&#39;).textContent = formatLocalTime(dayData.moon_set_utc);
+            document.getElementById(&#39;moon-overhead&#39;).textContent = formatLocalTime(dayData.moon_overhead_utc);
+            document.getElementById(&#39;moon-underfoot&#39;).textContent = formatLocalTime(dayData.moon_underfoot_utc);
 
-    // Pad with zeros (e.g., 1 -> "0001")
-    const frameStr = frameNum.toString().padStart(4, '0');
+            const mkRange = (center, minutes) =&gt; {
+                if (!center) return &#39;—&#39;;
+                const cDate = new Date(center);
+                const s = new Date(cDate.getTime() - minutes*60000);
+                const e = new Date(cDate.getTime() + minutes*60000);
+                return `${formatLocalTime(s)}–${formatLocalTime(e)}`;
+            };
 
-    // Construct URL
-    // Pattern: /vis/a000000/{baseGroup}/a00{id}/frames/730x730_1x1_30p/moon.{frame}.jpg
-    return `https://svs.gsfc.nasa.gov/vis/a000000/${yearData.base}/a00${yearData.id}/frames/730x730_1x1_30p/moon.${frameStr}.jpg`;
-}
+            document.getElementById(&#39;maj1&#39;).textContent = mkRange(dayData.major_1_utc, 60);
+            document.getElementById(&#39;maj2&#39;).textContent = mkRange(dayData.major_2_utc, 60);
+            document.getElementById(&#39;min1&#39;).textContent = mkRange(dayData.minor_1_utc, 30);
+            document.getElementById(&#39;min2&#39;).textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : &#39;—&#39;;
 
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const lat = 32.4619, lng = -93.3486;
-        const now = new Date();
-        const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
+            // RATING LOGIC (UPDATED COLORS TO WHITE)
+            const illum = dayData.moon_illum;
+            const actualIllum = Math.round(illum);
+            const moonAge = dayData.moon_age;
 
-        // --- 1. DATE HEADERS ---
-        document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-        document.getElementById('header-year').textContent = now.getFullYear();
-        document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+            let score = 1;
+            if (illum &gt;= 99 || illum &lt;= 1) score = 4;
+            else if (illum &gt;= 95 || illum &lt;= 5) score = 3;
+            else if (illum &gt;= 90 || illum &lt;= 10) score = 2;
 
-        // --- 2. SET THE ROBUST NASA IMAGE IMMEDIATELY ---
-        // We don't need to wait for the JSON data to set the image anymore
-        const moonImage = document.getElementById('moon-img');
-        moonImage.src = getNasaMoonURL(now);
-        moonImage.alt = "Current Moon Phase (NASA SVS)";
+            const labels = [&#39;Average&#39;, &#39;Good&#39;, &#39;Better&#39;, &#39;Best&#39;];
+            const stars = &#39;★&#39;.repeat(score);
+            
+            // INJECTED HTML: White color for stars and text
+            document.getElementById(&#39;rating&#39;).innerHTML = `
+                &lt;div style=&quot;font-size:36px;color:#ffffff;&quot;&gt;${stars}&lt;/div&gt;
+                &lt;div style=&quot;font-size:24px;color:#ffffff;&quot;&gt;${labels[score-1]}&lt;/div&gt;
+            `;
 
-        // --- 3. SUN DATA (Sunrise/Sunset) ---
-        let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
-        const todayStr = now.toISOString().slice(0, 10);
+            let phaseName;
+            if (actualIllum &gt;= 99.5) phaseName = &#39;Full Moon&#39;;
+            else if (actualIllum &lt;= 0.5) phaseName = &#39;New Moon&#39;;
+            else if (moonAge &gt; 7.3 &amp;&amp; moonAge &lt; 7.6) phaseName = &#39;First Quarter&#39;;
+            else if (moonAge &gt; 21.9 &amp;&amp; moonAge &lt; 22.3) phaseName = &#39;Last Quarter&#39;;
+            else if (moonAge &lt; 14.70) {
+                phaseName = (illum &lt; 50) ? &#39;Waxing Crescent&#39; : &#39;Waxing Gibbous&#39;;
+            } else {
+                phaseName = (illum &lt; 50) ? &#39;Waning Crescent&#39; : &#39;Waning Gibbous&#39;;
+            }
 
-        if (!sun || sun.date !== todayStr) {
-            fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
-                .then(r => r.json())
-                .then(j => {
-                    if (j.status === "OK") {
-                        sun = {date: todayStr, data: j.results};
-                        localStorage.setItem('sunCache', JSON.stringify(sun));
-                        updateSunTimes(sun);
-                    }
-                })
-                .catch(() => {});
-        } else {
-             updateSunTimes(sun);
-        }
-
-        function updateSunTimes(sunData) {
-            document.getElementById('first').textContent = formatLocalTime(sunData.data.civil_twilight_begin);
-            document.getElementById('rise').textContent    = formatLocalTime(sunData.data.sunrise);
-            document.getElementById('set').textContent     = formatLocalTime(sunData.data.sunset);
-            document.getElementById('last').textContent    = formatLocalTime(sunData.data.civil_twilight_end);
-        }
-
-        // --- 4. SOLUNAR DATA (Periods & Rating) ---
-        const timestamp = new Date().getTime();
-        fetch(`/solunar_data.json?t=${timestamp}`)
-            .then(response => {
-                if (!response.ok) throw new Error("Could not fetch data.");
-                return response.json();
-            })
-            .then(fullData => {
-                const dayData = fullData[todayKey];
-                if (!dayData) throw new Error("Data missing for today.");
-                
-                // Moon Times
-                document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
-                document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
-                document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
-                document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
-
-                // Major/Minor Periods
-                const mkRange = (center, minutes) => {
-                    if (!center) return '—';
-                    const cDate = new Date(center);
-                    const s = new Date(cDate.getTime() - minutes*60000);
-                    const e = new Date(cDate.getTime() + minutes*60000);
-                    return `${formatLocalTime(s)}–${formatLocalTime(e)}`;
-                };
-
-                document.getElementById('maj1').textContent = mkRange(dayData.major_1_utc, 60);
-                document.getElementById('maj2').textContent = mkRange(dayData.major_2_utc, 60);
-                document.getElementById('min1').textContent = mkRange(dayData.minor_1_utc, 30);
-                document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
-
-                // Rating & Phase Text
-                const illum = dayData.moon_illum;
-                const actualIllum = Math.round(illum);
-                const moonAge = dayData.moon_age;
-
-                let score = 1;
-                if (illum >= 99 || illum <= 1) score = 4;
-                else if (illum >= 95 || illum <= 5) score = 3;
-                else if (illum >= 90 || illum <= 10) score = 2;
-
-                const labels = ['Average', 'Good', 'Better', 'Best'];
-                const stars = '★'.repeat(score);
-                
-                document.getElementById('rating').innerHTML = `
-                    <div style="font-size:36px;color:#000000;">${stars}</div>
-                    <div style="font-size:24px;color:#000000;">${labels[score-1]}</div>
-                `;
-
-                // Phase Naming
-                let phaseName;
-                if (actualIllum >= 99.5) phaseName = 'Full Moon';
-                else if (actualIllum <= 0.5) phaseName = 'New Moon';
-                else if (moonAge > 7.3 && moonAge < 7.6) phaseName = 'First Quarter';
-                else if (moonAge > 21.9 && moonAge < 22.3) phaseName = 'Last Quarter';
-                else if (moonAge < 14.70) {
-                    phaseName = (illum < 50) ? 'Waxing Crescent' : 'Waxing Gibbous';
-                } else {
-                    phaseName = (illum < 50) ? 'Waning Crescent' : 'Waning Gibbous';
-                }
-
-                document.getElementById('phase').textContent = phaseName;
-                document.getElementById('illum').textContent = `${actualIllum}% Illuminated`;
-
-                // Note: We REMOVED the local image logic here because we set the NASA image earlier.
-            })
-            .catch(error => {
-                console.error("Error fetching solunar data:", error);
-            });
-    }, 500);
-});
-</script>
+            document.getElementById(&#39;phase&#39;).textContent = phaseName;
+            document.getElementById(&#39;illum&#39;).textContent = `${actualIllum}% Illuminated`;
+        })
+        .catch(error =&gt; {
+            console.error(&quot;Error fetching solunar data:&quot;, error);
+        });
+}, 500);
+}); </script>
     
 </body>
 </html>
+
 
 
 
