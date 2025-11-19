@@ -433,146 +433,117 @@
 
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 <script>
-// -------------------------------------------------------------------
-// FINAL TEXTURED NASA MOON – ONLY CHANGE IS THE MOON RENDER
-// -------------------------------------------------------------------
-function formatLocalTime(utcTimeString) {
-    if (!utcTimeString) return 'N/A';
-    const date = new Date(utcTimeString);
-    return date.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit',hour12:true});
-}
+function formatLocalTime(utc){return utc?new Date(utc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}):'N/A';}
 
-// Accurate libration (matches NASA Daily Moon Guide)
-function moonPhaseLibration(year, month, day, lat, lng) {
-    const date = new Date(year, month-1, day, 12);
-    const moonPos = SunCalc.getMoonPosition(date, lat, lng);
-    const D = (date.getTime()/86400000 - 2451545)/36525;
-    const L = 218.316 + 481267.881 * D;
-    const libLon = Math.sin((L + 83.353)*Math.PI/180)*6.289;
-    const libLat = Math.sin((L + 125.04452 - 1934.136*D)*Math.PI/180)*1.274;
-    const posAngle = (moonPos.parallacticAngle*180/Math.PI + libLat) % 360;
-    return {librationLat:libLat, librationLon:libLon, positionAngle:posAngle};
-}
-
-// Load texture (local first, then fallback)
-let moonTexture = null;
-async function loadMoonTexture() {
-    if (moonTexture) return moonTexture;
-    try {
-        const resp = await fetch('/images/moon_texture.jpg');
-        if (!resp.ok) throw 0;
-        moonTexture = await createImageBitmap(await resp.blob());
-        console.log('Local texture loaded');
-        return moonTexture;
-    } catch(e) {
-        console.log('Using Wikimedia fallback');
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = 'https://upload.wikimedia.org/wikipedia/commons/7/74/Moon_texture.jpg';
-        await new Promise(r => img.onload = r);
-        moonTexture = img;
-        return img;
+let moonTexture=null;
+async function loadMoonTexture(){
+    if(moonTexture) return moonTexture;
+    try{
+        const r=await fetch('/images/moon_texture.jpg');
+        if(!r.ok) throw 0;
+        moonTexture=await createImageBitmap(await r.blob());
+    }catch(e){
+        const i=new Image(); i.crossOrigin='anonymous';
+        i.src='https://upload.wikimedia.org/wikipedia/commons/7/74/Moon_texture.jpg';
+        await new Promise(res=>i.onload=res);
+        moonTexture=i;
     }
+    return moonTexture;
 }
 
-// Render textured moon with correct phase & libration
-async function renderMoonCanvas(illumFrac, canvasId) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, c = w/2, r = w/2 - 4;
-    ctx.fillStyle = '#000'; ctx.fillRect(0,0,w,w);
+function getLibration(){
+    const d=new Date(); d.setHours(12,0,0,0);
+    const D=(d/864e5)-2451545/36525;
+    const L=218.316+481267.881*D;
+    const libLat=Math.sin((L+125.04452-1934.136*D)*Math.PI/180)*1.274;
+    const posAngle=(SunCalc.getMoonPosition(d,32.4619,-93.3486).parallacticAngle*180/Math.PI + libLat)%360;
+    return {libLat,posAngle};
+}
 
-    const tex = await loadMoonTexture();
-    const lib = moonPhaseLibration(new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate(), 32.4619, -93.3486);
-    const angle = Math.acos(2*illumFrac - 1);
+async function renderMoonCanvas(illumFrac,canvasId){
+    const c=document.getElementById(canvasId);
+    const ctx=c.getContext('2d');
+    const w=c.width, r=w/2-4, cx=w/2;
+
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,w,w);
+    const tex=await loadMoonTexture();
+    const lib=getLibration();
+    const phaseAngle=Math.acos(2*illumFrac-1);
 
     ctx.save();
-    ctx.translate(c, c);
-    ctx.rotate(lib.positionAngle * Math.PI / 180);
-    ctx.scale(1 + lib.librationLat/60, 1 + lib.librationLon/60);
+    ctx.translate(cx,cx);
+    ctx.rotate(lib.posAngle*Math.PI/180);
 
-    // Full textured disk
-    ctx.drawImage(tex, -r, -r, 2*r, 2*r);
+    ctx.drawImage(tex,-r,-r,2*r,2*r);                     // textured disk
 
-           // Dark side overlay – FINAL & PERFECT (no more Pac-Man, no more backwards crescent)
-    ctx.beginPath();
-    const phaseAngle = Math.acos(2 * illumFrac - 1);        // 0 = full moon, π = new moon
-    ctx.arc(0, 0, r, -phaseAngle, phaseAngle, true);       // true = counter-clockwise = correct direction
-    ctx.lineTo(0, 0);
+    ctx.beginPath();                                      // dark side overlay – perfect crescent
+    ctx.arc(0,0,r,-phaseAngle,phaseAngle,true);           // true = counter-clockwise = correct
+    ctx.lineTo(0,0);
     ctx.closePath();
-    ctx.fillStyle = '#000';
+    ctx.fillStyle='#000';
     ctx.fill();
 
-  ctx.restore();   // ← keep this (closes the translate/rotate/scale)
+    ctx.restore();
+}
 
-// Main loader (top-level async so awaits work)
-document.addEventListener('DOMContentLoaded', async () => {
-    await new Promise(r => setTimeout(r, 600));
+document.addEventListener('DOMContentLoaded',async()=>{
+    await new Promise(r=>setTimeout(r,600));
+    const now=new Date();
+    const today=now.toISOString().slice(0,10);
 
-    const lat = 32.4619, lng = -93.3486;
-    const now = new Date();
-    const todayKey = now.toISOString().slice(0,10);
-
-    // SUN TIMES (unchanged)
-    let sun = JSON.parse(localStorage.getItem('sunCache')||'null');
-    const today = now.toISOString().slice(0,10);
-    if (!sun || sun.date !== today) {
-        const res = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`);
-        const j = await res.json();
-        if (j.status==="OK") {
-            sun = {date:today, data:j.results};
-            localStorage.setItem('sunCache', JSON.stringify(sun));
-        }
+    // SUN TIMES
+    let sun=JSON.parse(localStorage.getItem('sunCache')||'null');
+    if(!sun||sun.date!==today){
+        const j=await (await fetch(`https://api.sunrise-sunset.org/json?lat=32.4619&lng=-93.3486&formatted=0`)).json();
+        if(j.status==="OK"){sun={date:today,data:j.results}; localStorage.setItem('sunCache',JSON.stringify(sun));}
     }
-    if (sun) {
-        document.getElementById('first').textContent = formatLocalTime(sun.data.civil_twilight_begin);
-        document.getElementById('rise').textContent   = formatLocalTime(sun.data.sunrise);
-        document.getElementById('set').textContent    = formatLocalTime(sun.data.sunset);
-        document.getElementById('last').textContent   = formatLocalTime(sun.data.civil_twilight_end);
+    if(sun){
+        document.getElementById('first').textContent=formatLocalTime(sun.data.civil_twilight_begin);
+        document.getElementById('rise').textContent=formatLocalTime(sun.data.sunrise);
+        document.getElementById('set').textContent=formatLocalTime(sun.data.sunset);
+        document.getElementById('last').textContent=formatLocalTime(sun.data.civil_twilight_end);
     }
 
     // SOLUNAR DATA
-    const fullData = await (await fetch(`/solunar_data.json?t=${Date.now()}`)).json();
-    const dayData = fullData[todayKey];
+    const data=await (await fetch(`/solunar_data.json?t=${Date.now()}`)).json();
+    const d=data[today];
 
-    // Populate all your existing fields exactly as before
-    document.getElementById('moon-rise').textContent      = formatLocalTime(dayData.moon_rise_utc);
-    document.getElementById('moon-set').textContent       = formatLocalTime(dayData.moon_set_utc);
-    document.getElementById('moon-overhead').textContent  = formatLocalTime(dayData.moon_overhead_utc);
-    document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
+    document.getElementById('moon-rise').textContent=formatLocalTime(d.moon_rise_utc);
+    document.getElementById('moon-set').textContent=formatLocalTime(d.moon_set_utc);
+    document.getElementById('moon-overhead').textContent=formatLocalTime(d.moon_overhead_utc);
+    document.getElementById('moon-underfoot').textContent=formatLocalTime(d.moon_underfoot_utc);
 
-    const applyKnight = s=> s ? new Date(new Date(s).getTime() + 0*60000) : null;
-    const range = (c,m) => c ? `${formatLocalTime(new Date(c- m*60000))}–${formatLocalTime(new Date(+c+ m*60000))}` : '—';
-    document.getElementById('maj1').innerHTML = range(applyKnight(dayData.major_1_utc),60);
-    document.getElementById('maj2').innerHTML = range(applyKnight(dayData.major_2_utc),60);
-    document.getElementById('min1').innerHTML = range(applyKnight(dayData.minor_1_utc),30);
-    document.getElementById('min2').innerHTML = dayData.minor_2_utc ? range(applyKnight(dayData.minor_2_utc),30) : '—';
+    const range=(c,m)=>c?`${formatLocalTime(new Date(+new Date(c)-m*6e4))}–${formatLocalTime(new Date(+new Date(c)+m*6e4))}`:'—';
+    document.getElementById('maj1').innerHTML=range(d.major_1_utc,60);
+    document.getElementById('maj2').innerHTML=range(d.major_2_utc,60);
+    document.getElementById('min1').innerHTML=range(d.minor_1_utc,30);
+    document.getElementById('min2').innerHTML=d.minor_2_utc?range(d.minor_2_utc,30):'—';
 
-    const illum = dayData.moon_illum, actual = Math.round(illum);
-    const score = illum>=99||illum<=1?4:illum>=95||illum<=5?3:illum>=90||illum<=10?2:1;
-   document.getElementById('rating').innerHTML = 
-    `<div style="font-size:36px;letter-spacing:6px;">${'★'.repeat(score)}</div>` +
-    `<div style="font-size:24px;margin-top:4px;">${['Average','Good','Better','Best'][score-1]}</div>`;
-    let phaseName = actual>=99.5?'Full Moon':actual<=0.5?'New Moon':
-        dayData.moon_age>21.9&&dayData.moon_age<22.3?'Last Quarter':
-        dayData.moon_age>7.3&&dayData.moon_age<7.6?'First Quarter':
-        dayData.moon_age<14.7? (illum<50?'Waxing Crescent':'Waxing Gibbous')
-                            : (illum<50?'Waning Crescent':'Waning Gibbous');
-    document.getElementById('phase').textContent = phaseName;
-    document.getElementById('illum').textContent = `${actual}% Illuminated`;
+    const illum=Math.round(d.moon_illum);
+    const score=illum>=99||illum<=1?4:illum>=95||illum<=5?3:illum>=90||illum<=10?2:1;
+    document.getElementById('rating').innerHTML=
+        `<div style="font-size:36px;letter-spacing:6px;">${'★'.repeat(score)}</div>`+
+        `<div style="font-size:24px;margin-top:4px;">${['Average','Good','Better','Best'][score-1]}</div>`;
 
-    // TEXTURED MOON RENDER
-    await renderMoonCanvas(actual/100, 'nasa-moon');
+    const age=d.moon_age;
+    let phase=illum>=99.5?'Full Moon':illum<=0.5?'New Moon':
+        age>21.9&&age<22.3?'Last Quarter':age>7.3&&age<7.6?'First Quarter':
+        age<14.7?(illum<50?'Waxing Crescent':'Waxing Gibbous')
+                :(illum<50?'Waning Crescent':'Waning Gibbous');
+    document.getElementById('phase').textContent=phase;
+    document.getElementById('illum').textContent=`${illum}% Illuminated`;
 
-    // Date labels
-    document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-    document.getElementById('header-year').textContent = now.getFullYear();
-    document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    await renderMoonCanvas(illum/100,'nasa-moon');
+
+    document.getElementById('header-date').textContent=now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    document.getElementById('header-year').textContent=now.getFullYear();
+    document.getElementById('date').textContent=now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 });
 </script>
     
 </body>
 </html>
+
 
 
 
