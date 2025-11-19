@@ -445,15 +445,10 @@
 <script>
 // --------------------------------------------------------------------------------
 // --- GLOBAL UTILITY FUNCTION: TIME CONVERSION ---
-// This takes the UTC ISO string from the JSON and displays it as the correct LOCAL time (CST).
 // --------------------------------------------------------------------------------
 function formatLocalTime(utcTimeString) {
     if (!utcTimeString) return 'N/A';
-
-    // Creates a Date object from the UTC string. The browser handles the 'Z' (UTC).
     const date = new Date(utcTimeString);
-
-    // toLocaleTimeString forces the time to be displayed in the user's local timezone (CST)
     return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
@@ -461,48 +456,94 @@ function formatLocalTime(utcTimeString) {
     });
 }
 
+// --------------------------------------------------------------------------------
+// --- NEW: NASA SVS IMAGE CALCULATOR ---
+// Generates the URL for the specific "Hour of the Year" frame from NASA SVS
+// --------------------------------------------------------------------------------
+function getNasaMoonURL(date) {
+    const year = date.getUTCFullYear();
+    
+    // NASA SVS ID Map (These IDs change every year)
+    // 2024: ID 5187
+    // 2025: ID 5415
+    // If we are out of range (e.g., 2026), we default to a static phase image or the last hour of 2025
+    const svsIds = {
+        2024: { id: 5187, base: 'a005100' },
+        2025: { id: 5415, base: 'a005400' } 
+    };
+
+    const yearData = svsIds[year];
+    if (!yearData) {
+        // Fallback for future years if ID isn't updated yet:
+        // Returns a generic "Full Moon" from 2025 as a placeholder
+        return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg';
+    }
+
+    // Calculate "Hour of the Year" (1-based index)
+    const startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+    const diffMs = date - startOfYear;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    
+    // Round to nearest hour and add 1 (Files are named moon.0001.jpg to moon.8760.jpg)
+    let frameNum = Math.round(diffHours) + 1;
+
+    // Clamp frame number to valid range (handle leap years vs non-leap)
+    const maxFrames = (year % 4 === 0) ? 8784 : 8760;
+    if (frameNum < 1) frameNum = 1;
+    if (frameNum > maxFrames) frameNum = maxFrames;
+
+    // Pad with zeros (e.g., 1 -> "0001")
+    const frameStr = frameNum.toString().padStart(4, '0');
+
+    // Construct URL
+    // Pattern: /vis/a000000/{baseGroup}/a00{id}/frames/730x730_1x1_30p/moon.{frame}.jpg
+    return `https://svs.gsfc.nasa.gov/vis/a000000/${yearData.base}/a00${yearData.id}/frames/730x730_1x1_30p/moon.${frameStr}.jpg`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // We add a slight delay to allow the HTML structure to fully render
     setTimeout(() => {
         const lat = 32.4619, lng = -93.3486;
         const now = new Date();
+        const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
 
-        // --- ROBUST LOCAL DATE KEY FIX ---
-        const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-            .toISOString().slice(0, 10);
+        // --- 1. DATE HEADERS ---
+        document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+        document.getElementById('header-year').textContent = now.getFullYear();
+        document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 
-        // ---- SUN TIMES (Needed for First/Last Light, Sunrise/Sunset) ----
+        // --- 2. SET THE ROBUST NASA IMAGE IMMEDIATELY ---
+        // We don't need to wait for the JSON data to set the image anymore
+        const moonImage = document.getElementById('moon-img');
+        moonImage.src = getNasaMoonURL(now);
+        moonImage.alt = "Current Moon Phase (NASA SVS)";
+
+        // --- 3. SUN DATA (Sunrise/Sunset) ---
         let sun = JSON.parse(localStorage.getItem('sunCache') || 'null');
-        const today = now.toISOString().slice(0, 10);
+        const todayStr = now.toISOString().slice(0, 10);
 
-        if (!sun || sun.date !== today) {
+        if (!sun || sun.date !== todayStr) {
             fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
                 .then(r => r.json())
                 .then(j => {
                     if (j.status === "OK") {
-                        sun = {date: today, data: j.results};
+                        sun = {date: todayStr, data: j.results};
                         localStorage.setItem('sunCache', JSON.stringify(sun));
-                        if (sun) updateSunTimes(sun);
+                        updateSunTimes(sun);
                     }
                 })
                 .catch(() => {});
         } else {
-              updateSunTimes(sun);
+             updateSunTimes(sun);
         }
 
         function updateSunTimes(sunData) {
             document.getElementById('first').textContent = formatLocalTime(sunData.data.civil_twilight_begin);
-            document.getElementById('rise').textContent   = formatLocalTime(sunData.data.sunrise);
-            document.getElementById('set').textContent    = formatLocalTime(sunData.data.sunset);
-            document.getElementById('last').textContent   = formatLocalTime(sunData.data.civil_twilight_end);
+            document.getElementById('rise').textContent    = formatLocalTime(sunData.data.sunrise);
+            document.getElementById('set').textContent     = formatLocalTime(sunData.data.sunset);
+            document.getElementById('last').textContent    = formatLocalTime(sunData.data.civil_twilight_end);
         }
 
-
-        // ----------------------------------------------------------------------
-        // --- START: NEW ACCURATE SOLUNAR DATA INTEGRATION (JSON FETCH) ---
-        // ----------------------------------------------------------------------
-
-        // Use cache-busting logic to ensure the latest JSON file is fetched
+        // --- 4. SOLUNAR DATA (Periods & Rating) ---
         const timestamp = new Date().getTime();
         fetch(`/solunar_data.json?t=${timestamp}`)
             .then(response => {
@@ -513,149 +554,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dayData = fullData[todayKey];
                 if (!dayData) throw new Error("Data missing for today.");
                 
-                // --- MODIFIED --- START: 1. FILL 4 MOON DATA POINTS
+                // Moon Times
                 document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
                 document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
                 document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
                 document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
-                // --- MODIFIED --- END: 1. FILL 4 MOON DATA POINTS
 
-                // ---- KNIGHT OFFSET (Zeroed out for base accuracy) ----
-                const offsetMinutes = 0;
-
-                // Function to apply the offset (which is 0)
-                const applyKnight = utcStr => {
-                    if (!utcStr) return null;
-                    const dt = new Date(utcStr);
-                    return new Date(dt.getTime() + offsetMinutes * 60000);
-                };
-
-                // Function to create the time range from the center time
+                // Major/Minor Periods
                 const mkRange = (center, minutes) => {
-                    if (!center) return '—'; // <-- Handles null/missing event from JSON
-                    const s = new Date(center.getTime() - minutes*60000);
-                    const e = new Date(center.getTime() + minutes*60000);
-
+                    if (!center) return '—';
+                    const cDate = new Date(center);
+                    const s = new Date(cDate.getTime() - minutes*60000);
+                    const e = new Date(cDate.getTime() + minutes*60000);
                     return `${formatLocalTime(s)}–${formatLocalTime(e)}`;
                 };
 
-                // Get center times as Date objects (null if missing)
-                const major1Center = applyKnight(dayData.major_1_utc);
-                const major2Center = applyKnight(dayData.major_2_utc);
-                const min1Center = applyKnight(dayData.minor_1_utc);
-                const min2Center = applyKnight(dayData.minor_2_utc);
+                document.getElementById('maj1').textContent = mkRange(dayData.major_1_utc, 60);
+                document.getElementById('maj2').textContent = mkRange(dayData.major_2_utc, 60);
+                document.getElementById('min1').textContent = mkRange(dayData.minor_1_utc, 30);
+                document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
 
-                // Display the accurate times (showing dashes if null)
-                // --- MODIFIED --- 2. REMOVE BOLD TAGS from major/minor periods
-                document.getElementById('maj1').innerHTML = mkRange(major1Center, 60);
-                document.getElementById('maj2').innerHTML = mkRange(major2Center, 60); // Removed <b> tags
-                document.getElementById('min1').innerHTML = mkRange(min1Center, 30);
-                document.getElementById('min2').innerHTML = dayData.minor_2_utc ? mkRange(min2Center, 30) : '—'; // Removed <b> tags
-
-                // ----------------------------------------------------------------
-                // ---- RATING AND MOON PHASE (FINAL LOGIC USING DECIMAL MOON_AGE) ----
-                // ----------------------------------------------------------------
+                // Rating & Phase Text
                 const illum = dayData.moon_illum;
-                const actualIllum = Math.round(illum); // For display
-                const moonAge = dayData.moon_age; // Precise decimal value (e.g., 14.7)
+                const actualIllum = Math.round(illum);
+                const moonAge = dayData.moon_age;
 
-                // RATING LOGIC (based on illumination)
                 let score = 1;
                 if (illum >= 99 || illum <= 1) score = 4;
                 else if (illum >= 95 || illum <= 5) score = 3;
                 else if (illum >= 90 || illum <= 10) score = 2;
-                else score = 1;
 
                 const labels = ['Average', 'Good', 'Better', 'Best'];
                 const stars = '★'.repeat(score);
                 
-                // --- MODIFIED --- 3. CHANGE STAR AND WORD RATING COLOR TO BLACK
                 document.getElementById('rating').innerHTML = `
                     <div style="font-size:36px;color:#000000;">${stars}</div>
                     <div style="font-size:24px;color:#000000;">${labels[score-1]}</div>
                 `;
-                // --- MODIFIED --- END: 3. CHANGE STAR AND WORD RATING COLOR TO BLACK
 
-
-                // MOON PHASE NAMING LOGIC (Using precise Moon Age for boundaries)
-                // FINAL FIX: Pushing the midpoint boundary to 14.70 to force the current Waning Moon into the correct half.
+                // Phase Naming
                 let phaseName;
-
-                if (actualIllum >= 99.5) {
-                    phaseName = 'Full Moon';
-                } else if (actualIllum <= 0.5) {
-                    phaseName = 'New Moon';
-                }
-                // --- QUARTER MOONS ---
-                else if (moonAge > 7.3 && moonAge < 7.6) {
-                    phaseName = 'First Quarter';
-                } else if (moonAge > 21.9 && moonAge < 22.3) {
-                    phaseName = 'Last Quarter';
-                }
-                // --- STANDARD PHASES (Waxing/Waning determined by 14.70-day split) ---
+                if (actualIllum >= 99.5) phaseName = 'Full Moon';
+                else if (actualIllum <= 0.5) phaseName = 'New Moon';
+                else if (moonAge > 7.3 && moonAge < 7.6) phaseName = 'First Quarter';
+                else if (moonAge > 21.9 && moonAge < 22.3) phaseName = 'Last Quarter';
                 else if (moonAge < 14.70) {
-                    // Waxing side (Age 0 to 14.70)
-                    if (illum < 50) {
-                        phaseName = 'Waxing Crescent';
-                    } else {
-                        phaseName = 'Waxing Gibbous';
-                    }
+                    phaseName = (illum < 50) ? 'Waxing Crescent' : 'Waxing Gibbous';
                 } else {
-                    // Waning side (Age 14.70 to 29.5)
-                    if (illum < 50) {
-                        phaseName = 'Waning Crescent';
-                    } else {
-                        phaseName = 'Waning Gibbous';
-                    }
+                    phaseName = (illum < 50) ? 'Waning Crescent' : 'Waning Gibbous';
                 }
 
-                // Display phase name and illumination percentage
                 document.getElementById('phase').textContent = phaseName;
                 document.getElementById('illum').textContent = `${actualIllum}% Illuminated`;
 
-                // Determine moon image (Image logic remains the same)
-                let moonFile = '';
-                if (actualIllum < 1) {
-                    moonFile = 'newmoon.png';
-                } else if (actualIllum > 99) {
-                    moonFile = 'fullmoon.png';
-                } else if (phaseName.includes('First Quarter')) {
-                    moonFile = 'firstquart.png';
-                } else if (phaseName.includes('Last Quarter')) {
-                    moonFile = 'lastquart.png';
-                } else {
-                    const dir = phaseName.includes('Waxing') ? 'wax' : 'wane';
-                    let pct = actualIllum;
-
-                    // Custom ranges for missing images
-                    if (pct > 45 && pct < 50) pct = 45;
-                    else if (pct > 50 && pct < 55) pct = 55;
-                    if (dir === 'wane' && pct === 33) pct = 32;
-
-                    moonFile = `${dir}${pct}.png`;
-                }
-
-                document.getElementById('moon-img').src = `/images/${moonFile}`;
-
+                // Note: We REMOVED the local image logic here because we set the NASA image earlier.
             })
             .catch(error => {
-                console.error("Error fetching accurate solunar data:", error);
+                console.error("Error fetching solunar data:", error);
             });
-
-        // ----------------------------------------------------------------------
-        // --- DATE LABELS (No changes needed) ----
-        // ----------------------------------------------------------------------
-        const currentYear = now.getFullYear();
-        document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
-        // --- MODIFIED --- Populate the year in the header
-        document.getElementById('header-year').textContent = currentYear;
-        document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
     }, 500);
 });
 </script>
     
 </body>
 </html>
+
 
 
 
