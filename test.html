@@ -389,7 +389,7 @@
   /* Mobile Phones */
   @media (max-width: 600px) {
     .period-text {
-      font-size: 13px !important;
+      font-size: 14px !important;
       gap: 8px 4px !important;
     }
   }
@@ -537,11 +537,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 var dayData = fullData[todayKey];
                 if (!dayData) throw new Error("Data missing for today.");
                 
+                /* Moon Times */
                 if(document.getElementById('moon-rise')) document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
                 if(document.getElementById('moon-set')) document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
                 if(document.getElementById('moon-overhead')) document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
                 if(document.getElementById('moon-underfoot')) document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
 
+                /* Periods */
                 function mkRange(center, minutes) {
                     if (!center) return '—';
                     var c = new Date(center);
@@ -555,6 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(document.getElementById('min1')) document.getElementById('min1').textContent = mkRange(dayData.minor_1_utc, 30);
                 if(document.getElementById('min2')) document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
 
+                /* Rating */
                 var illum = dayData.moon_illum;
                 var score = 1;
                 if (illum >= 99 || illum <= 1) score = 4;
@@ -571,15 +574,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
+                /* Phase Logic (UPDATED STRICTNESS) */
                 var actualIllum = Math.round(illum);
                 var phaseName = '—';
-                if (actualIllum >= 99) phaseName = 'Full Moon';
-                else if (actualIllum <= 1) phaseName = 'New Moon';
-                else if (dayData.moon_age > 7.3 && dayData.moon_age < 7.6) phaseName = 'First Quarter';
-                else if (dayData.moon_age > 21.9 && dayData.moon_age < 22.3) phaseName = 'Last Quarter';
-                else phaseName = (dayData.moon_age < 14.7) ? 
-                    ((illum < 50) ? 'Waxing Crescent' : 'Waxing Gibbous') : 
-                    ((illum < 50) ? 'Waning Crescent' : 'Waning Gibbous');
+                
+                // Changed from >=99 and <=1 to >=100 and <=0
+                // This ensures 1% is still a Crescent and 99% is still Gibbous
+                if (actualIllum >= 100) {
+                    phaseName = 'Full Moon';
+                } else if (actualIllum <= 0) {
+                    phaseName = 'New Moon';
+                } else if (dayData.moon_age > 7.3 && dayData.moon_age < 7.6) {
+                    phaseName = 'First Quarter';
+                } else if (dayData.moon_age > 21.9 && dayData.moon_age < 22.3) {
+                    phaseName = 'Last Quarter';
+                } else {
+                    // Waxing vs Waning
+                    if (dayData.moon_age < 14.7) {
+                        phaseName = (illum < 50) ? 'Waxing Crescent' : 'Waxing Gibbous';
+                    } else {
+                        phaseName = (illum < 50) ? 'Waning Crescent' : 'Waning Gibbous';
+                    }
+                }
 
                 if(document.getElementById('phase')) document.getElementById('phase').textContent = phaseName;
                 if(document.getElementById('illum')) document.getElementById('illum').textContent = actualIllum + '% Illuminated';
@@ -591,6 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
