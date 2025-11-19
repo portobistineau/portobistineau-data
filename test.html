@@ -379,6 +379,22 @@
 
 </div>
 <!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
+<style>
+  /* Default (Desktop/Tablet) */
+  .period-text {
+    font-size: 16px;
+    gap: 8px 10px;
+  }
+  
+  /* Mobile Phones */
+  @media (max-width: 600px) {
+    .period-text {
+      font-size: 13px !important;
+      gap: 8px 4px !important;
+    }
+  }
+</style>
+
 <div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
   <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
     Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
@@ -412,7 +428,7 @@
 
       <hr style="margin: 20px 0 15px 0; border: 0; border-top: 1px solid #ccc;">
 
-      <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;line-height:1.35;font-size:16px;">
+      <div class="period-text" style="display:grid;grid-template-columns:max-content 1fr;line-height:1.35;">
         <b>Major Period 1</b> <div id="maj1" style="text-align:right;font-weight:normal;">Calculating…</div>
         <b>Major Period 2</b> <div id="maj2" style="text-align:right;font-weight:normal;">Calculating…</div>
         <b>Minor Period 1</b> <div id="min1" style="text-align:right;font-weight:normal;">Calculating…</div>
@@ -431,6 +447,10 @@
 
       <div id="phase" style="font-weight:bold;font-size:20px;color:#ffffff;margin:20px 0 4px;">—</div>
       <div id="illum" style="color:#dddddd;font-size:16px;">—</div>
+
+      <div style="margin-top:20px; font-size:10px; color:#666666; line-height:1.2;">
+        Image Credit: NASA Scientific Visualization Studio
+      </div>
     </div>
   </div>
 
@@ -447,7 +467,6 @@ function formatLocalTime(dateObj) {
     if (!dateObj) return '—';
     var d = (typeof dateObj === 'string') ? new Date(dateObj) : dateObj;
     if (isNaN(d.getTime())) return '—';
-    
     return d.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
@@ -463,13 +482,13 @@ function getNasaMoonURL(date) {
         2025: { id: 5415, base: 'a005400' } 
     };
     var yearData = svsIds[year];
-    if (!yearData) return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg'; // Fallback
+    if (!yearData) return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg';
     
     var startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
     var diffMs = date - startOfYear;
     var diffHours = diffMs / (1000 * 60 * 60);
     var frameNum = Math.round(diffHours) + 1;
-    var maxFrames = (year % 4 === 0) ? 8784 : 8760; // Max hours in a year (leap vs non-leap)
+    var maxFrames = (year % 4 === 0) ? 8784 : 8760;
     
     if (frameNum < 1) frameNum = 1;
     if (frameNum > maxFrames) frameNum = maxFrames;
@@ -479,54 +498,50 @@ function getNasaMoonURL(date) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() { // Small delay to ensure DOM is fully ready
-        var lat = 32.4619; // Your specified Latitude
-        var lng = -93.3486; // Your specified Longitude
-        var now = new Date(); // Current date and time
+    setTimeout(function() {
+        var lat = 32.4619;
+        var lng = -93.3486;
+        var now = new Date();
         var todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
 
-        /* 1. UPDATE HEADERS & SET NASA IMAGE */
+        /* 1. HEADERS & NASA IMAGE */
         document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
         document.getElementById('header-year').textContent = now.getFullYear();
         document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
         
         var moonImage = document.getElementById('moon-img');
-        if(moonImage) { // Check if element exists before setting properties
+        if(moonImage) {
             moonImage.src = getNasaMoonURL(now);
             moonImage.alt = "Current Moon Phase";
         }
 
-        /* 2. SUN DATA (USING SUNCALC LOCAL LIBRARY) */
-        if (typeof SunCalc !== 'undefined') { // Ensure SunCalc is loaded
+        /* 2. SUN DATA (SUNCALC) */
+        if (typeof SunCalc !== 'undefined') {
             var times = SunCalc.getTimes(now, lat, lng);
             if(document.getElementById('first')) document.getElementById('first').textContent = formatLocalTime(times.dawn);
             if(document.getElementById('rise')) document.getElementById('rise').textContent  = formatLocalTime(times.sunrise);
             if(document.getElementById('set')) document.getElementById('set').textContent   = formatLocalTime(times.sunset);
             if(document.getElementById('last')) document.getElementById('last').textContent  = formatLocalTime(times.dusk);
         } else {
-            console.error("SunCalc library failed to load or is undefined.");
-            // Fallback: Optionally fetch from sunrise-sunset.org if SunCalc fails
-            // (You had this before, but it's more reliable to just use SunCalc if it works)
+            console.error("SunCalc library failed to load.");
         }
 
-        /* 3. SOLUNAR DATA (VIA JSON FETCH) */
-        var timestamp = new Date().getTime(); // Cache-busting for JSON
+        /* 3. SOLUNAR DATA (JSON) */
+        var timestamp = new Date().getTime();
         fetch(`/solunar_data.json?t=${timestamp}`)
             .then(function(res) {
-                if (!res.ok) throw new Error("Could not fetch solunar data: " + res.statusText);
+                if (!res.ok) throw new Error("Could not fetch solunar data.");
                 return res.json();
             })
             .then(function(fullData) {
                 var dayData = fullData[todayKey];
-                if (!dayData) throw new Error("Solunar data missing for today's date in JSON.");
+                if (!dayData) throw new Error("Data missing for today.");
                 
-                // Moon Times
                 if(document.getElementById('moon-rise')) document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
                 if(document.getElementById('moon-set')) document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
                 if(document.getElementById('moon-overhead')) document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
                 if(document.getElementById('moon-underfoot')) document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
 
-                // Periods
                 function mkRange(center, minutes) {
                     if (!center) return '—';
                     var c = new Date(center);
@@ -540,27 +555,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(document.getElementById('min1')) document.getElementById('min1').textContent = mkRange(dayData.minor_1_utc, 30);
                 if(document.getElementById('min2')) document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
 
-                // Rating & Phase
                 var illum = dayData.moon_illum;
-                var score = 1; // Default to 'Average'
-                if (illum >= 99 || illum <= 1) score = 4; // 'Best' (New/Full)
-                else if (illum >= 95 || illum <= 5) score = 3; // 'Better'
-                else if (illum >= 90 || illum <= 10) score = 2; // 'Good'
+                var score = 1;
+                if (illum >= 99 || illum <= 1) score = 4;
+                else if (illum >= 95 || illum <= 5) score = 3;
+                else if (illum >= 90 || illum <= 10) score = 2;
 
                 var labels = ['Average', 'Good', 'Better', 'Best'];
                 var stars = '★'.repeat(score);
 
-                var ratingElement = document.getElementById('rating');
-                if(ratingElement) {
-                    ratingElement.innerHTML = `
+                if(document.getElementById('rating')) {
+                    document.getElementById('rating').innerHTML = `
                         <div style="font-size:36px;color:#ffffff;">${stars}</div>
                         <div style="font-size:24px;color:#ffffff;">${labels[score-1]}</div>
                     `;
                 }
 
-                // Phase Name Logic
                 var actualIllum = Math.round(illum);
-                var phaseName = '—'; // Default
+                var phaseName = '—';
                 if (actualIllum >= 99) phaseName = 'Full Moon';
                 else if (actualIllum <= 1) phaseName = 'New Moon';
                 else if (dayData.moon_age > 7.3 && dayData.moon_age < 7.6) phaseName = 'First Quarter';
@@ -572,14 +584,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(document.getElementById('phase')) document.getElementById('phase').textContent = phaseName;
                 if(document.getElementById('illum')) document.getElementById('illum').textContent = actualIllum + '% Illuminated';
             })
-            .catch(function(e) { console.error("Solunar Data fetch or parse error:", e); });
-
-    }, 500); // End of setTimeout
-}); // End of DOMContentLoaded
+            .catch(function(e) { console.error("Error:", e); });
+    }, 500);
+});
 </script>
     
 </body>
 </html>
+
 
 
 
