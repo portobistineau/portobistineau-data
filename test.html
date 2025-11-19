@@ -421,16 +421,16 @@
     </div>
 
     <div style="flex: 1 1 0%; background:#000000; padding:25px; border-radius:12px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
-      <div style="margin-top: -15px;">
-        <div id="rating" style="font-size:30px;color:#ffffff;line-height:1.5;min-height:90px;display:flex;flex-direction:column;justify-content:center;">Calculating…</div>
+      <div style="margin-top: -10px; min-height: 90px; display: flex; flex-direction: column; justify-content: center;">
+        <div id="rating" style="font-size:30px;color:#ffffff;line-height:1.2;">Calculating…</div>
       </div>
 
-      <div id="moon-bg" style="position:relative; width:110px;height:110px;margin:10px auto;padding:0;">
-        <img id="moon-img" src="" width="110" height="110" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; border-radius:50%;">
+      <div id="moon-bg" style="position:relative; width:160px;height:160px;margin:10px auto;padding:0;">
+        <img id="moon-img" src="" width="160" height="160" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; border-radius:50%;">
       </div>
 
-      <div id="phase" style="font-weight:bold;font-size:18px;color:#ffffff;margin:12px 0 4px;">—</div>
-      <div id="illum" style="color:#dddddd;font-size:15px;">—</div>
+      <div id="phase" style="font-weight:bold;font-size:20px;color:#ffffff;margin:20px 0 4px;">—</div>
+      <div id="illum" style="color:#dddddd;font-size:16px;">—</div>
     </div>
   </div>
 
@@ -445,7 +445,6 @@
 /* --- UTILITY: TIME FORMATTER --- */
 function formatLocalTime(dateObj) {
     if (!dateObj) return '—';
-    // If it's a string (from JSON), convert to Date. If it's already a Date (from SunCalc), use as is.
     var d = (typeof dateObj === 'string') ? new Date(dateObj) : dateObj;
     if (isNaN(d.getTime())) return '—';
     
@@ -464,13 +463,13 @@ function getNasaMoonURL(date) {
         2025: { id: 5415, base: 'a005400' } 
     };
     var yearData = svsIds[year];
-    if (!yearData) return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg';
-
+    if (!yearData) return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg'; // Fallback
+    
     var startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
     var diffMs = date - startOfYear;
     var diffHours = diffMs / (1000 * 60 * 60);
     var frameNum = Math.round(diffHours) + 1;
-    var maxFrames = (year % 4 === 0) ? 8784 : 8760;
+    var maxFrames = (year % 4 === 0) ? 8784 : 8760; // Max hours in a year (leap vs non-leap)
     
     if (frameNum < 1) frameNum = 1;
     if (frameNum > maxFrames) frameNum = maxFrames;
@@ -480,46 +479,52 @@ function getNasaMoonURL(date) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        var lat = 32.4619;
-        var lng = -93.3486;
-        var now = new Date();
+    setTimeout(function() { // Small delay to ensure DOM is fully ready
+        var lat = 32.4619; // Your specified Latitude
+        var lng = -93.3486; // Your specified Longitude
+        var now = new Date(); // Current date and time
         var todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
 
-        /* 1. HEADERS & NASA IMAGE */
+        /* 1. UPDATE HEADERS & SET NASA IMAGE */
         document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
         document.getElementById('header-year').textContent = now.getFullYear();
         document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
         
         var moonImage = document.getElementById('moon-img');
-        moonImage.src = getNasaMoonURL(now);
-        moonImage.alt = "Current Moon Phase";
+        if(moonImage) { // Check if element exists before setting properties
+            moonImage.src = getNasaMoonURL(now);
+            moonImage.alt = "Current Moon Phase";
+        }
 
         /* 2. SUN DATA (USING SUNCALC LOCAL LIBRARY) */
-        if (typeof SunCalc !== 'undefined') {
+        if (typeof SunCalc !== 'undefined') { // Ensure SunCalc is loaded
             var times = SunCalc.getTimes(now, lat, lng);
-            // Mapping SunCalc results to our fields
-            document.getElementById('first').textContent = formatLocalTime(times.dawn);    // Civil Twilight Begin
-            document.getElementById('rise').textContent  = formatLocalTime(times.sunrise); // Sunrise
-            document.getElementById('set').textContent   = formatLocalTime(times.sunset);  // Sunset
-            document.getElementById('last').textContent  = formatLocalTime(times.dusk);    // Civil Twilight End
+            if(document.getElementById('first')) document.getElementById('first').textContent = formatLocalTime(times.dawn);
+            if(document.getElementById('rise')) document.getElementById('rise').textContent  = formatLocalTime(times.sunrise);
+            if(document.getElementById('set')) document.getElementById('set').textContent   = formatLocalTime(times.sunset);
+            if(document.getElementById('last')) document.getElementById('last').textContent  = formatLocalTime(times.dusk);
         } else {
-            console.error("SunCalc library failed to load.");
+            console.error("SunCalc library failed to load or is undefined.");
+            // Fallback: Optionally fetch from sunrise-sunset.org if SunCalc fails
+            // (You had this before, but it's more reliable to just use SunCalc if it works)
         }
 
         /* 3. SOLUNAR DATA (VIA JSON FETCH) */
-        var timestamp = new Date().getTime();
+        var timestamp = new Date().getTime(); // Cache-busting for JSON
         fetch(`/solunar_data.json?t=${timestamp}`)
-            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if (!res.ok) throw new Error("Could not fetch solunar data: " + res.statusText);
+                return res.json();
+            })
             .then(function(fullData) {
                 var dayData = fullData[todayKey];
-                if (!dayData) return;
-
+                if (!dayData) throw new Error("Solunar data missing for today's date in JSON.");
+                
                 // Moon Times
-                document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
-                document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
-                document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
-                document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
+                if(document.getElementById('moon-rise')) document.getElementById('moon-rise').textContent = formatLocalTime(dayData.moon_rise_utc);
+                if(document.getElementById('moon-set')) document.getElementById('moon-set').textContent = formatLocalTime(dayData.moon_set_utc);
+                if(document.getElementById('moon-overhead')) document.getElementById('moon-overhead').textContent = formatLocalTime(dayData.moon_overhead_utc);
+                if(document.getElementById('moon-underfoot')) document.getElementById('moon-underfoot').textContent = formatLocalTime(dayData.moon_underfoot_utc);
 
                 // Periods
                 function mkRange(center, minutes) {
@@ -530,25 +535,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     return `${formatLocalTime(s)}–${formatLocalTime(e)}`;
                 }
 
-                document.getElementById('maj1').textContent = mkRange(dayData.major_1_utc, 60);
-                document.getElementById('maj2').textContent = mkRange(dayData.major_2_utc, 60);
-                document.getElementById('min1').textContent = mkRange(dayData.minor_1_utc, 30);
-                document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
+                if(document.getElementById('maj1')) document.getElementById('maj1').textContent = mkRange(dayData.major_1_utc, 60);
+                if(document.getElementById('maj2')) document.getElementById('maj2').textContent = mkRange(dayData.major_2_utc, 60);
+                if(document.getElementById('min1')) document.getElementById('min1').textContent = mkRange(dayData.minor_1_utc, 30);
+                if(document.getElementById('min2')) document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
 
                 // Rating & Phase
                 var illum = dayData.moon_illum;
-                var score = (illum >= 90 || illum <= 10) ? ((illum >= 95 || illum <= 5) ? ((illum >= 99 || illum <= 1) ? 4 : 3) : 2) : 1;
+                var score = 1; // Default to 'Average'
+                if (illum >= 99 || illum <= 1) score = 4; // 'Best' (New/Full)
+                else if (illum >= 95 || illum <= 5) score = 3; // 'Better'
+                else if (illum >= 90 || illum <= 10) score = 2; // 'Good'
+
                 var labels = ['Average', 'Good', 'Better', 'Best'];
                 var stars = '★'.repeat(score);
 
-                document.getElementById('rating').innerHTML = `
-                    <div style="font-size:36px;color:#ffffff;">${stars}</div>
-                    <div style="font-size:24px;color:#ffffff;">${labels[score-1]}</div>
-                `;
+                var ratingElement = document.getElementById('rating');
+                if(ratingElement) {
+                    ratingElement.innerHTML = `
+                        <div style="font-size:36px;color:#ffffff;">${stars}</div>
+                        <div style="font-size:24px;color:#ffffff;">${labels[score-1]}</div>
+                    `;
+                }
 
-                // Phase Name
+                // Phase Name Logic
                 var actualIllum = Math.round(illum);
-                var phaseName = '—';
+                var phaseName = '—'; // Default
                 if (actualIllum >= 99) phaseName = 'Full Moon';
                 else if (actualIllum <= 1) phaseName = 'New Moon';
                 else if (dayData.moon_age > 7.3 && dayData.moon_age < 7.6) phaseName = 'First Quarter';
@@ -557,17 +569,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     ((illum < 50) ? 'Waxing Crescent' : 'Waxing Gibbous') : 
                     ((illum < 50) ? 'Waning Crescent' : 'Waning Gibbous');
 
-                document.getElementById('phase').textContent = phaseName;
-                document.getElementById('illum').textContent = actualIllum + '% Illuminated';
+                if(document.getElementById('phase')) document.getElementById('phase').textContent = phaseName;
+                if(document.getElementById('illum')) document.getElementById('illum').textContent = actualIllum + '% Illuminated';
             })
-            .catch(function(e) { console.error("Data fetch error:", e); });
+            .catch(function(e) { console.error("Solunar Data fetch or parse error:", e); });
 
-    }, 500);
-});
+    }, 500); // End of setTimeout
+}); // End of DOMContentLoaded
 </script>
     
 </body>
 </html>
+
 
 
 
