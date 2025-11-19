@@ -285,18 +285,40 @@
     }
     const windDir = closestHourly?.windDirection || '';
 
-    const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
-        <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
-        <div style="margin:8px 0;">
-          <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
-          <div style="font-size:14px;color:#666;margin-top:4px;">${currentForecast}</div>
+        const currentHTML = `
+      <div style="display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+        <!-- CURRENT CONDITIONS CARD -->
+        <div style="background:#fff;padding:18px;border-radius:12px;width:290px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.12);">
+          <div style="font-size:30px;font-weight:bold;color:#003366;">${currentTemp}°F</div>
+          <div style="margin:10px 0;">
+            <img src="${currentIcon}" width="90" height="90" style="display:block;margin:0 auto;">
+            <div style="font-size:15px;color:#555;margin-top:6px;">${currentForecast}</div>
+          </div>
+          <div style="color:#666;font-size:14px;margin-bottom:10px;">Feels ${feels}°F • As of ${timeStr}</div>
+          <div style="font-size:14px;line-height:1.75;color:#333;">
+            Wind ${windSpeedAvg} mph ${windDir}<br>
+            Pressure ${pressure} inHg ${trend}<br>
+            Humidity ${p.relativeHumidity.value !== null ? Math.round(p.relativeHumidity.value) : '—'}%<br>
+            Dew Point ${p.dewpoint.value !== null ? Math.round(p.dewpoint.value * 1.8 + 32) : '—'}°F<br>
+          </div>
         </div>
-        <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
-        <div style="font-size:14px;line-height:1.6;">
-          Wind ${windSpeedAvg} mph ${windDir}<br>
-          Pressure ${pressure} inHg ${trend}<br>
-          Humidity ${p.relativeHumidity.value !== null ? Math.round(p.relativeHumidity.value) : '—'}%<br>
+
+        <!-- NWS RADAR CARD (RIGHT SIDE) -->
+        <div style="background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.12);">
+          <div style="font-weight:bold;color:#003366;text-align:center;margin-bottom:6px;font-size:15px;">
+            Live Radar – Lake Bistineau
+          </div>
+          <iframe 
+            src="https://radar.weather.gov/?lat=32.45&lon=-93.42&zoom=10&base=Reflectivity&loop=1&smooth=1&overlays=1" 
+            width="340" 
+            height="340" 
+            style="border:none;border-radius:8px;"
+            scrolling="no"
+            allowfullscreen>
+          </iframe>
+          <div style="text-align:center;font-size:11px;color:#777;margin-top:4px;">
+            NWS • Auto-animates • Pinch/zoom works
+          </div>
         </div>
       </div>`;
 
@@ -607,6 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
