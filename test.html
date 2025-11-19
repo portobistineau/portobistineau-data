@@ -494,13 +494,15 @@ async function renderMoonCanvas(illumFrac, canvasId) {
     // Full textured disk
     ctx.drawImage(tex, -r, -r, 2*r, 2*r);
 
-    // Dark side overlay
+        // Dark side overlay — CORRECTED DIRECTION
     ctx.beginPath();
+    const start = illumFrac < 0.5 ? -angle : Math.PI - angle;  // ← this line fixes everything
+    const end   = illumFrac < 0.5 ?  angle : Math.PI + angle;
     if (illumFrac < 0.05) {
         const offset = r * 0.07;
-        ctx.arc(offset, 0, r, angle - Math.PI, angle);
+        ctx.arc(offset, 0, r, start, end);
     } else {
-        ctx.arc(0, 0, r, angle - Math.PI, angle);
+        ctx.arc(0, 0, r, start, end);
     }
     ctx.lineTo(0,0);
     ctx.closePath();
@@ -576,6 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
 </body>
 </html>
+
 
 
 
