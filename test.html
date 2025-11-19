@@ -494,22 +494,16 @@ async function renderMoonCanvas(illumFrac, canvasId) {
     // Full textured disk
     ctx.drawImage(tex, -r, -r, 2*r, 2*r);
 
-        // Dark side overlay — CORRECTED DIRECTION
+           // Dark side overlay – FINAL & PERFECT (no more Pac-Man, no more backwards crescent)
     ctx.beginPath();
-    const start = illumFrac < 0.5 ? -angle : Math.PI - angle;  // ← this line fixes everything
-    const end   = illumFrac < 0.5 ?  angle : Math.PI + angle;
-    if (illumFrac < 0.05) {
-        const offset = r * 0.07;
-        ctx.arc(offset, 0, r, start, end);
-    } else {
-        ctx.arc(0, 0, r, start, end);
-    }
-    ctx.lineTo(0,0);
+    const phaseAngle = Math.acos(2 * illumFrac - 1);        // 0 = full moon, π = new moon
+    ctx.arc(0, 0, r, -phaseAngle, phaseAngle, true);       // true = counter-clockwise = correct direction
+    ctx.lineTo(0, 0);
     ctx.closePath();
     ctx.fillStyle = '#000';
     ctx.fill();
-    ctx.restore();
-}
+
+  ctx.restore();   // ← keep this (closes the translate/rotate/scale)
 
 // Main loader (top-level async so awaits work)
 document.addEventListener('DOMContentLoaded', async () => {
@@ -556,8 +550,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const illum = dayData.moon_illum, actual = Math.round(illum);
     const score = illum>=99||illum<=1?4:illum>=95||illum<=5?3:illum>=90||illum<=10?2:1;
-    document.getElementById('rating').innerHTML = `<div style="font-size:36px">★`.repeat(score)+`</div><div style="font-size:24px">${['Average','Good','Better','Best'][score-1]}</div>`;
-
+   document.getElementById('rating').innerHTML = 
+    `<div style="font-size:36px;letter-spacing:6px;">${'★'.repeat(score)}</div>` +
+    `<div style="font-size:24px;margin-top:4px;">${['Average','Good','Better','Best'][score-1]}</div>`;
     let phaseName = actual>=99.5?'Full Moon':actual<=0.5?'New Moon':
         dayData.moon_age>21.9&&dayData.moon_age<22.3?'Last Quarter':
         dayData.moon_age>7.3&&dayData.moon_age<7.6?'First Quarter':
@@ -578,6 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
 </body>
 </html>
+
 
 
 
