@@ -296,6 +296,7 @@
         <div style="font-size:14px;line-height:1.6;">
           Wind ${windSpeedAvg} mph ${windDir}<br>
           Pressure ${pressure} inHg ${trend}<br>
+          Humidity ${p.relativeHumidity.value !== null ? Math.round(p.relativeHumidity.value) : '—'}%<br>
         </div>
       </div>`;
 
@@ -592,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 </body>
 </html>
+
 
 
 
