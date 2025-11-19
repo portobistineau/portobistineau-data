@@ -297,6 +297,7 @@
           Wind ${windSpeedAvg} mph ${windDir}<br>
           Pressure ${pressure} inHg ${trend}<br>
           Humidity ${p.relativeHumidity.value !== null ? Math.round(p.relativeHumidity.value) : '—'}%<br>
+		Dew Point ${p.dewpoint.value !== null ? Math.round(p.dewpoint.value * 1.8 + 32) : '—'}°F<br>
         </div>
       </div>`;
 
@@ -852,6 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
+
 
 
 
