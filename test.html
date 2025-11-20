@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <!-- ============================================= -->
   <!-- SEO & YouTube Growth Meta Tags -->
   <!-- ============================================= -->
@@ -448,6 +448,31 @@
           zIndex: 50
       }).addTo(map);
 
+    // --- MARINA STAR MARKER ---
+      
+      var marinaLat = 32.4619;
+      var marinaLng = -93.34883;
+
+      // Define the custom red star icon using Font Awesome
+      var redStarIcon = L.divIcon({
+          className: 'custom-star-icon',
+          html: '<i class="fa-solid fa-star fa-2xl" style="color: red; opacity: 0.9;"></i>',
+          iconSize: [30, 30], // Size of the div container
+          iconAnchor: [15, 30] // Anchor the tip of the star to the coordinates
+      });
+
+      // Add the marker to the map
+      L.marker([marinaLat, marinaLng], { icon: redStarIcon })
+          .addTo(map)
+          .bindTooltip("Port O Bistineau", {
+              permanent: true,   // Always display the label
+              direction: 'right', // Place the label to the right of the star
+              offset: [15, -5],  // Shift the label slightly
+              className: 'marina-label' // Custom class for styling
+          });
+      
+      // --------------------------
+
       fetch('https://api.rainviewer.com/public/weather-maps.json')
           .then(res => res.json())
           .then(data => {
@@ -790,6 +815,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
