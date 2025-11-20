@@ -409,8 +409,9 @@
           zIndex: 0
       }).addTo(map);
 
-      // 2. GeoJSON Lake Polygon Layer (z-index 40) - GUARANTEED HIGHLIGHT
-      const lakeDataUrl = 'https://crt-esri.crt.state.la.us/arcgis/rest/services/State_Parks/MapServer/357/query?where=1%3D1&outFields=*&f=geojson';
+      // 2. CORRECT GeoJSON Lake Polygon Layer (z-index 40)
+      // This URL fetches the water bodies from the LADEQ service and filters for Lake Bistineau.
+      const lakeDataUrl = 'https://crt-esri.crt.state.la.us/arcgis/rest/services/DEQ_Water/LADEQ_Hydrography/MapServer/2/query?where=NAME%3D%27Lake%20Bistineau%27&outFields=*&f=geojson';
 
       fetch(lakeDataUrl)
         .then(response => response.json())
@@ -418,16 +419,14 @@
             L.geoJSON(data, {
                 style: function (feature) {
                     return {
-                        fillColor: '#0084FF',  
-                        weight: 2,             
-                        opacity: 1,           
-                        color: '#003366',      
-                        fillOpacity: 0.35      
+                        fillColor: '#0084FF',  // Bright Blue fill
+                        weight: 0,             // Remove the line weight so only the fill shows
+                        fillOpacity: 0.35      // Transparency
                     };
                 }
             }).addTo(map);
         })
-        .catch(error => console.error('Error loading GeoJSON data:', error));
+        .catch(error => console.error('Error loading Hydrography GeoJSON data:', error));
 
 
       // 3. Reference Overlay (Roads/Labels) (z-index 50) - Remains on top
@@ -773,6 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
