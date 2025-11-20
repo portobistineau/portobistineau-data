@@ -6,41 +6,33 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   
 <style>
-/* Custom style for the plain white marina label */
 /* Target the main tooltip container with high specificity */
 .leaflet-tooltip.marina-label {
-    background-color: transparent !important; /* NO BACKGROUND */
-    border: none !important;                 /* NO BORDER */
-    box-shadow: none !important;             /* NO SHADOW */
-    padding: 0 !important;                   /* NO PADDING */
-    margin: 0 !important;                    /* NO MARGIN */
-    white-space: nowrap;                     /* Keep text on one line */
-}
-
-/* Style the actual text inside the tooltip */
-.leaflet-tooltip.marina-label .leaflet-tooltip-pane {
-    color: white !important;                 /* White text */
-    font-weight: bold;
-    font-size: 10px !important;              /* Keep your 10px font size */
-    line-height: 1.2 !important;             /* Ensure good line height */
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.8); /* Stronger shadow for readability */
-    /* Position adjustments */
-    left: 0 !important;
-    top: 0 !important;
-    transform: none !important;
-}
-
-/* Absolutely remove the arrow/tip from ALL directions */
-.leaflet-tooltip.marina-label.leaflet-tooltip-bottom:before,
-.leaflet-tooltip.marina-label.leaflet-tooltip-top:before,
-.leaflet-tooltip.marina-label.leaflet-tooltip-left:before,
-.leaflet-tooltip.marina-label.leaflet-tooltip-right:before,
-.leaflet-tooltip.marina-label .leaflet-tooltip-tip {
-    display: none !important;
+    /* Hide the bubble properties */
+    background-color: transparent !important;
     border: none !important;
-    content: none !important;
-    background: transparent !important;
     box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    white-space: nowrap;
+}
+
+/* ➡️ FIX: Style the actual text content directly ⬅️ */
+.leaflet-tooltip.marina-label .leaflet-tooltip-tip,
+.leaflet-tooltip-pane .leaflet-tooltip-tip {
+    /* Hide the arrow element */
+    display: none !important;
+}
+
+/* Style the text itself */
+.leaflet-tooltip.marina-label .leaflet-tooltip-content {
+    color: white !important;
+    font-weight: bold;
+    font-size: 10px !important;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    background: transparent !important; /* Ensure content box has no background */
+    padding: 0 !important; /* Remove text padding */
+    line-height: 1.2;
 }
 </style>
   <!-- ============================================= -->
@@ -854,6 +846,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
