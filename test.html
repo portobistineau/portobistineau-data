@@ -412,9 +412,8 @@
           zIndex: 0
       }).addTo(map);
 
-      // 2. NEW: Water Body Highlight Layer (z-index 40)
-      // This layer is styled with CSS to be a transparent blue.
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places_Alternate/MapServer/tile/{z}/{y}/{x}', {
+      // NEW, DEDICATED HYDROGRAPHY LAYER
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_HydroReference_Overlay/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
           zIndex: 40, 
           className: 'water-highlight-layer' 
@@ -760,6 +759,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
