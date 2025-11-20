@@ -205,14 +205,7 @@
     </div>
 
 <!-- Weather - NATIONAL WEATHER SERVICE (LIVE + HOURLY CACHE + ICON) -->
-<style>
-/* Applies a strong, transparent blue filter to tiles
-   in the layer with the class 'water-highlight-layer'.
-*/
-.water-highlight-layer {
-    filter: sepia(100%) hue-rotate(180deg) saturate(300%) opacity(70%);
-}
-</style>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -380,7 +373,7 @@
     initRadarWidget();
   }
 
-  // --- RADAR INITIALIZATION (with Water Highlight) ---
+  // --- RADAR INITIALIZATION (with Simple Water Highlight) ---
   function initRadarWidget() {
       if (window.radarMapInstance) {
           window.radarMapInstance.remove();
@@ -412,14 +405,14 @@
           zIndex: 0
       }).addTo(map);
 
-      // NEW, DEDICATED HYDROGRAPHY LAYER
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_HydroReference_Overlay/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19,
-          zIndex: 40, 
-          className: 'water-highlight-layer' 
+      // 2. NEW: Transparent OpenStreetMap Water Highlight Layer (z-index 40)
+      L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          zIndex: 40,
+          opacity: 0.55 // Adjust this value (0.0 to 1.0) to control transparency/darkness
       }).addTo(map);
 
-      // 3. Reference Overlay (Roads/Labels) (z-index 50) - Keeps labels on top of the blue water layer
+      // 3. Reference Overlay (Roads/Labels) (z-index 50) - Remains on top of the water layer
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
           zIndex: 50
@@ -759,6 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
