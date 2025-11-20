@@ -409,24 +409,37 @@
           zIndex: 0
       }).addTo(map);
 
-      // 2. CORRECT GEOJSON LAKE POLYGON LAYER (z-index 40)
-      // This fetches the high-resolution lake boundary from the USGS NHD service.
-      const geoJsonUrl = "https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer/60/query?where=GNIS_Name%3D'Lake%20Bistineau'&outFields=*&f=geojson&returnGeometry=true";
+      // 2. FINAL, CORRECT DOTD NHD GeoJSON Layer (z-index 40)
+      
+      // GeoJSON URL pointing to the DOTD NHD service, filtered by GNIS_Name
+      const dotdGeoJsonUrl = "https://maps.dotd.la.gov/topo/rest/services/OpenData/NHD/FeatureServer/3/query?where=GNIS_Name%3D'Lake%20Bistineau'&outFields=*&f=geojson&returnGeometry=true";
       
       const lakeStyle = {
           fillColor: "#0084FF",  // Bright Blue fill
-          weight: 0,             // No outline for a clean fill effect
-          fillOpacity: 0.35      // Transparency
+          weight: 0,             // No outline (pure fill effect)
+          fillOpacity: 0.35      // Transparency of the highlight
       };
 
-      fetch(geoJsonUrl)
-        .then(response => response.json())
-        .then(data => {
-            L.geoJson(data, {
-                style: lakeStyle
-            }).addTo(map);
+      fetch(dotdGeoJsonUrl)
+        .then(response => {
+            if (!response.ok) {
+                 // Throw an error if the fetch fails (e.g., 404)
+                throw new Error(`Failed to fetch DOTD NHD data: ${response.status}`);
+            }
+            return response.json();
         })
-        .catch(error => console.error('Error loading NHD GeoJSON data:', error));
+        .then(data => {
+            if (data.features && data.features.length > 0) {
+                // SUCCESS: Add the fetched GeoJSON feature(s) to the map
+                L.geoJson(data, {
+                    style: lakeStyle
+                }).addTo(map);
+            } else {
+                // FAILED: Data was fetched, but Lake Bistineau was not found in the results.
+                console.error('Lake Bistineau not found in DOTD NHD layer.');
+            }
+        })
+        .catch(error => console.error('Error loading DOTD NHD GeoJSON data:', error));
 
 
       // 3. Reference Overlay (Roads/Labels) (z-index 50) - Remains on top
@@ -772,6 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
