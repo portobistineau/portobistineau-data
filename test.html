@@ -318,7 +318,7 @@
     const radarHTML = `
       <div id="radar-container" style="position:relative; width:350px; height:350px; max-width:100%; border-radius:15px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.3); background:#000;">
           <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
-          <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
+          <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
               <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
               <span id="radar-time">Loading...</span>
           </div>
@@ -461,8 +461,13 @@
       var past = apiData.radar.past || [];
       var future = apiData.radar.nowcast || [];
       
-      var pastSlice = past.slice(-12);
-      var futureSlice = future.slice(0, 12);
+      // Use up to the last 24 available frames (4 hours of history)
+      var maxPastFrames = 24; 
+      var pastSlice = past.slice(-maxPastFrames); 
+      
+      // Use all available future frames (up to 12 frames, or whatever the API provides)
+      var futureSlice = future.slice(0, 12); 
+      
       var frames = pastSlice.concat(futureSlice);
 
       frames.forEach(function(frameObj, index) {
@@ -785,6 +790,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
