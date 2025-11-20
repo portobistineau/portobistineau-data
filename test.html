@@ -475,10 +475,11 @@
           iconAnchor: [0, 10]  // Anchor the top-left of the text box
       });
       
-      // Position the text marker slightly to the right of the star (adjusting Longitude)
-      var labelLng = marinaLng + 0.003; // Adjust the offset by 0.003 degrees East
+      // Position the text marker slightly above and to the right of the star (adjusting Latitude and Longitude)
+      var labelLat = marinaLat + 0.002; //Adjust the offset by 0.002 degrees North
+      var labelLng = marinaLng + 0.001; // Adjust the offset by 0.001 degrees East
 
-      L.marker([marinaLat, labelLng], { icon: textLabelIcon }).addTo(map);
+      L.marker([labelLat, labelLng], { icon: textLabelIcon }).addTo(map);
 
       // ------------------------------------
 
@@ -824,6 +825,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
