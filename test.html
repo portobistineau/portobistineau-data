@@ -5,21 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-/* Custom style for the marina label */
+<style>
+/* Custom style for the plain white marina label */
 .marina-label {
-    background-color: transparent !important; /* No background */
-    border: none !important;                 /* No border */
-    box-shadow: none !important;             /* No shadow */
+    background-color: transparent !important; /* Remove background */
+    border: none !important;                 /* Remove border */
+    box-shadow: none !important;             /* Remove shadow */
     color: white !important;                 /* White text */
-    font-weight: bold;                       /* Make it stand out a bit */
-    font-size: 13px;                         /* Slightly smaller than default town names */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Subtle shadow for readability on any background */
+    font-weight: bold;
+    font-size: 10px;                         /* ⬅️ Smaller Font Size */
+    padding: 0;                              /* Remove internal padding (to reduce size) */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Subtle shadow for readability */
 }
-/* Hide the arrow of the custom tooltip */
-.marina-label .leaflet-tooltip-tip {
-    background-color: transparent !important;
+
+/* ➡️ Code to absolutely remove the arrow/tip ⬅️ */
+.marina-label.leaflet-tooltip-bottom:before,
+.marina-label.leaflet-tooltip-top:before,
+.marina-label.leaflet-tooltip-left:before,
+.marina-label.leaflet-tooltip-right:before {
     border: none !important;
-    box-shadow: none !important;
+    content: none !important;
+}
+
+/* Ensure the wrapper element that usually contains the arrow is also clean */
+.marina-label .leaflet-tooltip-tip {
+    display: none !important;
 }
 </style>
   <!-- ============================================= -->
@@ -833,6 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
