@@ -4,6 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+/* Custom style for the marina label */
+.marina-label {
+    background-color: transparent !important; /* No background */
+    border: none !important;                 /* No border */
+    box-shadow: none !important;             /* No shadow */
+    color: white !important;                 /* White text */
+    font-weight: bold;                       /* Make it stand out a bit */
+    font-size: 13px;                         /* Slightly smaller than default town names */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Subtle shadow for readability on any background */
+}
+/* Hide the arrow of the custom tooltip */
+.marina-label .leaflet-tooltip-tip {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+</style>
   <!-- ============================================= -->
   <!-- SEO & YouTube Growth Meta Tags -->
   <!-- ============================================= -->
@@ -448,17 +466,17 @@
           zIndex: 50
       }).addTo(map);
 
-    // --- MARINA STAR MARKER ---
+   // --- MARINA STAR MARKER (Updated Size & Label) ---
       
       var marinaLat = 32.4619;
       var marinaLng = -93.34883;
 
-      // Define the custom red star icon using Font Awesome
+      // Define the custom red star icon using Font Awesome (fa-lg for smaller size)
       var redStarIcon = L.divIcon({
           className: 'custom-star-icon',
-          html: '<i class="fa-solid fa-star fa-2xl" style="color: red; opacity: 0.9;"></i>',
-          iconSize: [30, 30], // Size of the div container
-          iconAnchor: [15, 30] // Anchor the tip of the star to the coordinates
+          html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9;"></i>', // Changed to fa-lg
+          iconSize: [20, 20], // Smaller size
+          iconAnchor: [10, 20] // Adjust anchor for smaller size
       });
 
       // Add the marker to the map
@@ -467,8 +485,8 @@
           .bindTooltip("Port O Bistineau", {
               permanent: true,   // Always display the label
               direction: 'right', // Place the label to the right of the star
-              offset: [15, -5],  // Shift the label slightly
-              className: 'marina-label' // Custom class for styling
+              offset: [10, -10],  // Shift the label slightly for the smaller star
+              className: 'marina-label' // Custom class for plain white text
           });
       
       // --------------------------
@@ -815,6 +833,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
