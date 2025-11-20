@@ -1,17 +1,4 @@
 {
-    "2025-11-19": {
-        "date": "2025-11-19",
-        "major_1_utc": "2025-11-19T17:29:04.295719Z",
-        "major_2_utc": "2025-11-20T05:52:35.269252Z",
-        "minor_1_utc": "2025-11-19T12:18:36.274782Z",
-        "minor_2_utc": "2025-11-19T22:34:46.952730Z",
-        "moon_rise_utc": "2025-11-19T12:18:36.274782Z",
-        "moon_set_utc": "2025-11-19T22:34:46.952730Z",
-        "moon_overhead_utc": "2025-11-19T17:29:04.295719Z",
-        "moon_underfoot_utc": "2025-11-20T05:52:35.269252Z",
-        "moon_illum": 1.1,
-        "moon_age": 28.7
-    },
     "2025-11-20": {
         "date": "2025-11-20",
         "major_1_utc": "2025-11-20T18:16:46.444035Z",
@@ -23,7 +10,7 @@
         "moon_overhead_utc": "2025-11-20T18:16:46.444035Z",
         "moon_underfoot_utc": null,
         "moon_illum": 0.2,
-        "moon_age": 0.2
+        "moon_age": 29.5
     },
     "2025-11-21": {
         "date": "2025-11-21",
@@ -36,7 +23,7 @@
         "moon_overhead_utc": "2025-11-21T19:06:54.604050Z",
         "moon_underfoot_utc": "2025-11-21T06:41:34.711941Z",
         "moon_illum": 1.1,
-        "moon_age": 1.2
+        "moon_age": 1.0
     },
     "2025-11-22": {
         "date": "2025-11-22",
@@ -49,7 +36,7 @@
         "moon_overhead_utc": "2025-11-22T19:58:37.168000Z",
         "moon_underfoot_utc": "2025-11-22T07:32:38.506591Z",
         "moon_illum": 3.7,
-        "moon_age": 2.2
+        "moon_age": 2.0
     },
     "2025-11-23": {
         "date": "2025-11-23",
@@ -62,7 +49,7 @@
         "moon_overhead_utc": "2025-11-23T20:50:38.307271Z",
         "moon_underfoot_utc": "2025-11-23T08:24:40.461868Z",
         "moon_illum": 8.1,
-        "moon_age": 3.2
+        "moon_age": 3.0
     },
     "2025-11-24": {
         "date": "2025-11-24",
@@ -75,7 +62,7 @@
         "moon_overhead_utc": "2025-11-24T21:41:42.956679Z",
         "moon_underfoot_utc": "2025-11-24T09:16:21.592670Z",
         "moon_illum": 14.0,
-        "moon_age": 4.2
+        "moon_age": 4.0
     },
     "2025-11-25": {
         "date": "2025-11-25",
@@ -88,7 +75,7 @@
         "moon_overhead_utc": "2025-11-25T22:31:02.112455Z",
         "moon_underfoot_utc": "2025-11-25T10:06:37.316339Z",
         "moon_illum": 21.3,
-        "moon_age": 5.2
+        "moon_age": 5.0
     },
     "2025-11-26": {
         "date": "2025-11-26",
@@ -101,7 +88,7 @@
         "moon_overhead_utc": "2025-11-26T23:18:25.159705Z",
         "moon_underfoot_utc": "2025-11-26T10:54:57.299850Z",
         "moon_illum": 29.9,
-        "moon_age": 6.2
+        "moon_age": 6.0
     },
     "2025-11-27": {
         "date": "2025-11-27",
@@ -114,7 +101,7 @@
         "moon_overhead_utc": "2025-11-28T00:04:17.918296Z",
         "moon_underfoot_utc": "2025-11-27T11:41:30.014051Z",
         "moon_illum": 39.5,
-        "moon_age": 7.2
+        "moon_age": 7.0
     },
     "2025-11-28": {
         "date": "2025-11-28",
@@ -127,7 +114,7 @@
         "moon_overhead_utc": "2025-11-29T00:49:34.108750Z",
         "moon_underfoot_utc": "2025-11-28T12:26:56.377222Z",
         "moon_illum": 49.8,
-        "moon_age": 8.2
+        "moon_age": 8.0
     },
     "2025-11-29": {
         "date": "2025-11-29",
@@ -140,7 +127,7 @@
         "moon_overhead_utc": "2025-11-30T01:35:27.230505Z",
         "moon_underfoot_utc": "2025-11-29T13:12:20.856822Z",
         "moon_illum": 60.5,
-        "moon_age": 9.2
+        "moon_age": 9.0
     },
     "2025-11-30": {
         "date": "2025-11-30",
@@ -153,7 +140,7 @@
         "moon_overhead_utc": "2025-12-01T02:23:24.533841Z",
         "moon_underfoot_utc": "2025-11-30T13:59:04.535113Z",
         "moon_illum": 71.0,
-        "moon_age": 10.2
+        "moon_age": 10.0
     },
     "2025-12-01": {
         "date": "2025-12-01",
@@ -166,7 +153,7 @@
         "moon_overhead_utc": "2025-12-02T03:14:59.418658Z",
         "moon_underfoot_utc": "2025-12-01T14:48:39.065744Z",
         "moon_illum": 80.8,
-        "moon_age": 11.2
+        "moon_age": 11.0
     },
     "2025-12-02": {
         "date": "2025-12-02",
@@ -179,7 +166,7 @@
         "moon_overhead_utc": "2025-12-03T04:11:33.735844Z",
         "moon_underfoot_utc": "2025-12-02T15:42:35.357951Z",
         "moon_illum": 89.2,
-        "moon_age": 12.2
+        "moon_age": 12.0
     },
     "2025-12-03": {
         "date": "2025-12-03",
@@ -192,7 +179,7 @@
         "moon_overhead_utc": "2025-12-04T05:13:39.889189Z",
         "moon_underfoot_utc": "2025-12-03T16:41:56.720517Z",
         "moon_illum": 95.4,
-        "moon_age": 13.2
+        "moon_age": 13.0
     },
     "2025-12-04": {
         "date": "2025-12-04",
@@ -205,7 +192,7 @@
         "moon_overhead_utc": null,
         "moon_underfoot_utc": "2025-12-04T17:46:30.731929Z",
         "moon_illum": 99.0,
-        "moon_age": 14.2
+        "moon_age": 14.0
     },
     "2025-12-05": {
         "date": "2025-12-05",
@@ -218,7 +205,7 @@
         "moon_overhead_utc": "2025-12-05T06:20:08.334436Z",
         "moon_underfoot_utc": "2025-12-05T18:54:04.915822Z",
         "moon_illum": 99.7,
-        "moon_age": 15.2
+        "moon_age": 15.0
     },
     "2025-12-06": {
         "date": "2025-12-06",
@@ -231,7 +218,7 @@
         "moon_overhead_utc": "2025-12-06T07:27:49.279710Z",
         "moon_underfoot_utc": "2025-12-06T20:00:51.338506Z",
         "moon_illum": 97.4,
-        "moon_age": 16.2
+        "moon_age": 16.0
     },
     "2025-12-07": {
         "date": "2025-12-07",
@@ -244,7 +231,7 @@
         "moon_overhead_utc": "2025-12-07T08:32:46.271892Z",
         "moon_underfoot_utc": "2025-12-07T21:03:17.093606Z",
         "moon_illum": 92.4,
-        "moon_age": 17.2
+        "moon_age": 17.0
     },
     "2025-12-08": {
         "date": "2025-12-08",
@@ -257,7 +244,7 @@
         "moon_overhead_utc": "2025-12-08T09:32:15.222398Z",
         "moon_underfoot_utc": "2025-12-08T21:59:39.484029Z",
         "moon_illum": 85.1,
-        "moon_age": 18.2
+        "moon_age": 18.0
     },
     "2025-12-09": {
         "date": "2025-12-09",
@@ -270,7 +257,7 @@
         "moon_overhead_utc": "2025-12-09T10:25:34.323363Z",
         "moon_underfoot_utc": "2025-12-09T22:50:07.918181Z",
         "moon_illum": 76.3,
-        "moon_age": 19.2
+        "moon_age": 19.0
     },
     "2025-12-10": {
         "date": "2025-12-10",
@@ -283,7 +270,7 @@
         "moon_overhead_utc": "2025-12-10T11:13:30.588584Z",
         "moon_underfoot_utc": "2025-12-10T23:35:53.638292Z",
         "moon_illum": 66.5,
-        "moon_age": 20.2
+        "moon_age": 20.0
     },
     "2025-12-11": {
         "date": "2025-12-11",
@@ -296,7 +283,7 @@
         "moon_overhead_utc": "2025-12-11T11:57:28.597173Z",
         "moon_underfoot_utc": "2025-12-12T00:18:26.778306Z",
         "moon_illum": 56.3,
-        "moon_age": 21.2
+        "moon_age": 21.0
     },
     "2025-12-12": {
         "date": "2025-12-12",
@@ -309,7 +296,7 @@
         "moon_overhead_utc": "2025-12-12T12:38:59.047669Z",
         "moon_underfoot_utc": "2025-12-13T00:59:15.724422Z",
         "moon_illum": 46.3,
-        "moon_age": 22.2
+        "moon_age": 22.0
     },
     "2025-12-13": {
         "date": "2025-12-13",
@@ -322,7 +309,7 @@
         "moon_overhead_utc": "2025-12-13T13:19:26.549734Z",
         "moon_underfoot_utc": "2025-12-14T01:39:40.674903Z",
         "moon_illum": 36.6,
-        "moon_age": 23.2
+        "moon_age": 23.0
     },
     "2025-12-14": {
         "date": "2025-12-14",
@@ -335,7 +322,7 @@
         "moon_overhead_utc": "2025-12-14T14:00:06.638622Z",
         "moon_underfoot_utc": "2025-12-15T02:20:52.303435Z",
         "moon_illum": 27.7,
-        "moon_age": 24.2
+        "moon_age": 24.0
     },
     "2025-12-15": {
         "date": "2025-12-15",
@@ -348,7 +335,7 @@
         "moon_overhead_utc": "2025-12-15T14:42:04.735621Z",
         "moon_underfoot_utc": "2025-12-16T03:03:50.011065Z",
         "moon_illum": 19.7,
-        "moon_age": 25.2
+        "moon_age": 25.0
     },
     "2025-12-16": {
         "date": "2025-12-16",
@@ -361,7 +348,7 @@
         "moon_overhead_utc": "2025-12-16T15:26:12.946994Z",
         "moon_underfoot_utc": "2025-12-17T03:49:16.766154Z",
         "moon_illum": 12.8,
-        "moon_age": 26.2
+        "moon_age": 26.0
     },
     "2025-12-17": {
         "date": "2025-12-17",
@@ -374,7 +361,7 @@
         "moon_overhead_utc": "2025-12-17T16:13:02.729312Z",
         "moon_underfoot_utc": "2025-12-18T04:37:29.790862Z",
         "moon_illum": 7.2,
-        "moon_age": 27.2
+        "moon_age": 27.0
     },
     "2025-12-18": {
         "date": "2025-12-18",
@@ -387,7 +374,7 @@
         "moon_overhead_utc": "2025-12-18T17:02:34.366007Z",
         "moon_underfoot_utc": "2025-12-19T05:28:10.303551Z",
         "moon_illum": 3.2,
-        "moon_age": 28.2
+        "moon_age": 28.0
     },
     "2025-12-19": {
         "date": "2025-12-19",
@@ -400,7 +387,7 @@
         "moon_overhead_utc": "2025-12-19T17:54:09.152177Z",
         "moon_underfoot_utc": null,
         "moon_illum": 0.8,
-        "moon_age": 29.2
+        "moon_age": 29.0
     },
     "2025-12-20": {
         "date": "2025-12-20",
@@ -413,7 +400,7 @@
         "moon_overhead_utc": "2025-12-20T18:46:34.098663Z",
         "moon_underfoot_utc": null,
         "moon_illum": 0.2,
-        "moon_age": 0.7
+        "moon_age": 0.4
     },
     "2025-12-21": {
         "date": "2025-12-21",
@@ -426,7 +413,7 @@
         "moon_overhead_utc": "2025-12-21T19:38:23.979807Z",
         "moon_underfoot_utc": "2025-12-21T07:12:38.383527Z",
         "moon_illum": 1.5,
-        "moon_age": 1.7
+        "moon_age": 1.4
     },
     "2025-12-22": {
         "date": "2025-12-22",
@@ -439,7 +426,7 @@
         "moon_overhead_utc": "2025-12-22T20:28:31.108118Z",
         "moon_underfoot_utc": "2025-12-22T08:03:43.260232Z",
         "moon_illum": 4.6,
-        "moon_age": 2.7
+        "moon_age": 2.4
     },
     "2025-12-23": {
         "date": "2025-12-23",
@@ -452,7 +439,7 @@
         "moon_overhead_utc": "2025-12-23T21:16:25.461255Z",
         "moon_underfoot_utc": "2025-12-23T08:52:45.106907Z",
         "moon_illum": 9.5,
-        "moon_age": 3.7
+        "moon_age": 3.4
     },
     "2025-12-24": {
         "date": "2025-12-24",
@@ -465,7 +452,7 @@
         "moon_overhead_utc": "2025-12-24T22:02:17.516964Z",
         "moon_underfoot_utc": "2025-12-24T09:39:34.736593Z",
         "moon_illum": 16.2,
-        "moon_age": 4.7
+        "moon_age": 4.4
     },
     "2025-12-25": {
         "date": "2025-12-25",
@@ -478,7 +465,7 @@
         "moon_overhead_utc": "2025-12-25T22:46:49.959037Z",
         "moon_underfoot_utc": "2025-12-25T10:24:40.053959Z",
         "moon_illum": 24.4,
-        "moon_age": 5.7
+        "moon_age": 5.4
     },
     "2025-12-26": {
         "date": "2025-12-26",
@@ -491,7 +478,7 @@
         "moon_overhead_utc": "2025-12-26T23:31:07.694080Z",
         "moon_underfoot_utc": "2025-12-26T11:08:55.955795Z",
         "moon_illum": 33.8,
-        "moon_age": 6.7
+        "moon_age": 6.4
     },
     "2025-12-27": {
         "date": "2025-12-27",
@@ -504,7 +491,7 @@
         "moon_overhead_utc": "2025-12-28T00:16:30.747655Z",
         "moon_underfoot_utc": "2025-12-27T11:53:35.602373Z",
         "moon_illum": 44.3,
-        "moon_age": 7.7
+        "moon_age": 7.4
     },
     "2025-12-28": {
         "date": "2025-12-28",
@@ -517,7 +504,7 @@
         "moon_overhead_utc": "2025-12-29T01:04:28.984649Z",
         "moon_underfoot_utc": "2025-12-28T12:40:04.649826Z",
         "moon_illum": 55.3,
-        "moon_age": 8.7
+        "moon_age": 8.4
     },
     "2025-12-29": {
         "date": "2025-12-29",
@@ -530,7 +517,7 @@
         "moon_overhead_utc": "2025-12-30T01:56:33.186481Z",
         "moon_underfoot_utc": "2025-12-29T13:29:55.091420Z",
         "moon_illum": 66.3,
-        "moon_age": 9.7
+        "moon_age": 9.4
     },
     "2025-12-30": {
         "date": "2025-12-30",
@@ -543,7 +530,7 @@
         "moon_overhead_utc": "2025-12-31T02:53:53.255682Z",
         "moon_underfoot_utc": "2025-12-30T14:24:31.205072Z",
         "moon_illum": 76.8,
-        "moon_age": 10.7
+        "moon_age": 10.4
     },
     "2025-12-31": {
         "date": "2025-12-31",
@@ -556,7 +543,7 @@
         "moon_overhead_utc": "2026-01-01T03:56:36.206270Z",
         "moon_underfoot_utc": "2025-12-31T15:24:37.836741Z",
         "moon_illum": 85.9,
-        "moon_age": 11.7
+        "moon_age": 11.4
     },
     "2026-01-01": {
         "date": "2026-01-01",
@@ -569,7 +556,7 @@
         "moon_overhead_utc": "2026-01-02T05:02:59.703142Z",
         "moon_underfoot_utc": "2026-01-01T16:29:31.557774Z",
         "moon_illum": 93.1,
-        "moon_age": 12.7
+        "moon_age": 12.4
     },
     "2026-01-02": {
         "date": "2026-01-02",
@@ -582,7 +569,7 @@
         "moon_overhead_utc": null,
         "moon_underfoot_utc": "2026-01-02T17:36:31.606449Z",
         "moon_illum": 97.9,
-        "moon_age": 13.7
+        "moon_age": 13.4
     },
     "2026-01-03": {
         "date": "2026-01-03",
@@ -595,7 +582,7 @@
         "moon_overhead_utc": "2026-01-03T06:09:37.341766Z",
         "moon_underfoot_utc": "2026-01-03T18:41:50.323934Z",
         "moon_illum": 99.8,
-        "moon_age": 14.7
+        "moon_age": 14.4
     },
     "2026-01-04": {
         "date": "2026-01-04",
@@ -608,7 +595,7 @@
         "moon_overhead_utc": "2026-01-04T07:12:50.503193Z",
         "moon_underfoot_utc": "2026-01-04T19:42:25.777577Z",
         "moon_illum": 98.9,
-        "moon_age": 15.7
+        "moon_age": 15.4
     },
     "2026-01-05": {
         "date": "2026-01-05",
@@ -621,7 +608,7 @@
         "moon_overhead_utc": "2026-01-05T08:10:31.689686Z",
         "moon_underfoot_utc": "2026-01-05T20:37:10.030637Z",
         "moon_illum": 95.3,
-        "moon_age": 16.7
+        "moon_age": 16.4
     },
     "2026-01-06": {
         "date": "2026-01-06",
@@ -634,7 +621,7 @@
         "moon_overhead_utc": "2026-01-06T09:02:27.057218Z",
         "moon_underfoot_utc": "2026-01-06T21:26:31.831008Z",
         "moon_illum": 89.5,
-        "moon_age": 17.7
+        "moon_age": 17.4
     },
     "2026-01-07": {
         "date": "2026-01-07",
@@ -647,7 +634,7 @@
         "moon_overhead_utc": "2026-01-07T09:49:34.912269Z",
         "moon_underfoot_utc": "2026-01-07T22:11:47.453221Z",
         "moon_illum": 81.9,
-        "moon_age": 18.7
+        "moon_age": 18.4
     },
     "2026-01-08": {
         "date": "2026-01-08",
@@ -660,7 +647,7 @@
         "moon_overhead_utc": "2026-01-08T10:33:20.626802Z",
         "moon_underfoot_utc": "2026-01-08T22:54:25.303909Z",
         "moon_illum": 73.2,
-        "moon_age": 19.7
+        "moon_age": 19.4
     },
     "2026-01-09": {
         "date": "2026-01-09",
@@ -673,7 +660,7 @@
         "moon_overhead_utc": "2026-01-09T11:15:11.888396Z",
         "moon_underfoot_utc": "2026-01-09T23:35:50.243805Z",
         "moon_illum": 63.8,
-        "moon_age": 20.7
+        "moon_age": 20.4
     },
     "2026-01-10": {
         "date": "2026-01-10",
@@ -686,7 +673,7 @@
         "moon_overhead_utc": "2026-01-10T11:56:29.655257Z",
         "moon_underfoot_utc": "2026-01-11T00:17:18.791454Z",
         "moon_illum": 54.1,
-        "moon_age": 21.7
+        "moon_age": 21.4
     },
     "2026-01-11": {
         "date": "2026-01-11",
@@ -699,7 +686,7 @@
         "moon_overhead_utc": "2026-01-11T12:38:25.634505Z",
         "moon_underfoot_utc": "2026-01-12T00:59:57.356918Z",
         "moon_illum": 44.4,
-        "moon_age": 22.7
+        "moon_age": 22.4
     },
     "2026-01-12": {
         "date": "2026-01-12",
@@ -712,7 +699,7 @@
         "moon_overhead_utc": "2026-01-12T13:22:00.132182Z",
         "moon_underfoot_utc": "2026-01-13T01:44:38.870747Z",
         "moon_illum": 35.2,
-        "moon_age": 23.7
+        "moon_age": 23.4
     },
     "2026-01-13": {
         "date": "2026-01-13",
@@ -725,7 +712,7 @@
         "moon_overhead_utc": "2026-01-13T14:07:56.894902Z",
         "moon_underfoot_utc": "2026-01-14T02:31:55.579442Z",
         "moon_illum": 26.5,
-        "moon_age": 24.7
+        "moon_age": 24.4
     },
     "2026-01-14": {
         "date": "2026-01-14",
@@ -738,7 +725,7 @@
         "moon_overhead_utc": "2026-01-14T14:56:34.019201Z",
         "moon_underfoot_utc": "2026-01-15T03:21:48.801746Z",
         "moon_illum": 18.7,
-        "moon_age": 25.7
+        "moon_age": 25.4
     },
     "2026-01-15": {
         "date": "2026-01-15",
@@ -751,7 +738,7 @@
         "moon_overhead_utc": "2026-01-15T15:47:33.984147Z",
         "moon_underfoot_utc": "2026-01-16T04:13:41.351260Z",
         "moon_illum": 11.9,
-        "moon_age": 26.7
+        "moon_age": 26.4
     },
     "2026-01-16": {
         "date": "2026-01-16",
@@ -764,7 +751,7 @@
         "moon_overhead_utc": "2026-01-16T16:40:00.992569Z",
         "moon_underfoot_utc": "2026-01-17T05:06:22.150469Z",
         "moon_illum": 6.5,
-        "moon_age": 27.7
+        "moon_age": 27.4
     },
     "2026-01-17": {
         "date": "2026-01-17",
@@ -777,7 +764,7 @@
         "moon_overhead_utc": "2026-01-17T17:32:34.221479Z",
         "moon_underfoot_utc": "2026-01-18T05:58:27.736121Z",
         "moon_illum": 2.6,
-        "moon_age": 28.7
+        "moon_age": 28.4
     },
     "2026-01-18": {
         "date": "2026-01-18",
@@ -790,7 +777,7 @@
         "moon_overhead_utc": "2026-01-18T18:23:55.157651Z",
         "moon_underfoot_utc": null,
         "moon_illum": 0.4,
-        "moon_age": 0.1
+        "moon_age": 29.4
     },
     "2026-01-19": {
         "date": "2026-01-19",
@@ -803,7 +790,7 @@
         "moon_overhead_utc": "2026-01-19T19:13:13.971821Z",
         "moon_underfoot_utc": "2026-01-19T06:48:51.389659Z",
         "moon_illum": 0.3,
-        "moon_age": 1.1
+        "moon_age": 0.9
     },
     "2026-01-20": {
         "date": "2026-01-20",
@@ -816,7 +803,7 @@
         "moon_overhead_utc": "2026-01-20T20:00:20.907492Z",
         "moon_underfoot_utc": "2026-01-20T07:37:03.006609Z",
         "moon_illum": 2.1,
-        "moon_age": 2.1
+        "moon_age": 1.9
     },
     "2026-01-21": {
         "date": "2026-01-21",
@@ -829,7 +816,7 @@
         "moon_overhead_utc": "2026-01-21T20:45:42.456510Z",
         "moon_underfoot_utc": "2026-01-21T08:23:12.057397Z",
         "moon_illum": 6.1,
-        "moon_age": 3.1
+        "moon_age": 2.9
     },
     "2026-01-22": {
         "date": "2026-01-22",
@@ -842,7 +829,7 @@
         "moon_overhead_utc": "2026-01-22T21:30:11.233377Z",
         "moon_underfoot_utc": "2026-01-22T09:07:59.403281Z",
         "moon_illum": 12.0,
-        "moon_age": 4.1
+        "moon_age": 3.9
     },
     "2026-01-23": {
         "date": "2026-01-23",
@@ -855,7 +842,7 @@
         "moon_overhead_utc": "2026-01-23T22:14:56.858519Z",
         "moon_underfoot_utc": "2026-01-23T09:52:27.111052Z",
         "moon_illum": 19.8,
-        "moon_age": 5.1
+        "moon_age": 4.9
     },
     "2026-01-24": {
         "date": "2026-01-24",
@@ -868,7 +855,7 @@
         "moon_overhead_utc": "2026-01-24T23:01:19.491189Z",
         "moon_underfoot_utc": "2026-01-24T10:37:50.787303Z",
         "moon_illum": 29.1,
-        "moon_age": 6.1
+        "moon_age": 5.9
     },
     "2026-01-25": {
         "date": "2026-01-25",
@@ -881,7 +868,7 @@
         "moon_overhead_utc": "2026-01-25T23:50:43.013302Z",
         "moon_underfoot_utc": "2026-01-25T11:25:33.540278Z",
         "moon_illum": 39.6,
-        "moon_age": 7.1
+        "moon_age": 6.9
     },
     "2026-01-26": {
         "date": "2026-01-26",
@@ -894,7 +881,7 @@
         "moon_overhead_utc": "2026-01-27T00:44:21.596781Z",
         "moon_underfoot_utc": "2026-01-26T12:16:56.795456Z",
         "moon_illum": 50.8,
-        "moon_age": 8.1
+        "moon_age": 7.9
     },
     "2026-01-27": {
         "date": "2026-01-27",
@@ -907,7 +894,7 @@
         "moon_overhead_utc": "2026-01-28T01:42:52.577309Z",
         "moon_underfoot_utc": "2026-01-27T13:13:00.700598Z",
         "moon_illum": 62.2,
-        "moon_age": 9.1
+        "moon_age": 8.9
     },
     "2026-01-28": {
         "date": "2026-01-28",
@@ -920,7 +907,7 @@
         "moon_overhead_utc": "2026-01-29T02:45:37.842654Z",
         "moon_underfoot_utc": "2026-01-28T14:13:49.673265Z",
         "moon_illum": 73.0,
-        "moon_age": 10.1
+        "moon_age": 9.9
     },
     "2026-01-29": {
         "date": "2026-01-29",
@@ -933,7 +920,7 @@
         "moon_overhead_utc": "2026-01-30T03:50:22.628665Z",
         "moon_underfoot_utc": "2026-01-29T15:17:56.915480Z",
         "moon_illum": 82.7,
-        "moon_age": 11.1
+        "moon_age": 10.9
     },
     "2026-01-30": {
         "date": "2026-01-30",
@@ -946,7 +933,7 @@
         "moon_overhead_utc": "2026-01-31T04:53:54.855769Z",
         "moon_underfoot_utc": "2026-01-30T16:22:29.642956Z",
         "moon_illum": 90.6,
-        "moon_age": 12.1
+        "moon_age": 11.9
     },
     "2026-01-31": {
         "date": "2026-01-31",
@@ -959,7 +946,7 @@
         "moon_overhead_utc": "2026-02-01T05:53:33.448163Z",
         "moon_underfoot_utc": "2026-01-31T17:24:20.077546Z",
         "moon_illum": 96.2,
-        "moon_age": 13.1
+        "moon_age": 12.9
     },
     "2026-02-01": {
         "date": "2026-02-01",
@@ -972,7 +959,7 @@
         "moon_overhead_utc": null,
         "moon_underfoot_utc": "2026-02-01T18:21:29.528386Z",
         "moon_illum": 99.4,
-        "moon_age": 14.1
+        "moon_age": 13.9
     },
     "2026-02-02": {
         "date": "2026-02-02",
@@ -985,7 +972,7 @@
         "moon_overhead_utc": "2026-02-02T06:48:08.427713Z",
         "moon_underfoot_utc": "2026-02-02T19:13:34.482396Z",
         "moon_illum": 99.8,
-        "moon_age": 15.1
+        "moon_age": 14.9
     },
     "2026-02-03": {
         "date": "2026-02-03",
@@ -998,7 +985,7 @@
         "moon_overhead_utc": "2026-02-03T07:37:54.898519Z",
         "moon_underfoot_utc": "2026-02-03T20:01:18.604054Z",
         "moon_illum": 97.8,
-        "moon_age": 16.1
+        "moon_age": 15.9
     },
     "2026-02-04": {
         "date": "2026-02-04",
@@ -1011,7 +998,7 @@
         "moon_overhead_utc": "2026-02-04T08:23:55.388080Z",
         "moon_underfoot_utc": "2026-02-04T20:45:55.316566Z",
         "moon_illum": 93.5,
-        "moon_age": 17.1
+        "moon_age": 16.9
     },
     "2026-02-05": {
         "date": "2026-02-05",
@@ -1024,7 +1011,7 @@
         "moon_overhead_utc": "2026-02-05T09:07:28.363499Z",
         "moon_underfoot_utc": "2026-02-05T21:28:44.195335Z",
         "moon_illum": 87.4,
-        "moon_age": 18.1
+        "moon_age": 17.9
     },
     "2026-02-06": {
         "date": "2026-02-06",
@@ -1037,7 +1024,7 @@
         "moon_overhead_utc": "2026-02-06T09:49:52.045445Z",
         "moon_underfoot_utc": "2026-02-06T22:11:00.634675Z",
         "moon_illum": 79.8,
-        "moon_age": 19.1
+        "moon_age": 18.9
     },
     "2026-02-07": {
         "date": "2026-02-07",
@@ -1050,7 +1037,7 @@
         "moon_overhead_utc": "2026-02-07T10:32:18.096965Z",
         "moon_underfoot_utc": "2026-02-07T22:53:51.886015Z",
         "moon_illum": 71.3,
-        "moon_age": 20.1
+        "moon_age": 19.9
     },
     "2026-02-08": {
         "date": "2026-02-08",
@@ -1063,7 +1050,7 @@
         "moon_overhead_utc": "2026-02-08T11:15:48.638584Z",
         "moon_underfoot_utc": "2026-02-08T23:38:13.986079Z",
         "moon_illum": 62.2,
-        "moon_age": 21.1
+        "moon_age": 20.9
     },
     "2026-02-09": {
         "date": "2026-02-09",
@@ -1076,7 +1063,7 @@
         "moon_overhead_utc": "2026-02-09T12:01:12.308251Z",
         "moon_underfoot_utc": "2026-02-10T00:24:46.445022Z",
         "moon_illum": 52.8,
-        "moon_age": 22.1
+        "moon_age": 21.9
     },
     "2026-02-10": {
         "date": "2026-02-10",
@@ -1089,7 +1076,7 @@
         "moon_overhead_utc": "2026-02-10T12:48:57.394294Z",
         "moon_underfoot_utc": "2026-02-11T01:13:44.049384Z",
         "moon_illum": 43.4,
-        "moon_age": 23.1
+        "moon_age": 22.9
     },
     "2026-02-11": {
         "date": "2026-02-11",
@@ -1102,7 +1089,7 @@
         "moon_overhead_utc": "2026-02-11T13:39:03.047927Z",
         "moon_underfoot_utc": "2026-02-12T02:04:48.805518Z",
         "moon_illum": 34.2,
-        "moon_age": 24.1
+        "moon_age": 23.9
     },
     "2026-02-12": {
         "date": "2026-02-12",
@@ -1115,7 +1102,7 @@
         "moon_overhead_utc": "2026-02-12T14:30:53.797569Z",
         "moon_underfoot_utc": "2026-02-13T02:57:09.101604Z",
         "moon_illum": 25.5,
-        "moon_age": 25.1
+        "moon_age": 24.9
     },
     "2026-02-13": {
         "date": "2026-02-13",
@@ -1128,7 +1115,7 @@
         "moon_overhead_utc": "2026-02-13T15:23:25.157977Z",
         "moon_underfoot_utc": "2026-02-14T03:49:32.638494Z",
         "moon_illum": 17.6,
-        "moon_age": 26.1
+        "moon_age": 25.9
     },
     "2026-02-14": {
         "date": "2026-02-14",
@@ -1141,7 +1128,7 @@
         "moon_overhead_utc": "2026-02-14T16:15:23.287276Z",
         "moon_underfoot_utc": "2026-02-15T04:40:50.599474Z",
         "moon_illum": 10.8,
-        "moon_age": 27.1
+        "moon_age": 26.9
     },
     "2026-02-15": {
         "date": "2026-02-15",
@@ -1154,7 +1141,7 @@
         "moon_overhead_utc": "2026-02-15T17:05:50.258719Z",
         "moon_underfoot_utc": "2026-02-16T05:30:20.310535Z",
         "moon_illum": 5.4,
-        "moon_age": 28.1
+        "moon_age": 27.9
     },
     "2026-02-16": {
         "date": "2026-02-16",
@@ -1167,7 +1154,7 @@
         "moon_overhead_utc": "2026-02-16T17:54:21.112618Z",
         "moon_underfoot_utc": null,
         "moon_illum": 1.7,
-        "moon_age": 29.1
+        "moon_age": 28.9
     },
     "2026-02-17": {
         "date": "2026-02-17",
@@ -1180,7 +1167,7 @@
         "moon_overhead_utc": "2026-02-17T18:41:06.632066Z",
         "moon_underfoot_utc": null,
         "moon_illum": 0.1,
-        "moon_age": 0.6
+        "moon_age": 0.4
     },
     "2026-02-18": {
         "date": "2026-02-18",
@@ -1193,7 +1180,7 @@
         "moon_overhead_utc": "2026-02-18T19:26:46.472262Z",
         "moon_underfoot_utc": "2026-02-18T07:04:01.413087Z",
         "moon_illum": 0.7,
-        "moon_age": 1.6
+        "moon_age": 1.4
     },
     "2026-02-19": {
         "date": "2026-02-19",
@@ -1206,7 +1193,7 @@
         "moon_overhead_utc": "2026-02-19T20:12:20.020175Z",
         "moon_underfoot_utc": "2026-02-19T07:49:29.773308Z",
         "moon_illum": 3.6,
-        "moon_age": 2.6
+        "moon_age": 2.4
     },
     "2026-02-20": {
         "date": "2026-02-20",
@@ -1219,7 +1206,7 @@
         "moon_overhead_utc": "2026-02-20T20:58:58.597490Z",
         "moon_underfoot_utc": "2026-02-20T08:35:26.447815Z",
         "moon_illum": 8.8,
-        "moon_age": 3.6
+        "moon_age": 3.4
     },
     "2026-02-21": {
         "date": "2026-02-21",
@@ -1232,7 +1219,7 @@
         "moon_overhead_utc": "2026-02-21T21:47:57.937446Z",
         "moon_underfoot_utc": "2026-02-21T09:23:06.030883Z",
         "moon_illum": 16.2,
-        "moon_age": 4.6
+        "moon_age": 4.4
     },
     "2026-02-22": {
         "date": "2026-02-22",
@@ -1245,7 +1232,7 @@
         "moon_overhead_utc": "2026-02-22T22:40:26.546299Z",
         "moon_underfoot_utc": "2026-02-22T10:13:42.580247Z",
         "moon_illum": 25.3,
-        "moon_age": 5.6
+        "moon_age": 5.4
     },
     "2026-02-23": {
         "date": "2026-02-23",
@@ -1258,7 +1245,7 @@
         "moon_overhead_utc": "2026-02-23T23:37:04.606335Z",
         "moon_underfoot_utc": "2026-02-23T11:08:13.798059Z",
         "moon_illum": 35.8,
-        "moon_age": 6.6
+        "moon_age": 6.4
     },
     "2026-02-24": {
         "date": "2026-02-24",
@@ -1271,7 +1258,7 @@
         "moon_overhead_utc": "2026-02-25T00:37:33.886062Z",
         "moon_underfoot_utc": "2026-02-24T12:06:54.549107Z",
         "moon_illum": 47.1,
-        "moon_age": 7.6
+        "moon_age": 7.4
     },
     "2026-02-25": {
         "date": "2026-02-25",
@@ -1284,7 +1271,7 @@
         "moon_overhead_utc": "2026-02-26T01:40:16.788304Z",
         "moon_underfoot_utc": "2026-02-25T13:08:47.661687Z",
         "moon_illum": 58.6,
-        "moon_age": 8.6
+        "moon_age": 8.4
     },
     "2026-02-26": {
         "date": "2026-02-26",
@@ -1297,7 +1284,7 @@
         "moon_overhead_utc": "2026-02-27T02:42:36.745299Z",
         "moon_underfoot_utc": "2026-02-26T14:11:40.068981Z",
         "moon_illum": 69.5,
-        "moon_age": 9.6
+        "moon_age": 9.4
     },
     "2026-02-27": {
         "date": "2026-02-27",
@@ -1310,7 +1297,7 @@
         "moon_overhead_utc": "2026-02-28T03:42:03.294528Z",
         "moon_underfoot_utc": "2026-02-27T15:12:48.925207Z",
         "moon_illum": 79.5,
-        "moon_age": 10.6
+        "moon_age": 10.4
     },
     "2026-02-28": {
         "date": "2026-02-28",
@@ -1323,7 +1310,7 @@
         "moon_overhead_utc": "2026-03-01T04:37:11.622248Z",
         "moon_underfoot_utc": "2026-02-28T16:10:11.834372Z",
         "moon_illum": 87.8,
-        "moon_age": 11.6
+        "moon_age": 11.4
     },
     "2026-03-01": {
         "date": "2026-03-01",
@@ -1336,7 +1323,7 @@
         "moon_overhead_utc": "2026-03-02T05:27:53.682625Z",
         "moon_underfoot_utc": "2026-03-01T17:03:04.032172Z",
         "moon_illum": 94.2,
-        "moon_age": 12.6
+        "moon_age": 12.4
     },
     "2026-03-02": {
         "date": "2026-03-02",
@@ -1349,7 +1336,7 @@
         "moon_overhead_utc": null,
         "moon_underfoot_utc": "2026-03-02T17:51:47.404659Z",
         "moon_illum": 98.2,
-        "moon_age": 13.6
+        "moon_age": 13.4
     },
     "2026-03-03": {
         "date": "2026-03-03",
@@ -1362,7 +1349,7 @@
         "moon_overhead_utc": "2026-03-03T06:14:53.373081Z",
         "moon_underfoot_utc": "2026-03-03T18:37:20.451337Z",
         "moon_illum": 99.9,
-        "moon_age": 14.6
+        "moon_age": 14.4
     },
     "2026-03-04": {
         "date": "2026-03-04",
@@ -1375,7 +1362,7 @@
         "moon_overhead_utc": "2026-03-04T06:59:17.731958Z",
         "moon_underfoot_utc": "2026-03-04T19:20:54.234996Z",
         "moon_illum": 99.3,
-        "moon_age": 15.6
+        "moon_age": 15.4
     },
     "2026-03-05": {
         "date": "2026-03-05",
@@ -1388,7 +1375,7 @@
         "moon_overhead_utc": "2026-03-05T07:42:18.712775Z",
         "moon_underfoot_utc": "2026-03-05T20:03:39.521222Z",
         "moon_illum": 96.6,
-        "moon_age": 16.6
+        "moon_age": 16.4
     },
     "2026-03-06": {
         "date": "2026-03-06",
@@ -1401,7 +1388,7 @@
         "moon_overhead_utc": "2026-03-06T08:25:04.517407Z",
         "moon_underfoot_utc": "2026-03-06T20:46:40.958747Z",
         "moon_illum": 91.9,
-        "moon_age": 17.6
+        "moon_age": 17.4
     },
     "2026-03-07": {
         "date": "2026-03-07",
@@ -1414,7 +1401,7 @@
         "moon_overhead_utc": "2026-03-07T09:08:35.378512Z",
         "moon_underfoot_utc": "2026-03-07T21:30:53.427554Z",
         "moon_illum": 85.7,
-        "moon_age": 18.6
+        "moon_age": 18.4
     },
     "2026-03-08": {
         "date": "2026-03-08",
@@ -1427,7 +1414,7 @@
         "moon_overhead_utc": "2026-03-08T09:53:39.672829Z",
         "moon_underfoot_utc": "2026-03-08T22:16:57.362336Z",
         "moon_illum": 78.3,
-        "moon_age": 19.6
+        "moon_age": 19.4
     },
     "2026-03-09": {
         "date": "2026-03-09",
@@ -1440,7 +1427,7 @@
         "moon_overhead_utc": "2026-03-09T10:40:48.172485Z",
         "moon_underfoot_utc": "2026-03-09T23:05:11.978415Z",
         "moon_illum": 70.3,
-        "moon_age": 20.6
+        "moon_age": 20.3
     },
     "2026-03-10": {
         "date": "2026-03-10",
@@ -1453,7 +1440,7 @@
         "moon_overhead_utc": "2026-03-10T11:30:06.695215Z",
         "moon_underfoot_utc": "2026-03-10T23:55:28.254194Z",
         "moon_illum": 61.3,
-        "moon_age": 21.6
+        "moon_age": 21.3
     },
     "2026-03-11": {
         "date": "2026-03-11",
@@ -1466,7 +1453,7 @@
         "moon_overhead_utc": "2026-03-11T12:21:10.763899Z",
         "moon_underfoot_utc": "2026-03-12T00:47:06.887509Z",
         "moon_illum": 52.0,
-        "moon_age": 22.6
+        "moon_age": 22.3
     },
     "2026-03-12": {
         "date": "2026-03-12",
@@ -1479,7 +1466,7 @@
         "moon_overhead_utc": "2026-03-12T13:13:08.417999Z",
         "moon_underfoot_utc": "2026-03-13T01:39:06.987614Z",
         "moon_illum": 42.5,
-        "moon_age": 23.6
+        "moon_age": 23.3
     },
     "2026-03-13": {
         "date": "2026-03-13",
@@ -1492,7 +1479,7 @@
         "moon_overhead_utc": "2026-03-13T14:04:54.811329Z",
         "moon_underfoot_utc": "2026-03-14T02:30:25.350297Z",
         "moon_illum": 33.2,
-        "moon_age": 24.6
+        "moon_age": 24.3
     },
     "2026-03-14": {
         "date": "2026-03-14",
@@ -1505,7 +1492,7 @@
         "moon_overhead_utc": "2026-03-14T14:55:33.810845Z",
         "moon_underfoot_utc": "2026-03-15T03:20:17.430997Z",
         "moon_illum": 24.3,
-        "moon_age": 25.6
+        "moon_age": 25.3
     },
     "2026-03-15": {
         "date": "2026-03-15",
@@ -1518,7 +1505,7 @@
         "moon_overhead_utc": "2026-03-15T15:44:35.562980Z",
         "moon_underfoot_utc": "2026-03-16T04:08:29.588332Z",
         "moon_illum": 16.3,
-        "moon_age": 26.6
+        "moon_age": 26.3
     },
     "2026-03-16": {
         "date": "2026-03-16",
@@ -1531,7 +1518,7 @@
         "moon_overhead_utc": "2026-03-16T16:32:02.726953Z",
         "moon_underfoot_utc": "2026-03-17T04:55:19.791720Z",
         "moon_illum": 9.4,
-        "moon_age": 27.6
+        "moon_age": 27.3
     },
     "2026-03-17": {
         "date": "2026-03-17",
@@ -1544,7 +1531,7 @@
         "moon_overhead_utc": "2026-03-17T17:18:26.934896Z",
         "moon_underfoot_utc": null,
         "moon_illum": 4.1,
-        "moon_age": 28.6
+        "moon_age": 28.3
     },
     "2026-03-18": {
         "date": "2026-03-18",
@@ -1557,7 +1544,7 @@
         "moon_overhead_utc": "2026-03-18T18:04:41.331026Z",
         "moon_underfoot_utc": "2026-03-18T05:41:31.406072Z",
         "moon_illum": 0.9,
-        "moon_age": 0.0
+        "moon_age": 29.3
     },
     "2026-03-19": {
         "date": "2026-03-19",
@@ -1570,7 +1557,7 @@
         "moon_overhead_utc": "2026-03-19T18:51:53.118805Z",
         "moon_underfoot_utc": "2026-03-19T06:28:05.496370Z",
         "moon_illum": 0.1,
-        "moon_age": 1.0
+        "moon_age": 0.8
     },
     "2026-03-20": {
         "date": "2026-03-20",
@@ -1583,7 +1570,7 @@
         "moon_overhead_utc": "2026-03-20T19:41:15.928269Z",
         "moon_underfoot_utc": "2026-03-20T07:16:13.557677Z",
         "moon_illum": 1.8,
-        "moon_age": 2.0
+        "moon_age": 1.8
     },
     "2026-03-21": {
         "date": "2026-03-21",
@@ -1596,7 +1583,7 @@
         "moon_overhead_utc": "2026-03-21T20:33:58.275719Z",
         "moon_underfoot_utc": "2026-03-21T08:07:08.561809Z",
         "moon_illum": 6.2,
-        "moon_age": 3.0
+        "moon_age": 2.8
     },
     "2026-03-22": {
         "date": "2026-03-22",
@@ -1609,7 +1596,7 @@
         "moon_overhead_utc": "2026-03-22T21:30:42.930140Z",
         "moon_underfoot_utc": "2026-03-22T09:01:49.443376Z",
         "moon_illum": 13.0,
-        "moon_age": 4.0
+        "moon_age": 3.8
     },
     "2026-03-23": {
         "date": "2026-03-23",
@@ -1622,7 +1609,7 @@
         "moon_overhead_utc": "2026-03-23T22:31:16.920428Z",
         "moon_underfoot_utc": "2026-03-23T10:00:35.061948Z",
         "moon_illum": 21.9,
-        "moon_age": 5.0
+        "moon_age": 4.8
     },
     "2026-03-24": {
         "date": "2026-03-24",
@@ -1635,7 +1622,7 @@
         "moon_overhead_utc": "2026-03-24T23:34:08.717892Z",
         "moon_underfoot_utc": "2026-03-24T11:02:34.315801Z",
         "moon_illum": 32.2,
-        "moon_age": 6.0
+        "moon_age": 5.8
     },
     "2026-03-25": {
         "date": "2026-03-25",
@@ -1648,7 +1635,7 @@
         "moon_overhead_utc": "2026-03-26T00:36:44.697318Z",
         "moon_underfoot_utc": "2026-03-25T12:05:39.151091Z",
         "moon_illum": 43.4,
-        "moon_age": 7.0
+        "moon_age": 6.8
     },
     "2026-03-26": {
         "date": "2026-03-26",
@@ -1661,7 +1648,7 @@
         "moon_overhead_utc": "2026-03-27T01:36:31.979880Z",
         "moon_underfoot_utc": "2026-03-26T13:07:06.975367Z",
         "moon_illum": 54.7,
-        "moon_age": 8.0
+        "moon_age": 7.8
     },
     "2026-03-27": {
         "date": "2026-03-27",
@@ -1674,7 +1661,7 @@
         "moon_overhead_utc": "2026-03-28T02:32:00.269157Z",
         "moon_underfoot_utc": "2026-03-27T14:04:50.945909Z",
         "moon_illum": 65.7,
-        "moon_age": 9.0
+        "moon_age": 8.8
     },
     "2026-03-28": {
         "date": "2026-03-28",
@@ -1687,7 +1674,7 @@
         "moon_overhead_utc": "2026-03-29T03:22:56.683022Z",
         "moon_underfoot_utc": "2026-03-28T14:58:00.774298Z",
         "moon_illum": 75.8,
-        "moon_age": 10.0
+        "moon_age": 9.8
     },
     "2026-03-29": {
         "date": "2026-03-29",
@@ -1700,7 +1687,7 @@
         "moon_overhead_utc": "2026-03-30T04:10:02.466648Z",
         "moon_underfoot_utc": "2026-03-29T15:46:54.569986Z",
         "moon_illum": 84.4,
-        "moon_age": 11.0
+        "moon_age": 10.8
     },
     "2026-03-30": {
         "date": "2026-03-30",
@@ -1713,7 +1700,7 @@
         "moon_overhead_utc": "2026-03-31T04:54:23.787079Z",
         "moon_underfoot_utc": "2026-03-30T16:32:29.176048Z",
         "moon_illum": 91.3,
-        "moon_age": 12.0
+        "moon_age": 11.8
     },
     "2026-03-31": {
         "date": "2026-03-31",
@@ -1726,7 +1713,7 @@
         "moon_overhead_utc": null,
         "moon_underfoot_utc": "2026-03-31T17:15:55.353436Z",
         "moon_illum": 96.3,
-        "moon_age": 13.0
+        "moon_age": 12.8
     },
     "2026-04-01": {
         "date": "2026-04-01",
@@ -1739,7 +1726,7 @@
         "moon_overhead_utc": "2026-04-01T05:37:12.685943Z",
         "moon_underfoot_utc": "2026-04-01T17:58:24.217925Z",
         "moon_illum": 99.2,
-        "moon_age": 14.0
+        "moon_age": 13.8
     },
     "2026-04-02": {
         "date": "2026-04-02",
@@ -1752,7 +1739,7 @@
         "moon_overhead_utc": "2026-04-02T06:19:37.902417Z",
         "moon_underfoot_utc": "2026-04-02T18:41:01.115742Z",
         "moon_illum": 99.9,
-        "moon_age": 15.0
+        "moon_age": 14.8
     },
     "2026-04-03": {
         "date": "2026-04-03",
@@ -1765,7 +1752,7 @@
         "moon_overhead_utc": "2026-04-03T07:02:40.541156Z",
         "moon_underfoot_utc": "2026-04-03T19:24:42.021290Z",
         "moon_illum": 98.7,
-        "moon_age": 16.0
+        "moon_age": 15.8
     },
     "2026-04-04": {
         "date": "2026-04-04",
@@ -1778,7 +1765,7 @@
         "moon_overhead_utc": "2026-04-04T07:47:10.368192Z",
         "moon_underfoot_utc": "2026-04-04T20:10:09.138149Z",
         "moon_illum": 95.5,
-        "moon_age": 17.0
+        "moon_age": 16.8
     },
     "2026-04-05": {
         "date": "2026-04-05",
@@ -1791,7 +1778,7 @@
         "moon_overhead_utc": "2026-04-05T08:33:40.383760Z",
         "moon_underfoot_utc": "2026-04-05T20:57:44.419680Z",
         "moon_illum": 90.7,
-        "moon_age": 18.0
+        "moon_age": 17.8
     },
     "2026-04-06": {
         "date": "2026-04-06",
@@ -1804,7 +1791,7 @@
         "moon_overhead_utc": "2026-04-06T09:22:19.646056Z",
         "moon_underfoot_utc": "2026-04-06T21:47:22.491569Z",
         "moon_illum": 84.5,
-        "moon_age": 19.0
+        "moon_age": 18.8
     },
     "2026-04-07": {
         "date": "2026-04-07",
@@ -1817,7 +1804,7 @@
         "moon_overhead_utc": "2026-04-07T10:12:47.527386Z",
         "moon_underfoot_utc": "2026-04-07T22:38:27.790171Z",
         "moon_illum": 77.1,
-        "moon_age": 20.0
+        "moon_age": 19.8
     },
     "2026-04-08": {
         "date": "2026-04-08",
@@ -1830,7 +1817,7 @@
         "moon_overhead_utc": "2026-04-08T11:04:15.305533Z",
         "moon_underfoot_utc": "2026-04-08T23:30:01.763409Z",
         "moon_illum": 68.7,
-        "moon_age": 21.0
+        "moon_age": 20.8
     },
     "2026-04-09": {
         "date": "2026-04-09",
@@ -1843,7 +1830,7 @@
         "moon_overhead_utc": "2026-04-09T11:55:39.248952Z",
         "moon_underfoot_utc": "2026-04-10T00:21:00.924333Z",
         "moon_illum": 59.7,
-        "moon_age": 22.0
+        "moon_age": 21.8
     },
     "2026-04-10": {
         "date": "2026-04-10",
@@ -1856,7 +1843,7 @@
         "moon_overhead_utc": "2026-04-10T12:46:01.564812Z",
         "moon_underfoot_utc": "2026-04-11T01:10:37.896149Z",
         "moon_illum": 50.2,
-        "moon_age": 23.0
+        "moon_age": 22.8
     },
     "2026-04-11": {
         "date": "2026-04-11",
@@ -1869,7 +1856,7 @@
         "moon_overhead_utc": "2026-04-11T13:34:48.728003Z",
         "moon_underfoot_utc": "2026-04-12T01:58:34.912928Z",
         "moon_illum": 40.4,
-        "moon_age": 24.0
+        "moon_age": 23.8
     },
     "2026-04-12": {
         "date": "2026-04-12",
@@ -1882,7 +1869,7 @@
         "moon_overhead_utc": "2026-04-12T14:21:59.188907Z",
         "moon_underfoot_utc": "2026-04-13T02:45:05.958412Z",
         "moon_illum": 30.8,
-        "moon_age": 25.0
+        "moon_age": 24.8
     },
     "2026-04-13": {
         "date": "2026-04-13",
@@ -1895,7 +1882,7 @@
         "moon_overhead_utc": "2026-04-13T15:08:01.054402Z",
         "moon_underfoot_utc": "2026-04-14T03:30:51.518740Z",
         "moon_illum": 21.7,
-        "moon_age": 26.0
+        "moon_age": 25.8
     },
     "2026-04-14": {
         "date": "2026-04-14",
@@ -1908,7 +1895,7 @@
         "moon_overhead_utc": "2026-04-14T15:53:45.408017Z",
         "moon_underfoot_utc": "2026-04-15T04:16:51.616604Z",
         "moon_illum": 13.6,
-        "moon_age": 27.0
+        "moon_age": 26.8
     },
     "2026-04-15": {
         "date": "2026-04-15",
@@ -1921,7 +1908,7 @@
         "moon_overhead_utc": "2026-04-15T16:40:19.699238Z",
         "moon_underfoot_utc": null,
         "moon_illum": 6.9,
-        "moon_age": 28.0
+        "moon_age": 27.8
     },
     "2026-04-16": {
         "date": "2026-04-16",
@@ -1934,7 +1921,7 @@
         "moon_overhead_utc": "2026-04-16T17:29:01.610716Z",
         "moon_underfoot_utc": null,
         "moon_illum": 2.3,
-        "moon_age": 29.0
+        "moon_age": 28.8
     },
     "2026-04-17": {
         "date": "2026-04-17",
@@ -1947,7 +1934,7 @@
         "moon_overhead_utc": "2026-04-17T18:21:09.783590Z",
         "moon_underfoot_utc": "2026-04-17T05:54:35.383763Z",
         "moon_illum": 0.2,
-        "moon_age": 0.5
+        "moon_age": 0.3
     },
     "2026-04-18": {
         "date": "2026-04-18",
@@ -1960,7 +1947,7 @@
         "moon_overhead_utc": "2026-04-18T19:17:44.751415Z",
         "moon_underfoot_utc": "2026-04-18T06:48:51.673473Z",
         "moon_illum": 0.9,
-        "moon_age": 1.5
+        "moon_age": 1.3
     },
     "2026-04-19": {
         "date": "2026-04-19",
@@ -1973,7 +1960,7 @@
         "moon_overhead_utc": "2026-04-19T20:18:55.303279Z",
         "moon_underfoot_utc": "2026-04-19T07:47:48.173959Z",
         "moon_illum": 4.5,
-        "moon_age": 2.5
+        "moon_age": 2.3
     },
     "2026-04-20": {
         "date": "2026-04-20",
@@ -1986,7 +1973,7 @@
         "moon_overhead_utc": "2026-04-20T21:23:22.100018Z",
         "moon_underfoot_utc": "2026-04-20T08:50:53.020159Z",
         "moon_illum": 10.7,
-        "moon_age": 3.5
+        "moon_age": 3.3
     },
     "2026-04-21": {
         "date": "2026-04-21",
@@ -1999,7 +1986,7 @@
         "moon_overhead_utc": "2026-04-21T22:28:18.370346Z",
         "moon_underfoot_utc": "2026-04-21T09:55:58.929488Z",
         "moon_illum": 19.2,
-        "moon_age": 4.5
+        "moon_age": 4.3
     },
     "2026-04-22": {
         "date": "2026-04-22",
@@ -2012,7 +1999,7 @@
         "moon_overhead_utc": "2026-04-22T23:30:36.149721Z",
         "moon_underfoot_utc": "2026-04-22T10:59:57.049781Z",
         "moon_illum": 29.2,
-        "moon_age": 5.5
+        "moon_age": 5.3
     },
     "2026-04-23": {
         "date": "2026-04-23",
@@ -2025,7 +2012,7 @@
         "moon_overhead_utc": "2026-04-24T00:28:11.404709Z",
         "moon_underfoot_utc": "2026-04-23T12:00:03.010823Z",
         "moon_illum": 40.1,
-        "moon_age": 6.5
+        "moon_age": 6.3
     },
     "2026-04-24": {
         "date": "2026-04-24",
@@ -2038,7 +2025,7 @@
         "moon_overhead_utc": "2026-04-25T01:20:35.002792Z",
         "moon_underfoot_utc": "2026-04-24T12:55:00.782963Z",
         "moon_illum": 51.3,
-        "moon_age": 7.5
+        "moon_age": 7.3
     },
     "2026-04-25": {
         "date": "2026-04-25",
@@ -2051,7 +2038,7 @@
         "moon_overhead_utc": "2026-04-26T02:08:27.440421Z",
         "moon_underfoot_utc": "2026-04-25T13:45:00.967030Z",
         "moon_illum": 62.2,
-        "moon_age": 8.5
+        "moon_age": 8.3
     },
     "2026-04-26": {
         "date": "2026-04-26",
@@ -2064,7 +2051,7 @@
         "moon_overhead_utc": "2026-04-27T02:53:01.152450Z",
         "moon_underfoot_utc": "2026-04-26T14:31:04.148530Z",
         "moon_illum": 72.2,
-        "moon_age": 9.5
+        "moon_age": 9.3
     },
     "2026-04-27": {
         "date": "2026-04-27",
@@ -2077,7 +2064,7 @@
         "moon_overhead_utc": "2026-04-28T03:35:35.741610Z",
         "moon_underfoot_utc": "2026-04-27T15:14:28.451035Z",
         "moon_illum": 81.0,
-        "moon_age": 10.5
+        "moon_age": 10.3
     },
     "2026-04-28": {
         "date": "2026-04-28",
@@ -2090,7 +2077,7 @@
         "moon_overhead_utc": "2026-04-29T04:17:26.808196Z",
         "moon_underfoot_utc": "2026-04-28T15:56:32.283029Z",
         "moon_illum": 88.3,
-        "moon_age": 11.5
+        "moon_age": 11.3
     },
     "2026-04-29": {
         "date": "2026-04-29",
@@ -2103,7 +2090,7 @@
         "moon_overhead_utc": "2026-04-30T04:59:41.663898Z",
         "moon_underfoot_utc": "2026-04-29T16:38:27.452197Z",
         "moon_illum": 93.9,
-        "moon_age": 12.5
+        "moon_age": 12.3
     },
     "2026-04-30": {
         "date": "2026-04-30",
@@ -2116,7 +2103,7 @@
         "moon_overhead_utc": null,
         "moon_underfoot_utc": "2026-04-30T17:21:16.084772Z",
         "moon_illum": 97.7,
-        "moon_age": 13.5
+        "moon_age": 13.3
     },
     "2026-05-01": {
         "date": "2026-05-01",
@@ -2129,7 +2116,7 @@
         "moon_overhead_utc": "2026-05-01T05:43:16.378553Z",
         "moon_underfoot_utc": "2026-05-01T18:05:47.012757Z",
         "moon_illum": 99.6,
-        "moon_age": 14.5
+        "moon_age": 14.3
     },
     "2026-05-02": {
         "date": "2026-05-02",
@@ -2142,7 +2129,7 @@
         "moon_overhead_utc": "2026-05-02T06:28:50.997737Z",
         "moon_underfoot_utc": "2026-05-02T18:52:29.613341Z",
         "moon_illum": 99.6,
-        "moon_age": 15.5
+        "moon_age": 15.3
     },
     "2026-05-03": {
         "date": "2026-05-03",
@@ -2155,7 +2142,7 @@
         "moon_overhead_utc": "2026-05-03T07:16:42.164288Z",
         "moon_underfoot_utc": "2026-05-03T19:41:25.829937Z",
         "moon_illum": 97.8,
-        "moon_age": 16.5
+        "moon_age": 16.3
     },
     "2026-05-04": {
         "date": "2026-05-04",
@@ -2168,7 +2155,7 @@
         "moon_overhead_utc": "2026-05-04T08:06:35.673040Z",
         "moon_underfoot_utc": "2026-05-04T20:32:04.868080Z",
         "moon_illum": 94.3,
-        "moon_age": 17.5
+        "moon_age": 17.3
     },
     "2026-05-05": {
         "date": "2026-05-05",
@@ -2181,7 +2168,7 @@
         "moon_overhead_utc": "2026-05-05T08:57:45.166764Z",
         "moon_underfoot_utc": "2026-05-05T21:23:27.572935Z",
         "moon_illum": 89.2,
-        "moon_age": 18.5
+        "moon_age": 18.3
     },
     "2026-05-06": {
         "date": "2026-05-06",
@@ -2194,7 +2181,7 @@
         "moon_overhead_utc": "2026-05-06T09:49:03.136182Z",
         "moon_underfoot_utc": "2026-05-06T22:14:23.746504Z",
         "moon_illum": 82.7,
-        "moon_age": 19.5
+        "moon_age": 19.3
     },
     "2026-05-07": {
         "date": "2026-05-07",
@@ -2207,7 +2194,7 @@
         "moon_overhead_utc": "2026-05-07T10:39:22.805066Z",
         "moon_underfoot_utc": "2026-05-07T23:03:55.690156Z",
         "moon_illum": 75.0,
-        "moon_age": 20.5
+        "moon_age": 20.3
     },
     "2026-05-08": {
         "date": "2026-05-08",
@@ -2220,7 +2207,7 @@
         "moon_overhead_utc": "2026-05-08T11:27:59.984608Z",
         "moon_underfoot_utc": "2026-05-08T23:51:35.491639Z",
         "moon_illum": 66.4,
-        "moon_age": 21.5
+        "moon_age": 21.3
     },
     "2026-05-09": {
         "date": "2026-05-09",
@@ -2233,7 +2220,7 @@
         "moon_overhead_utc": "2026-05-09T12:14:44.092162Z",
         "moon_underfoot_utc": "2026-05-10T00:37:29.515398Z",
         "moon_illum": 56.9,
-        "moon_age": 22.5
+        "moon_age": 22.3
     },
     "2026-05-10": {
         "date": "2026-05-10",
@@ -2246,7 +2233,7 @@
         "moon_overhead_utc": "2026-05-10T12:59:57.080084Z",
         "moon_underfoot_utc": "2026-05-11T01:22:13.450691Z",
         "moon_illum": 47.0,
-        "moon_age": 23.5
+        "moon_age": 23.3
     },
     "2026-05-11": {
         "date": "2026-05-11",
@@ -2259,7 +2246,7 @@
         "moon_overhead_utc": "2026-05-11T13:44:26.433016Z",
         "moon_underfoot_utc": "2026-05-12T02:06:44.810859Z",
         "moon_illum": 36.8,
-        "moon_age": 24.5
+        "moon_age": 24.3
     },
     "2026-05-12": {
         "date": "2026-05-12",
@@ -2272,7 +2259,7 @@
         "moon_overhead_utc": "2026-05-12T14:29:18.216294Z",
         "moon_underfoot_utc": "2026-05-13T02:52:17.003540Z",
         "moon_illum": 26.9,
-        "moon_age": 25.5
+        "moon_age": 25.3
     },
     "2026-05-13": {
         "date": "2026-05-13",
@@ -2285,7 +2272,7 @@
         "moon_overhead_utc": "2026-05-13T15:15:52.088976Z",
         "moon_underfoot_utc": "2026-05-14T03:40:14.694673Z",
         "moon_illum": 17.7,
-        "moon_age": 26.5
+        "moon_age": 26.3
     },
     "2026-05-14": {
         "date": "2026-05-14",
@@ -2298,7 +2285,7 @@
         "moon_overhead_utc": "2026-05-14T16:05:35.922435Z",
         "moon_underfoot_utc": "2026-05-15T04:32:06.063284Z",
         "moon_illum": 9.8,
-        "moon_age": 27.5
+        "moon_age": 27.3
     },
     "2026-05-15": {
         "date": "2026-05-15",
@@ -2311,7 +2298,7 @@
         "moon_overhead_utc": "2026-05-15T16:59:53.559918Z",
         "moon_underfoot_utc": null,
         "moon_illum": 4.0,
-        "moon_age": 28.5
+        "moon_age": 28.3
     },
     "2026-05-16": {
         "date": "2026-05-16",
@@ -2324,7 +2311,7 @@
         "moon_overhead_utc": "2026-05-16T17:59:36.296571Z",
         "moon_underfoot_utc": null,
         "moon_illum": 0.7,
-        "moon_age": 29.5
+        "moon_age": 29.3
     },
     "2026-05-17": {
         "date": "2026-05-17",
@@ -2337,6 +2324,19 @@
         "moon_overhead_utc": "2026-05-17T19:04:15.842904Z",
         "moon_underfoot_utc": "2026-05-17T06:31:25.172615Z",
         "moon_illum": 0.4,
-        "moon_age": 1.0
+        "moon_age": 0.7
+    },
+    "2026-05-18": {
+        "date": "2026-05-18",
+        "major_1_utc": "2026-05-18T07:37:46.284908Z",
+        "major_2_utc": "2026-05-18T20:11:28.781414Z",
+        "minor_1_utc": "2026-05-18T12:32:39.570157Z",
+        "minor_2_utc": "2026-05-19T03:50:03.144327Z",
+        "moon_rise_utc": "2026-05-18T12:32:39.570157Z",
+        "moon_set_utc": "2026-05-19T03:50:03.144327Z",
+        "moon_overhead_utc": "2026-05-18T20:11:28.781414Z",
+        "moon_underfoot_utc": "2026-05-18T07:37:46.284908Z",
+        "moon_illum": 3.1,
+        "moon_age": 1.7
     }
 }
