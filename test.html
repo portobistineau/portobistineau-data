@@ -4,32 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <style>
+  
 <style>
 /* Custom style for the plain white marina label */
-.marina-label {
-    background-color: transparent !important; /* Remove background */
-    border: none !important;                 /* Remove border */
-    box-shadow: none !important;             /* Remove shadow */
+/* Target the main tooltip container with high specificity */
+.leaflet-tooltip.marina-label {
+    background-color: transparent !important; /* NO BACKGROUND */
+    border: none !important;                 /* NO BORDER */
+    box-shadow: none !important;             /* NO SHADOW */
+    padding: 0 !important;                   /* NO PADDING */
+    margin: 0 !important;                    /* NO MARGIN */
+    white-space: nowrap;                     /* Keep text on one line */
+}
+
+/* Style the actual text inside the tooltip */
+.leaflet-tooltip.marina-label .leaflet-tooltip-pane {
     color: white !important;                 /* White text */
     font-weight: bold;
-    font-size: 10px;                         /* ⬅️ Smaller Font Size */
-    padding: 0;                              /* Remove internal padding (to reduce size) */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Subtle shadow for readability */
+    font-size: 10px !important;              /* Keep your 10px font size */
+    line-height: 1.2 !important;             /* Ensure good line height */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8); /* Stronger shadow for readability */
+    /* Position adjustments */
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
 }
 
-/* ➡️ Code to absolutely remove the arrow/tip ⬅️ */
-.marina-label.leaflet-tooltip-bottom:before,
-.marina-label.leaflet-tooltip-top:before,
-.marina-label.leaflet-tooltip-left:before,
-.marina-label.leaflet-tooltip-right:before {
+/* Absolutely remove the arrow/tip from ALL directions */
+.leaflet-tooltip.marina-label.leaflet-tooltip-bottom:before,
+.leaflet-tooltip.marina-label.leaflet-tooltip-top:before,
+.leaflet-tooltip.marina-label.leaflet-tooltip-left:before,
+.leaflet-tooltip.marina-label.leaflet-tooltip-right:before,
+.leaflet-tooltip.marina-label .leaflet-tooltip-tip {
+    display: none !important;
     border: none !important;
     content: none !important;
-}
-
-/* Ensure the wrapper element that usually contains the arrow is also clean */
-.marina-label .leaflet-tooltip-tip {
-    display: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 </style>
   <!-- ============================================= -->
@@ -843,6 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
