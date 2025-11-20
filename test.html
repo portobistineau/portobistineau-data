@@ -477,7 +477,7 @@
       
       // Position the text marker slightly above and to the right of the star (adjusting Latitude and Longitude)
       var labelLat = marinaLat + 0.004; //Adjust the offset by 0.004 degrees North
-      var labelLng = marinaLng ; // Adjust the offset by 0.001 degrees East
+      var labelLng = marinaLng - 0.004; // Adjust the offset by 0.004 degrees West
 
       L.marker([labelLat, labelLng], { icon: textLabelIcon }).addTo(map);
 
@@ -825,6 +825,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
