@@ -385,7 +385,9 @@
 
       var centerLat = 32.44; 
       var centerLng = -93.38;
-      var zoomLevel = 10; 
+      
+      // UPDATED: Fractional Zoom Level
+      var zoomLevel = 10.5; 
 
       var map = L.map('radar-map', {
           center: [centerLat, centerLng],
@@ -393,31 +395,24 @@
           zoomControl: false,
           attributionControl: false,
           scrollWheelZoom: false, 
-          dragging: !L.Browser.mobile 
+          dragging: !L.Browser.mobile,
+          
+          // NEW: This allows decimal zoom levels like 10.5
+          zoomSnap: 0.1 
       });
       window.radarMapInstance = map;
 
-      // 1. Base Satellite Layer (z-index 0)
+      // 1. Base Satellite Layer
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
           zIndex: 0
       }).addTo(map);
 
-      // 2. NEW: Reference Overlay (Roads, Labels, Borders) - z-index 50
-      // This ensures labels sit ON TOP of satellite, but BELOW the rain (which is 100)
+      // 2. Reference Overlay (Roads/Labels)
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
           zIndex: 50
       }).addTo(map);
-      
-      // 2b. Optional: Transportation specific (Highways) - sometimes offers better road lines
-      // Uncomment the block below if you want even bolder roads:
-      /*
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19,
-          zIndex: 50
-      }).addTo(map);
-      */
 
       fetch('https://api.rainviewer.com/public/weather-maps.json')
           .then(res => res.json())
@@ -426,7 +421,6 @@
           })
           .catch(e => console.error("Radar Error:", e));
   }
-
   function processRadarFrames(map, apiData) {
       var radarLayers = [];
       var past = apiData.radar.past || [];
@@ -754,6 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
