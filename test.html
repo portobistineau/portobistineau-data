@@ -230,7 +230,7 @@
     const lat = 32.4066, lon = -93.3906;
     const now = new Date();
 
-    // Only show "Fetching" if this is the initial load (to prevent radar flicker on silent updates)
+    // Only show "Fetching" if this is the initial load
     if(!document.getElementById('radar-map')) {
         document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
     }
@@ -265,7 +265,6 @@
       hourly: hourly.properties
     };
 
-    // STORE FOR POPUP
     window.lastWeatherData = data;
 
     // --- RENDER CURRENT ---
@@ -300,7 +299,7 @@
 
     // --- HTML GENERATION ---
 
-    // 1. Current Conditions HTML (Your original code)
+    // 1. Current Conditions (Matches height of 350px radar comfortably)
     const currentHTML = `
       <div style="background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;">
         <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
@@ -317,10 +316,9 @@
         </div>
       </div>`;
 
-    // 2. Radar Widget HTML (New Integration)
-    // Note: Added max-width:100% for mobile responsiveness
+    // 2. Radar Widget (UPDATED: 350x350)
     const radarHTML = `
-      <div id="radar-container" style="position:relative; width:450px; height:450px; max-width:100%; border-radius:15px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.3); background:#000;">
+      <div id="radar-container" style="position:relative; width:350px; height:350px; max-width:100%; border-radius:15px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.3); background:#000;">
           <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
           <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
               <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
@@ -331,7 +329,7 @@
           </div>
       </div>`;
 
-    // 3. 7-Day Forecast HTML (Your original code)
+    // 3. 7-Day Forecast (Unchanged)
     let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;margin-top:15px;">';
     const dailyPeriods = data.daily.periods.slice(0, 14);
     for (let i = 0; i < 7; i++) {
@@ -365,7 +363,6 @@
     forecastHTML += '</div>';
 
     // 4. COMBINE AND INJECT
-    // We create a Flexbox wrapper to put Current Temp (Left) and Radar (Right)
     const topSection = `
         <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:start;">
             <div style="flex: 1 1 300px; max-width:100%;">
@@ -379,13 +376,11 @@
 
     document.getElementById('bistineauWeather').innerHTML = topSection + forecastHTML;
 
-    // 5. INITIALIZE RADAR (Now that the HTML exists in the DOM)
     initRadarWidget();
   }
 
-  // --- RADAR INITIALIZATION FUNCTION ---
+  // --- RADAR INITIALIZATION ---
   function initRadarWidget() {
-      // Clean up existing map if it exists (prevent memory leaks on auto-refresh)
       if (window.radarMapInstance) {
           window.radarMapInstance.remove();
           window.radarMapInstance = null;
@@ -395,28 +390,24 @@
           window.radarAnimationTimer = null;
       }
 
-      // Configuration
-      var centerLat = 32.44; // Lake Bistineau Center
+      var centerLat = 32.44; 
       var centerLng = -93.38;
-      var zoomLevel = 10;
+      var zoomLevel = 11; // UPDATED: Zoomed in a little (was 10)
 
-      // Init Map
       var map = L.map('radar-map', {
           center: [centerLat, centerLng],
           zoom: zoomLevel,
           zoomControl: false,
           attributionControl: false,
-          scrollWheelZoom: false, // Prevent scrolling page from zooming map
-          dragging: !L.Browser.mobile // Optional: Disable dragging on mobile to help scrolling page
+          scrollWheelZoom: false, 
+          dragging: !L.Browser.mobile 
       });
       window.radarMapInstance = map;
 
-      // Satellite Layer
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19
       }).addTo(map);
 
-      // Fetch Radar
       fetch('https://api.rainviewer.com/public/weather-maps.json')
           .then(res => res.json())
           .then(data => {
@@ -430,7 +421,6 @@
       var past = apiData.radar.past || [];
       var future = apiData.radar.nowcast || [];
       
-      // 12 Past + 12 Future
       var pastSlice = past.slice(-12);
       var futureSlice = future.slice(0, 12);
       var frames = pastSlice.concat(futureSlice);
@@ -453,26 +443,22 @@
       if (layers.length === 0) return;
       var currentFrameIndex = 0;
 
-      // Formatter
       function formatTime(ts) {
           var d = new Date(ts * 1000);
           return d.toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'});
       }
 
       window.radarAnimationTimer = setInterval(function() {
-          // Hide prev
           var prevIndex = (currentFrameIndex - 1 + layers.length) % layers.length;
           layers[prevIndex].setOpacity(0);
 
-          // Show current
           var currentLayer = layers[currentFrameIndex];
           currentLayer.setOpacity(0.7);
 
-          // Update Labels
           var timeLabel = document.getElementById('radar-time');
           var statusLabel = document.getElementById('radar-status');
           
-          if(timeLabel && statusLabel) { // Check existence just in case
+          if(timeLabel && statusLabel) { 
               timeLabel.textContent = formatTime(currentLayer.timestamp);
               if (currentLayer.isFuture) {
                   statusLabel.textContent = "FUTURE";
@@ -488,7 +474,7 @@
   }
 
 
-  // --- POPUP DETAIL FUNCTION (Unchanged) ---
+  // --- POPUP DETAIL FUNCTION ---
   window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
     if (!data) return;
@@ -525,8 +511,7 @@
     document.getElementById('overlay').style.display = 'block';
   };
 
-  // --- AUTO-REFRESH EVERY 30 MIN ---
-  updateWeather(); // initial
+  updateWeather(); 
   setInterval(updateWeather, 30 * 60 * 1000);
   </script>
 </div>
@@ -760,6 +745,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
