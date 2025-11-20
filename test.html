@@ -5,36 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   
-<style>
-/* Target the main tooltip container with high specificity */
-.leaflet-tooltip.marina-label {
-    /* Hide the bubble properties */
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    white-space: nowrap;
-}
-
-/* ➡️ FIX: Style the actual text content directly ⬅️ */
-.leaflet-tooltip.marina-label .leaflet-tooltip-tip,
-.leaflet-tooltip-pane .leaflet-tooltip-tip {
-    /* Hide the arrow element */
-    display: none !important;
-}
-
-/* Style the text itself */
-.leaflet-tooltip.marina-label .leaflet-tooltip-content {
-    color: white !important;
-    font-weight: bold;
-    font-size: 10px !important;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-    background: transparent !important; /* Ensure content box has no background */
-    padding: 0 !important; /* Remove text padding */
-    line-height: 1.2;
-}
-</style>
   <!-- ============================================= -->
   <!-- SEO & YouTube Growth Meta Tags -->
   <!-- ============================================= -->
@@ -479,30 +449,38 @@
           zIndex: 50
       }).addTo(map);
 
-   // --- MARINA STAR MARKER (Updated Size & Label) ---
+   // --- FINAL MARINA MARKER AND LABEL ---
       
       var marinaLat = 32.4619;
       var marinaLng = -93.34883;
 
-      // Define the custom red star icon using Font Awesome (fa-lg for smaller size)
+      // 1. STAR ICON MARKER
+      // Define the red star icon (fa-lg size)
       var redStarIcon = L.divIcon({
-          className: 'custom-star-icon',
-          html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9;"></i>', // Changed to fa-lg
-          iconSize: [20, 20], // Smaller size
-          iconAnchor: [10, 20] // Adjust anchor for smaller size
+          className: 'marina-star-icon', // Just a class for easy identification
+          html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9;"></i>',
+          iconSize: [20, 20], 
+          iconAnchor: [10, 10] // Center the star over the coordinates
       });
 
-      // Add the marker to the map
-      L.marker([marinaLat, marinaLng], { icon: redStarIcon })
-          .addTo(map)
-          .bindTooltip("Port O Bistineau", {
-              permanent: true,   // Always display the label
-              direction: 'right', // Place the label to the right of the star
-              offset: [10, -10],  // Shift the label slightly for the smaller star
-              className: 'marina-label' // Custom class for plain white text
-          });
+      // Add the Star Marker to the map
+      L.marker([marinaLat, marinaLng], { icon: redStarIcon }).addTo(map);
+
+
+      // 2. TEXT LABEL MARKER (The simple text layer)
+      var textLabelIcon = L.divIcon({
+          className: 'marina-text-label', // Class to ensure text is white
+          html: '<span style="color: white; font-weight: bold; font-size: 10px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
+          iconSize: [120, 20], // Size needed for the text string
+          iconAnchor: [0, 10]  // Anchor the top-left of the text box
+      });
       
-      // --------------------------
+      // Position the text marker slightly to the right of the star (adjusting Longitude)
+      var labelLng = marinaLng + 0.003; // Adjust the offset by 0.003 degrees East
+
+      L.marker([marinaLat, labelLng], { icon: textLabelIcon }).addTo(map);
+
+      // ------------------------------------
 
       fetch('https://api.rainviewer.com/public/weather-maps.json')
           .then(res => res.json())
@@ -846,6 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
