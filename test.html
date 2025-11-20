@@ -205,14 +205,23 @@
     </div>
 
 <!-- Weather - NATIONAL WEATHER SERVICE (LIVE + HOURLY CACHE + ICON) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <div class="section">
   <h2>Lake Bistineau Weather</h2>
+  
   <div id="bistineauWeather">Loading NWS data...</div>
+  
   <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
   <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
+
   <script>
   // Global for popup
   window.lastWeatherData = null;
+  // Global for Map instance (to handle clean reloads)
+  window.radarMapInstance = null; 
+  window.radarAnimationTimer = null;
 
   async function updateWeather() {
     // ALWAYS CLEAR CACHE ON LOAD
@@ -221,7 +230,11 @@
     const lat = 32.4066, lon = -93.3906;
     const now = new Date();
 
-    document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+    // Only show "Fetching" if this is the initial load (to prevent radar flicker on silent updates)
+    if(!document.getElementById('radar-map')) {
+        document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+    }
+    
     let grid;
     try {
       const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
@@ -285,8 +298,11 @@
     }
     const windDir = closestHourly?.windDirection || '';
 
-               const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+    // --- HTML GENERATION ---
+
+    // 1. Current Conditions HTML (Your original code)
+    const currentHTML = `
+      <div style="background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;">
         <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
         <div style="margin:8px 0;">
           <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
@@ -301,8 +317,22 @@
         </div>
       </div>`;
 
-    // --- 7-DAY FORECAST ---
-    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;">';
+    // 2. Radar Widget HTML (New Integration)
+    // Note: Added max-width:100% for mobile responsiveness
+    const radarHTML = `
+      <div id="radar-container" style="position:relative; width:450px; height:450px; max-width:100%; border-radius:15px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.3); background:#000;">
+          <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
+          <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
+              <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
+              <span id="radar-time">Loading...</span>
+          </div>
+          <div style="position:absolute; bottom:5px; left:5px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:1000; pointer-events:none; text-shadow:1px 1px 2px black;">
+              Data: RainViewer / Esri
+          </div>
+      </div>`;
+
+    // 3. 7-Day Forecast HTML (Your original code)
+    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;margin-top:15px;">';
     const dailyPeriods = data.daily.periods.slice(0, 14);
     for (let i = 0; i < 7; i++) {
       const day = dailyPeriods[i*2];
@@ -333,10 +363,132 @@
         </div>`;
     }
     forecastHTML += '</div>';
-    document.getElementById('bistineauWeather').innerHTML = currentHTML + forecastHTML;
+
+    // 4. COMBINE AND INJECT
+    // We create a Flexbox wrapper to put Current Temp (Left) and Radar (Right)
+    const topSection = `
+        <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:start;">
+            <div style="flex: 1 1 300px; max-width:100%;">
+                ${currentHTML}
+            </div>
+            <div style="flex: 0 0 auto; max-width:100%; display:flex; justify-content:center;">
+                ${radarHTML}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('bistineauWeather').innerHTML = topSection + forecastHTML;
+
+    // 5. INITIALIZE RADAR (Now that the HTML exists in the DOM)
+    initRadarWidget();
   }
 
-  // --- POPUP DETAIL ---
+  // --- RADAR INITIALIZATION FUNCTION ---
+  function initRadarWidget() {
+      // Clean up existing map if it exists (prevent memory leaks on auto-refresh)
+      if (window.radarMapInstance) {
+          window.radarMapInstance.remove();
+          window.radarMapInstance = null;
+      }
+      if (window.radarAnimationTimer) {
+          clearInterval(window.radarAnimationTimer);
+          window.radarAnimationTimer = null;
+      }
+
+      // Configuration
+      var centerLat = 32.44; // Lake Bistineau Center
+      var centerLng = -93.38;
+      var zoomLevel = 10;
+
+      // Init Map
+      var map = L.map('radar-map', {
+          center: [centerLat, centerLng],
+          zoom: zoomLevel,
+          zoomControl: false,
+          attributionControl: false,
+          scrollWheelZoom: false, // Prevent scrolling page from zooming map
+          dragging: !L.Browser.mobile // Optional: Disable dragging on mobile to help scrolling page
+      });
+      window.radarMapInstance = map;
+
+      // Satellite Layer
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19
+      }).addTo(map);
+
+      // Fetch Radar
+      fetch('https://api.rainviewer.com/public/weather-maps.json')
+          .then(res => res.json())
+          .then(data => {
+              processRadarFrames(map, data);
+          })
+          .catch(e => console.error("Radar Error:", e));
+  }
+
+  function processRadarFrames(map, apiData) {
+      var radarLayers = [];
+      var past = apiData.radar.past || [];
+      var future = apiData.radar.nowcast || [];
+      
+      // 12 Past + 12 Future
+      var pastSlice = past.slice(-12);
+      var futureSlice = future.slice(0, 12);
+      var frames = pastSlice.concat(futureSlice);
+
+      frames.forEach(function(frameObj, index) {
+          var layer = L.tileLayer(apiData.host + frameObj.path + '/256/{z}/{x}/{y}/2/1_1.png', {
+              opacity: 0,
+              zIndex: 100
+          });
+          layer.isFuture = (index >= pastSlice.length); 
+          layer.timestamp = frameObj.time;
+          layer.addTo(map);
+          radarLayers.push(layer);
+      });
+
+      startRadarAnimation(radarLayers);
+  }
+
+  function startRadarAnimation(layers) {
+      if (layers.length === 0) return;
+      var currentFrameIndex = 0;
+
+      // Formatter
+      function formatTime(ts) {
+          var d = new Date(ts * 1000);
+          return d.toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'});
+      }
+
+      window.radarAnimationTimer = setInterval(function() {
+          // Hide prev
+          var prevIndex = (currentFrameIndex - 1 + layers.length) % layers.length;
+          layers[prevIndex].setOpacity(0);
+
+          // Show current
+          var currentLayer = layers[currentFrameIndex];
+          currentLayer.setOpacity(0.7);
+
+          // Update Labels
+          var timeLabel = document.getElementById('radar-time');
+          var statusLabel = document.getElementById('radar-status');
+          
+          if(timeLabel && statusLabel) { // Check existence just in case
+              timeLabel.textContent = formatTime(currentLayer.timestamp);
+              if (currentLayer.isFuture) {
+                  statusLabel.textContent = "FUTURE";
+                  statusLabel.style.color = "#00ccff";
+              } else {
+                  statusLabel.textContent = "PAST";
+                  statusLabel.style.color = "#00ff00";
+              }
+          }
+
+          currentFrameIndex = (currentFrameIndex + 1) % layers.length;
+      }, 400);
+  }
+
+
+  // --- POPUP DETAIL FUNCTION (Unchanged) ---
   window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
     if (!data) return;
@@ -376,9 +528,9 @@
   // --- AUTO-REFRESH EVERY 30 MIN ---
   updateWeather(); // initial
   setInterval(updateWeather, 30 * 60 * 1000);
-</script>
-
+  </script>
 </div>
+    
 <!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
 <style>
   /* Default (Desktop/Tablet) */
@@ -608,6 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
