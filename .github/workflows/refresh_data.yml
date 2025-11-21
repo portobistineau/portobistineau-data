@@ -32,5 +32,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Automated: Refresh Moon URL cache (GitHub Actions)'
-          files: moon_urls.json
+          file_pattern: moon_urls.json # <--- Use the correct input name
           # Ensure the Git email matches your GitHub email for clean commits
