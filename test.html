@@ -692,16 +692,23 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NASA MOON IMAGE FETCH FROM LOCAL JSON --- */
+/* --- NASA MOON IMAGE FETCH FROM LOCAL JSON (LOCAL DATE FIX) --- */
 function fetchMoonImageFromLocalJson(date) {
-    // 1. Get the date key in YYYY-MM-DD format
     const moonImage = document.getElementById('moon-img');
-    const todayKey = date.toISOString().slice(0, 10); 
+    
+    // CRITICAL FIX: Construct the key using LOCAL date components
+    const year = date.getFullYear();
+    // Month is 0-indexed, so we add 1 and pad with 0
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    // Day is padded with 0
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    // The key should now accurately reflect YYYY-MM-DD local time (e.g., "2025-11-20")
+    const todayKey = `${year}-${month}-${day}`; 
     
     if (!moonImage) return;
 
-    // 2. Fetch the local JSON file
-    // The timestamp ('?t=...') prevents the browser from aggressively caching the JSON file itself.
+    // Fetch the local JSON file
     fetch('moon_urls.json?t=' + new Date().getTime()) 
         .then(response => {
             if (!response.ok) throw new Error("Could not fetch moon_urls.json.");
@@ -711,10 +718,10 @@ function fetchMoonImageFromLocalJson(date) {
             const nasaUrl = data[todayKey];
             
             if (nasaUrl) {
-                // 3. Set the image source directly (bypasses CORS)
+                // 3. Set the image source directly 
                 moonImage.src = nasaUrl;
             } else {
-                console.error(`Moon URL not found in JSON for date: ${todayKey}. Please run the GitHub workflow to refresh the data.`);
+                console.error(`Moon URL not found in JSON for date: ${todayKey}. Data not generated yet.`);
             }
         })
         .catch(error => {
@@ -827,6 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
