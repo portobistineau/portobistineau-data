@@ -12,7 +12,7 @@ def build_moon_urls(days_ahead=40):
     # MVG index = Total Hours Elapsed since Jan 1 UTC + 12
     # The offset is +12, meaning the MVG sequence starts 12 hours later 
     # than the start of the year (i.e., Jan 1, 12:00 UTC is the starting point).
-    MVG_CORRECTION_HOURS = 12 # <--- CHANGED FROM -12 TO 12
+    MVG_CORRECTION_HOURS = 0 # <--- CHANGED FROM -12 TO 12
     
     urls = {}
     
