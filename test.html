@@ -692,69 +692,70 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NASA IMAGE CACHING & DISPLAY (FINAL, CORRECTED MVG Version) --- */
+/* --- NASA MOON IMAGE CACHING & DISPLAY (FINAL VERSION) --- */
 function cacheAndDisplayMoonImage(date) {
-    // We use the date's YYYY-MM-DD string as the cache key.
+    // 1. Setup & Checks
     const CACHE_KEY = `moon_image_${date.toISOString().slice(0, 10)}`;
     const moonImage = document.getElementById('moon-img');
     const year = date.getUTCFullYear();
     
     if (!moonImage) return;
 
-    // 1. CHECK CACHE
+    // --- 2. CHECK CACHE ---
     const cachedImage = localStorage.getItem(CACHE_KEY);
     if (cachedImage) {
         moonImage.src = cachedImage;
-        console.log("CACHE HIT: Moon image loaded from local storage.");
+        // The image is already loaded from local storage; no further action needed.
         return; 
     }
     
-    console.log("CACHE MISS: Attempting to fetch new image.");
-
-    // 2. CALCULATE MVG FRAME NUMBER WITH OFFSET
+    // --- 3. CALCULATE CORRECT MVG FRAME NUMBER ---
     var startOfYear = Date.UTC(year, 0, 1, 0, 0, 0); // Jan 1, 00:00:00 UTC
     var targetTime = date.getTime(); 
 
     // Calculate total hours elapsed since Jan 1, 00:00 UTC
     var hoursElapsed = Math.floor((targetTime - startOfYear) / (1000 * 60 * 60)); 
 
-    // **CRITICAL FIX:** Apply the necessary offset to align the calculated index 
-    // with the observed NASA MVG index (e.g., 7777 - 12 = 7765).
+    // CRITICAL FIX: The MVG index requires an offset of -12 hours relative to the 
+    // total hours elapsed since Jan 1st for the 2025 sequence to align correctly.
     const MVG_CORRECTION = -12; 
     
-    // Add 1 because the index starts at 1, then apply the correction.
+    // Add 1 (because the index starts at 1) and apply the correction.
     var frameNum = hoursElapsed + 1 + MVG_CORRECTION; 
 
     // Pad the frame number to 4 digits (e.g., 7765)
     var frameStr = frameNum.toString().padStart(4, '0');
     
-    // 3. CONSTRUCT MVG URL
+    // 4. CONSTRUCT PROXY URL
     const nasaImageUrl = `https://moon.nasa.gov/mvg.${year}/${frameStr}.jpg`;
 
-    console.log(`Calculated frame number: ${frameNum}. Final URL: ${nasaImageUrl}`); // <-- VERIFY THIS URL!
+    // FIX: Use a CORS proxy to bypass the browser security block
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(nasaImageUrl)}`;
 
-    // 4. FETCH, CACHE, AND DISPLAY
-    fetch(nasaImageUrl)
+    console.log(`CACHE MISS: Fetching image from NASA via proxy. Frame: ${frameNum}`); 
+
+    // --- 5. FETCH VIA PROXY, CACHE, AND DISPLAY ---
+    fetch(proxyUrl)
         .then(response => {
             if (!response.ok) {
-                console.error(`NASA MVG image fetch failed. Status: ${response.status}. URL: ${nasaImageUrl}`);
-                throw new Error('NASA MVG image fetch failed.');
+                console.error(`Fetch failed. Status: ${response.status}. URL: ${nasaImageUrl}`);
+                throw new Error('Image fetch failed (CORS Proxy likely returned non-200 status).');
             }
             return response.blob();
         })
         .then(blob => {
+            // Convert the image data (Blob) to a Base64 string
             const reader = new FileReader();
             reader.onloadend = function() {
                 const base64Image = reader.result;
-                localStorage.setItem(CACHE_KEY, base64Image); // Store
-                moonImage.src = base64Image;                 // Display
+                localStorage.setItem(CACHE_KEY, base64Image); // Store in cache
+                moonImage.src = base64Image;                 // Display the image
                 console.log("SUCCESS: Image fetched, displayed, and cached.");
             };
             reader.readAsDataURL(blob);
         })
         .catch(error => {
-            console.error("FATAL ERROR in image process:", error);
-            // If it fails, the image remains hidden, preventing a broken link icon.
+            console.error("FATAL ERROR: Could not load or cache moon image.", error);
         });
 }
 document.addEventListener('DOMContentLoaded', function() {
@@ -863,6 +864,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
