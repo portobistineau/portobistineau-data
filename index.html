@@ -476,29 +476,42 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NASA IMAGE CALCULATOR --- */
-function getNasaMoonURL(date) {
-    var year = date.getUTCFullYear();
-    var svsIds = {
-        2024: { id: 5187, base: 'a005100' },
-        2025: { id: 5415, base: 'a005400' } 
-    };
-    var yearData = svsIds[year];
-    if (!yearData) return 'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg';
+/* --- NASA MOON IMAGE FETCH FROM LOCAL JSON (LOCAL DATE FIX) --- */
+function fetchMoonImageFromLocalJson(date) {
+    const moonImage = document.getElementById('moon-img');
     
-    var startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
-    var diffMs = date - startOfYear;
-    var diffHours = diffMs / (1000 * 60 * 60);
-    var frameNum = Math.round(diffHours) + 1;
-    var maxFrames = (year % 4 === 0) ? 8784 : 8760;
+    // CRITICAL FIX: Construct the key using LOCAL date components
+    const year = date.getFullYear();
+    // Month is 0-indexed, so we add 1 and pad with 0
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    // Day is padded with 0
+    const day = String(date.getDate()).padStart(2, '0');
     
-    if (frameNum < 1) frameNum = 1;
-    if (frameNum > maxFrames) frameNum = maxFrames;
+    // The key should now accurately reflect YYYY-MM-DD local time (e.g., "2025-11-20")
+    const todayKey = `${year}-${month}-${day}`; 
     
-    var frameStr = frameNum.toString().padStart(4, '0');
-    return `https://svs.gsfc.nasa.gov/vis/a000000/${yearData.base}/a00${yearData.id}/frames/730x730_1x1_30p/moon.${frameStr}.jpg`;
-}
+    if (!moonImage) return;
 
+    // Fetch the local JSON file
+    fetch('moon_urls.json?t=' + new Date().getTime()) 
+        .then(response => {
+            if (!response.ok) throw new Error("Could not fetch moon_urls.json.");
+            return response.json();
+        })
+        .then(data => {
+            const nasaUrl = data[todayKey];
+            
+            if (nasaUrl) {
+                // 3. Set the image source directly 
+                moonImage.src = nasaUrl;
+            } else {
+                console.error(`Moon URL not found in JSON for date: ${todayKey}. Data not generated yet.`);
+            }
+        })
+        .catch(error => {
+            console.error("Error loading Moon image from local JSON:", error);
+        });
+}
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         var lat = 32.4619;
@@ -511,11 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('header-year').textContent = now.getFullYear();
         document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
         
-        var moonImage = document.getElementById('moon-img');
-        if(moonImage) {
-            moonImage.src = getNasaMoonURL(now);
-            moonImage.alt = "Current Moon Phase";
-        }
+        fetchMoonImageFromLocalJson(now);
 
         /* 2. SUN DATA (SUNCALC) */
         if (typeof SunCalc !== 'undefined') {
@@ -853,6 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
+
 
 
 
