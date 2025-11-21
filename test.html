@@ -694,15 +694,15 @@ function formatLocalTime(dateObj) {
 
 /* --- NASA MOON IMAGE FETCH FROM LOCAL JSON --- */
 function fetchMoonImageFromLocalJson(date) {
+    // 1. Get the date key in YYYY-MM-DD format
     const moonImage = document.getElementById('moon-img');
-    const todayKey = date.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+    const todayKey = date.toISOString().slice(0, 10); 
     
     if (!moonImage) return;
 
-    // We no longer need local storage since GitHub Actions refreshes the JSON weekly.
-    
-    // Fetch the local JSON file created by the Python script
-    fetch('moon_urls.json?t=' + new Date().getTime()) // Add timestamp to prevent browser caching the JSON itself
+    // 2. Fetch the local JSON file
+    // The timestamp ('?t=...') prevents the browser from aggressively caching the JSON file itself.
+    fetch('moon_urls.json?t=' + new Date().getTime()) 
         .then(response => {
             if (!response.ok) throw new Error("Could not fetch moon_urls.json.");
             return response.json();
@@ -711,11 +711,10 @@ function fetchMoonImageFromLocalJson(date) {
             const nasaUrl = data[todayKey];
             
             if (nasaUrl) {
-                // Set the src attribute directly. This standard image tag loading 
-                // bypasses the CORS issues we had with the JS fetch/blob conversion.
+                // 3. Set the image source directly (bypasses CORS)
                 moonImage.src = nasaUrl;
             } else {
-                console.error(`Moon URL not found in JSON for date: ${todayKey}`);
+                console.error(`Moon URL not found in JSON for date: ${todayKey}. Please run the GitHub workflow to refresh the data.`);
             }
         })
         .catch(error => {
@@ -828,6 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
