@@ -692,41 +692,54 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NASA IMAGE CACHING & DISPLAY (MVG Version) --- */
+/* --- NASA IMAGE CACHING & DISPLAY (FINAL, CORRECTED MVG Version) --- */
 function cacheAndDisplayMoonImage(date) {
+    // We use the date's YYYY-MM-DD string as the cache key.
     const CACHE_KEY = `moon_image_${date.toISOString().slice(0, 10)}`;
     const moonImage = document.getElementById('moon-img');
     const year = date.getUTCFullYear();
+    
+    if (!moonImage) return;
 
     // 1. CHECK CACHE
     const cachedImage = localStorage.getItem(CACHE_KEY);
     if (cachedImage) {
         moonImage.src = cachedImage;
+        console.log("CACHE HIT: Moon image loaded from local storage.");
         return; 
     }
     
-    // 2. CALCULATE MVG FRAME NUMBER
-    var startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
-    var diffMs = date - startOfYear;
-    
-    // Calculate total hours elapsed since Jan 1 UTC (this is the key change)
-    var frameNum = Math.floor(diffMs / (1000 * 60 * 60)); 
-    
-    // The MVG frame number is the *total hours* since Jan 1, plus a small index, 
-    // but the simplest formula is often just the total hour index.
-    // Let's use 1 as the starting index, matching standard DOY indexing.
-    frameNum = frameNum + 1; 
+    console.log("CACHE MISS: Attempting to fetch new image.");
 
-    // Pad the frame number to 4 digits (e.g., 0001, 7741)
+    // 2. CALCULATE MVG FRAME NUMBER WITH OFFSET
+    var startOfYear = Date.UTC(year, 0, 1, 0, 0, 0); // Jan 1, 00:00:00 UTC
+    var targetTime = date.getTime(); 
+
+    // Calculate total hours elapsed since Jan 1, 00:00 UTC
+    var hoursElapsed = Math.floor((targetTime - startOfYear) / (1000 * 60 * 60)); 
+
+    // **CRITICAL FIX:** Apply the necessary offset to align the calculated index 
+    // with the observed NASA MVG index (e.g., 7777 - 12 = 7765).
+    const MVG_CORRECTION = -12; 
+    
+    // Add 1 because the index starts at 1, then apply the correction.
+    var frameNum = hoursElapsed + 1 + MVG_CORRECTION; 
+
+    // Pad the frame number to 4 digits (e.g., 7765)
     var frameStr = frameNum.toString().padStart(4, '0');
     
     // 3. CONSTRUCT MVG URL
     const nasaImageUrl = `https://moon.nasa.gov/mvg.${year}/${frameStr}.jpg`;
 
+    console.log(`Calculated frame number: ${frameNum}. Final URL: ${nasaImageUrl}`); // <-- VERIFY THIS URL!
+
     // 4. FETCH, CACHE, AND DISPLAY
     fetch(nasaImageUrl)
         .then(response => {
-            if (!response.ok) throw new Error('NASA MVG image fetch failed.');
+            if (!response.ok) {
+                console.error(`NASA MVG image fetch failed. Status: ${response.status}. URL: ${nasaImageUrl}`);
+                throw new Error('NASA MVG image fetch failed.');
+            }
             return response.blob();
         })
         .then(blob => {
@@ -735,14 +748,15 @@ function cacheAndDisplayMoonImage(date) {
                 const base64Image = reader.result;
                 localStorage.setItem(CACHE_KEY, base64Image); // Store
                 moonImage.src = base64Image;                 // Display
+                console.log("SUCCESS: Image fetched, displayed, and cached.");
             };
             reader.readAsDataURL(blob);
         })
         .catch(error => {
-            console.error("Error loading or caching moon image:", error);
+            console.error("FATAL ERROR in image process:", error);
+            // If it fails, the image remains hidden, preventing a broken link icon.
         });
 }
-
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         var lat = 32.4619;
@@ -849,6 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
