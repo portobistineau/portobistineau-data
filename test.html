@@ -692,44 +692,41 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NASA IMAGE CACHING & DISPLAY --- */
+/* --- NASA IMAGE CACHING & DISPLAY (MVG Version) --- */
 function cacheAndDisplayMoonImage(date) {
     const CACHE_KEY = `moon_image_${date.toISOString().slice(0, 10)}`;
     const moonImage = document.getElementById('moon-img');
+    const year = date.getUTCFullYear();
 
-    // --- 1. CHECK CACHE ---
+    // 1. CHECK CACHE
     const cachedImage = localStorage.getItem(CACHE_KEY);
     if (cachedImage) {
         moonImage.src = cachedImage;
-        moonImage.alt = "Current Moon Phase (Cached)";
         return; 
     }
     
-    // --- 2. CALCULATE NASA URL (Your Original Logic) ---
-    var year = date.getUTCFullYear();
-    var svsIds = {
-        2024: { id: 5187, base: 'a005100' },
-        2025: { id: 5415, base: 'a005400' } 
-    };
-    var yearData = svsIds[year];
-    if (!yearData) return;
-    
+    // 2. CALCULATE MVG FRAME NUMBER
     var startOfYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
     var diffMs = date - startOfYear;
-    var diffHours = diffMs / (1000 * 60 * 60);
-    var frameNum = Math.round(diffHours) + 1;
-    var maxFrames = (year % 4 === 0) ? 8784 : 8760;
     
-    if (frameNum < 1) frameNum = 1;
-    if (frameNum > maxFrames) frameNum = maxFrames;
+    // Calculate total hours elapsed since Jan 1 UTC (this is the key change)
+    var frameNum = Math.floor(diffMs / (1000 * 60 * 60)); 
     
-    var frameStr = frameNum.toString().padStart(4, '0');
-    const nasaImageUrl = `https://svs.gsfc.nasa.gov/vis/a000000/${yearData.base}/a00${yearData.id}/frames/730x730_1x1_30p/moon.${frameStr}.jpg`;
+    // The MVG frame number is the *total hours* since Jan 1, plus a small index, 
+    // but the simplest formula is often just the total hour index.
+    // Let's use 1 as the starting index, matching standard DOY indexing.
+    frameNum = frameNum + 1; 
 
-    // --- 3. FETCH, CACHE, AND DISPLAY ---
+    // Pad the frame number to 4 digits (e.g., 0001, 7741)
+    var frameStr = frameNum.toString().padStart(4, '0');
+    
+    // 3. CONSTRUCT MVG URL
+    const nasaImageUrl = `https://moon.nasa.gov/mvg.${year}/${frameStr}.jpg`;
+
+    // 4. FETCH, CACHE, AND DISPLAY
     fetch(nasaImageUrl)
         .then(response => {
-            if (!response.ok) throw new Error('NASA image fetch failed.');
+            if (!response.ok) throw new Error('NASA MVG image fetch failed.');
             return response.blob();
         })
         .then(blob => {
@@ -738,13 +735,11 @@ function cacheAndDisplayMoonImage(date) {
                 const base64Image = reader.result;
                 localStorage.setItem(CACHE_KEY, base64Image); // Store
                 moonImage.src = base64Image;                 // Display
-                moonImage.alt = "Current Moon Phase";
             };
             reader.readAsDataURL(blob);
         })
         .catch(error => {
             console.error("Error loading or caching moon image:", error);
-            // Optional: Set a fallback if the fetch fails
         });
 }
 
@@ -854,6 +849,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
