@@ -1,29 +1,35 @@
 import json
 from datetime import datetime, timedelta, timezone
 
-def build_moon_urls(days_ahead=40):
+def build_moon_urls(days_ahead=90):
     """
     Calculates the NASA MVG URL for each day starting today
     and saves them to moon_urls.json.
+    
+    The calculation is based on the total hours elapsed since Jan 1, 00:00 UTC,
+    plus a fixed offset that aligns the formula with the NASA MVG sequence index.
     """
     
     # --- Configuration ---
-    # The necessary hour correction found through debugging: 
-    # MVG index = Total Hours Elapsed since Jan 1 UTC + 12
-    # The offset is +12, meaning the MVG sequence starts 12 hours later 
-    # than the start of the year (i.e., Jan 1, 12:00 UTC is the starting point).
-    MVG_CORRECTION_HOURS = 0 # <--- CHANGED FROM -12 TO 12
+    # The final, correct offset. A value of 0 means the base calculation 
+    # (Hours Elapsed + 1) already aligns perfectly with the NASA index.
+    MVG_CORRECTION_HOURS = 0
     
     urls = {}
     
-    # Find the start of the year in UTC
-    year = datetime.now(timezone.utc).year
+    # --- CALCULATE BASE START DATE ---
+    # We use the current date at a stable time (12:00 PM UTC) to start the indexing.
+    # This prevents timezone issues in the calculation.
+    base_start_date = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0)
+
+    year = base_start_date.year
     start_of_year_utc = datetime(year, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
     
-    # Iterate through the desired date range
+    # Iterate through the desired date range (starting with today's date)
     for i in range(days_ahead):
-        # We target 12:00 PM UTC for the day's image index 
-        target_date_utc = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(days=i)
+        
+        # Advance the date from the base start.
+        target_date_utc = base_start_date + timedelta(days=i)
         
         # Calculate total hours elapsed since Jan 1, 00:00 UTC
         time_difference = target_date_utc - start_of_year_utc
@@ -34,6 +40,11 @@ def build_moon_urls(days_ahead=40):
         
         # Format for URL construction
         frame_str = str(frame_num).zfill(4)
+        
+        # Format the date key to YYYY-MM-DD
+        # We target the date key based on the local date the user sees. 
+        # Since the calculation uses a stable 12:00 PM UTC time, simply formatting 
+        # the date key from the base time provides the correct date string.
         date_key = target_date_utc.strftime('%Y-%m-%d')
         
         nasa_url = f"https://moon.nasa.gov/mvg.{year}/{frame_str}.jpg"
@@ -47,4 +58,5 @@ def build_moon_urls(days_ahead=40):
     print(f"Successfully generated {len(urls)} Moon URLs into moon_urls.json.")
 
 if __name__ == '__main__':
-    build_moon_urls(days_ahead=40)
+    # Generating URLs for the next 90 days (approx. 3 months)
+    build_moon_urls(days_ahead=90)
