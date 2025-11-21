@@ -10,6 +10,9 @@ on:
 jobs:
   build-urls:
     runs-on: ubuntu-latest
+    # 💥 ADD THIS PERMISSIONS BLOCK HERE 💥
+    permissions:
+      contents: write # Grants the action permission to write (commit and push) files
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
