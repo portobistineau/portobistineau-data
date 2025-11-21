@@ -692,70 +692,34 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NASA MOON IMAGE CACHING & DISPLAY (FINAL VERSION) --- */
-function cacheAndDisplayMoonImage(date) {
-    // 1. Setup & Checks
-    const CACHE_KEY = `moon_image_${date.toISOString().slice(0, 10)}`;
+/* --- NASA MOON IMAGE FETCH FROM LOCAL JSON --- */
+function fetchMoonImageFromLocalJson(date) {
     const moonImage = document.getElementById('moon-img');
-    const year = date.getUTCFullYear();
+    const todayKey = date.toISOString().slice(0, 10); // Format: YYYY-MM-DD
     
     if (!moonImage) return;
 
-    // --- 2. CHECK CACHE ---
-    const cachedImage = localStorage.getItem(CACHE_KEY);
-    if (cachedImage) {
-        moonImage.src = cachedImage;
-        // The image is already loaded from local storage; no further action needed.
-        return; 
-    }
+    // We no longer need local storage since GitHub Actions refreshes the JSON weekly.
     
-    // --- 3. CALCULATE CORRECT MVG FRAME NUMBER ---
-    var startOfYear = Date.UTC(year, 0, 1, 0, 0, 0); // Jan 1, 00:00:00 UTC
-    var targetTime = date.getTime(); 
-
-    // Calculate total hours elapsed since Jan 1, 00:00 UTC
-    var hoursElapsed = Math.floor((targetTime - startOfYear) / (1000 * 60 * 60)); 
-
-    // CRITICAL FIX: The MVG index requires an offset of -12 hours relative to the 
-    // total hours elapsed since Jan 1st for the 2025 sequence to align correctly.
-    const MVG_CORRECTION = -12; 
-    
-    // Add 1 (because the index starts at 1) and apply the correction.
-    var frameNum = hoursElapsed + 1 + MVG_CORRECTION; 
-
-    // Pad the frame number to 4 digits (e.g., 7765)
-    var frameStr = frameNum.toString().padStart(4, '0');
-    
-    // 4. CONSTRUCT PROXY URL
-    const nasaImageUrl = `https://moon.nasa.gov/mvg.${year}/${frameStr}.jpg`;
-
-    // FIX: Use a CORS proxy to bypass the browser security block
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(nasaImageUrl)}`;
-
-    console.log(`CACHE MISS: Fetching image from NASA via proxy. Frame: ${frameNum}`); 
-
-    // --- 5. FETCH VIA PROXY, CACHE, AND DISPLAY ---
-    fetch(proxyUrl)
+    // Fetch the local JSON file created by the Python script
+    fetch('moon_urls.json?t=' + new Date().getTime()) // Add timestamp to prevent browser caching the JSON itself
         .then(response => {
-            if (!response.ok) {
-                console.error(`Fetch failed. Status: ${response.status}. URL: ${nasaImageUrl}`);
-                throw new Error('Image fetch failed (CORS Proxy likely returned non-200 status).');
-            }
-            return response.blob();
+            if (!response.ok) throw new Error("Could not fetch moon_urls.json.");
+            return response.json();
         })
-        .then(blob => {
-            // Convert the image data (Blob) to a Base64 string
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                const base64Image = reader.result;
-                localStorage.setItem(CACHE_KEY, base64Image); // Store in cache
-                moonImage.src = base64Image;                 // Display the image
-                console.log("SUCCESS: Image fetched, displayed, and cached.");
-            };
-            reader.readAsDataURL(blob);
+        .then(data => {
+            const nasaUrl = data[todayKey];
+            
+            if (nasaUrl) {
+                // Set the src attribute directly. This standard image tag loading 
+                // bypasses the CORS issues we had with the JS fetch/blob conversion.
+                moonImage.src = nasaUrl;
+            } else {
+                console.error(`Moon URL not found in JSON for date: ${todayKey}`);
+            }
         })
         .catch(error => {
-            console.error("FATAL ERROR: Could not load or cache moon image.", error);
+            console.error("Error loading Moon image from local JSON:", error);
         });
 }
 document.addEventListener('DOMContentLoaded', function() {
@@ -770,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('header-year').textContent = now.getFullYear();
         document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
         
-        cacheAndDisplayMoonImage(now);
+        fetchMoonImageFromLocalJson(now);
 
         /* 2. SUN DATA (SUNCALC) */
         if (typeof SunCalc !== 'undefined') {
@@ -864,6 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
