@@ -800,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const DATUM_MSL = 129.84;
 
       try {
-        const res = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active');
+        const res = await fetch('https://nwis.waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active');
         const data = await res.json();
         if (!data.value?.timeSeries?.[0]) throw new Error('No data');
 
@@ -875,6 +875,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
+
 
 
 
