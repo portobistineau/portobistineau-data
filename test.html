@@ -166,18 +166,22 @@
     position: relative; /* For absolute positioning of map overlays */
 }
 
-/* 2. Map Container: Allows map to fill its space */
+/* 2. Map Container: Allows map to fill its space and creates padding for overlays */
 #radar-container {
-    flex-grow: 1; /* Allow map to take up all available vertical space */
+    flex-grow: 1; 
     position: relative;
     overflow: hidden;
     height: 100%;
+    
+    /* NEW: Add padding to create space for absolutely positioned overlays */
+    padding-top: 30px; 
+    padding-bottom: 50px; 
 }
 
 /* 3. Legend (Compact, AccuWeather-style) */
 #radar-legend {
     position: absolute; /* Overlay map */
-    top: 5px;
+    top: 0px;
     left: 50%;
     transform: translateX(-50%); /* Center the block */
     z-index: 1000;
@@ -219,7 +223,7 @@
 /* 4. Controls (Moved to Bottom) */
 #radar-controls {
     position: absolute; /* Overlay map at the bottom */
-    bottom: 5px;
+    bottom: 0px;
     left: 50%;
     transform: translateX(-50%); /* Center the controls */
     z-index: 1000;
@@ -436,11 +440,11 @@
             <div id="radar-container">
                 <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
                 
-                <div style="position:absolute; bottom:30px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
+                <div style="position:absolute; bottom:50px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
                     <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
                     <span id="radar-time">Loading...</span>
                 </div>
-                <div style="position:absolute; bottom:30px; left:10px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:1000; pointer-events:none; text-shadow:1px 1px 2px black;">
+                <div style="position:absolute; bottom:50px; left:10px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:1000; pointer-events:none; text-shadow:1px 1px 2px black;">
                     Data: RainViewer / Esri
                 </div>
             </div>
@@ -1023,6 +1027,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
