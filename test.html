@@ -149,6 +149,115 @@
     .banner { height: 140px; }
     .videos-col .cam iframe { height: 160px; }
   }
+    /* --- RADAR WIDGET STYLES (Responsive and Controls) --- */
+
+/* 1. Default Mobile (Stacked Layout) */
+#radar-widget-wrapper {
+    display: flex;
+    flex-direction: column; /* Stacked layout for mobile */
+    align-items: center;    /* Center content */
+    margin: 15px auto 25px auto;
+    width: 95%; 
+    max-width: 100%;
+}
+
+#radar-container {
+    /* Set fluid width on mobile */
+    width: 100%; 
+    height: 350px; 
+    max-width: 400px; 
+    border-radius:15px; 
+    overflow:hidden; 
+    box-shadow:0 4px 15px rgba(0,0,0,0.3); 
+    background:#000;
+}
+
+/* 2. Legend Styling */
+#radar-legend {
+    width: 100%; 
+    max-width: 400px;
+    margin-top: 15px; 
+    margin-right: 0;
+    
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-family: sans-serif;
+    font-size: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    order: 2; /* Forces it to appear AFTER the map on mobile */
+    display: flex;
+    flex-direction: column;
+}
+#radar-legend h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.color-box {
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+/* RainViewer Color Palettes */
+.light-rain { background-color: #00FF00; } 
+.moderate-rain { background-color: #FFFF00; } 
+.heavy-rain { background-color: #FFA500; } 
+.intense-rain { background-color: #FF0000; } 
+.severe-storm { background-color: #800080; } 
+
+/* 3. Controls Styling */
+#radar-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+#radar-controls button, #radar-controls select {
+    padding: 6px 10px;
+    border: 1px solid #004d80;
+    background-color: #0066cc;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+#radar-controls button:hover, #radar-controls select:hover {
+    background-color: #004d80;
+}
+
+
+/* --- 4. DESKTOP/PC OVERRIDE (Side-by-Side Layout) --- */
+@media (min-width: 768px) {
+    #radar-widget-wrapper {
+        flex-direction: row; /* Switches to row: Legend/Controls on left, Map on right */
+        align-items: flex-start; 
+        width: fit-content; 
+    }
+
+    #radar-container {
+        width: 450px; /* Fixed map size on desktop */
+        height: 450px;
+    }
+
+    #radar-legend {
+        width: 200px; /* Fixed width on desktop */
+        margin-right: 20px; 
+        margin-top: 0;
+        order: 0; /* Ensures legend/controls appear BEFORE the map */
+    }
+}
 </style>
 
   <!-- Facebook SDK -->
@@ -791,6 +900,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
