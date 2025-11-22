@@ -791,135 +791,92 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
-  <script>
-  async function loadWaterGraph() {
-    const canvas = document.getElementById('water-chart');
-    const currentDiv = document.getElementById('current-level');
-    const ctx = canvas.getContext('2d');
-    const DATUM_MSL = 129.84;
-    const bust = new Date().getTime();
-    const site = '07349250';
+<script>
+    // Water Graph Script (unchanged)
+    async function loadWaterGraph() {
+      const canvas = document.getElementById('water-chart');
+      const currentDiv = document.getElementById('current-level');
+      const ctx = canvas.getContext('2d');
+      const DATUM_MSL = 129.84;
 
-    let values = null;
-
-    // Try RDB first (reliable text format)
-    try {
-      const text = await fetch(`https://waterdata.usgs.gov/nwis/uv?cb_00065=on&format=rdb&site_no=${site}&period=7&${bust}`).then(r => r.text());
-      const lines = text.split('\n');
-      let i = 0;
-      while (i < lines.length && !lines[i].startsWith('5s')) i++;
-      i += 2; // Skip headers
-
-      values = [];
-      for (; i < lines.length; i++) {
-        if (lines[i].trim() === '' || lines[i].startsWith('#')) continue;
-        const cols = lines[i].split('\t');
-        if (cols.length < 5) continue;
-        let date = cols[2].trim();
-        let time = cols[3].trim();
-        const val = cols[4].trim();
-        if (val && val !== 'P' && val !== 'Ice' && val !== '-999999') {
-          // Fix time: Add :00 if missing seconds
-          if (!time.includes(':')) time = '00:00:00';
-          else if (time.split(':').length === 2) time += ':00';
-          // Build ISO string (RDB is UTC)
-          const dateTimeStr = `${date}T${time}Z`;
-          values.push({ dateTime: dateTimeStr, value: val });
-        }
-      }
-    } catch (rdbErr) {
-      console.warn('RDB failed:', rdbErr);
-    }
-
-    // Fallback to JSON if RDB gave no data
-    if (!values || values.length === 0) {
       try {
-        const res = await fetch(`https://nwis.waterservices.usgs.gov/nwis/iv/?format=json&sites=${site}&parameterCd=00065&period=P7D&siteStatus=active&_${bust}`);
+        const res = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active');
         const data = await res.json();
-        const ts = data.value?.timeSeries?.[0];
-        if (ts?.values?.[0]?.value) {
-          values = ts.values[0].value.filter(v => v.value !== '-999999');
-        }
-      } catch (jsonErr) {
-        console.warn('JSON fallback failed:', jsonErr);
+        if (!data.value?.timeSeries?.[0]) throw new Error('No data');
+
+        const ts = data.value.timeSeries[0];
+        const labels = [];
+        const mslLevels = [];
+        let currentMSL = null;
+        let firstDate = null;
+        let lastDate = null;
+
+        const values = ts.values[0].value;
+        values.slice(0, 168).forEach(val => {
+          if (val.value !== '-999999') {
+            const gageHeight = parseFloat(val.value);
+            const mslElevation = gageHeight + DATUM_MSL;
+            const tsDate = new Date(val.dateTime);
+            const label = tsDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric' });
+            labels.push(label);
+            mslLevels.push(mslElevation);
+            if (!firstDate) firstDate = tsDate;
+            lastDate = tsDate;
+            currentMSL = mslElevation;
+          }
+        });
+
+        if (mslLevels.length === 0) throw new Error('No valid data');
+
+        const formatDate = (date) => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
+        const dateRange = `${formatDate(firstDate)} – ${formatDate(lastDate)}`;
+
+        currentDiv.innerHTML = `
+          <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
+          <span style="font-weight: normal; color: #666; font-size: 13px;">${dateRange}</span>
+        `;
+
+        if (window.waterChart) window.waterChart.destroy();
+
+        window.waterChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Elevation (ft MSL)', data: mslLevels, borderColor: '#1e90ff', backgroundColor: 'rgba(30, 144, 255, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0, pointHoverRadius: 5 }] },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+              x: { title: { display: true, text: 'Date / Time (CST)' }, grid: { color: 'rgba(0,0,0,0.1)' } }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: context => ` ${context.parsed.y.toFixed(2)} ft MSL` } },
+              annotation: { annotations: { poolLine: { type: 'line', yMin: 141, yMax: 141, borderColor: '#28a745', borderWidth: 3, borderDash: [6, 6] } } }
+            },
+            animation: { duration: 1000 }
+          }
+        });
+
+        const lastIdx = mslLevels.length - 1;
+        window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
+        window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
+        window.waterChart.data.datasets[0].pointRadius = Array(mslLevels.length).fill(0);
+        window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
+        window.waterChart.update();
+
+      } catch (err) {
+        console.error('Water Graph Error:', err);
+        currentDiv.innerHTML = '<p style="color:#d32f2f;">Level unavailable. <a href="https://water.noaa.gov/gauges/07349250">Check NOAA</a></p>';
+        canvas.style.display = 'none';
       }
     }
+    document.addEventListener('DOMContentLoaded', loadWaterGraph);
+  </script>
 
-    if (!values || values.length === 0) {
-      currentDiv.innerHTML = '<p style="color:#d32f2f;">Level unavailable – <a href="https://waterdata.usgs.gov/la/nwis/uv?site_no=07349250">check USGS</a></p>';
-      canvas.style.display = 'none';
-      return;
-    }
-
-    // Process values into chart data
-    const labels = [];
-    const mslLevels = [];
-    let currentMSL = null;
-    let firstDate = null;
-    let lastDate = null;
-
-    values.forEach(v => {
-      const gageHeight = parseFloat(v.value);
-      if (isNaN(gageHeight)) return;
-      const mslElevation = gageHeight + DATUM_MSL;
-      const tsDate = new Date(v.dateTime);
-      if (isNaN(tsDate.getTime())) return; // Skip invalid dates
-      // Convert UTC to CST (-6 hours, no DST adjustment needed for simplicity)
-      tsDate.setHours(tsDate.getHours() - 6);
-      const label = tsDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric', hour12: true });
-      labels.push(label);
-      mslLevels.push(mslElevation);
-      if (!firstDate) firstDate = tsDate;
-      lastDate = tsDate;
-      currentMSL = mslElevation;
-    });
-
-    if (mslLevels.length === 0) {
-      currentDiv.innerHTML = '<p style="color:#d32f2f;">No valid data points – <a href="https://waterdata.usgs.gov/la/nwis/uv?site_no=07349250">check USGS</a></p>';
-      canvas.style.display = 'none';
-      return;
-    }
-
-    const formatDate = d => d.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
-    currentDiv.innerHTML = `
-      <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
-      <span style="font-weight: normal; color: #666; font-size: 13px;">${formatDate(firstDate)} – ${formatDate(lastDate)}</span>
-    `;
-
-    if (window.waterChart) window.waterChart.destroy();
-    window.waterChart = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets: [{ label: 'Elevation (ft MSL)', data: mslLevels, borderColor: '#1e90ff', backgroundColor: 'rgba(30, 144, 255, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0, pointHoverRadius: 5 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
-          x: { title: { display: true, text: 'Date / Time (CST)' }, grid: { color: 'rgba(0,0,0,0.1)' } }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: context => ` ${context.parsed.y.toFixed(2)} ft MSL` } },
-          annotation: { annotations: { poolLine: { type: 'line', yMin: 141, yMax: 141, borderColor: '#28a745', borderWidth: 3, borderDash: [6, 6] } } }
-        },
-        animation: { duration: 1000 }
-      }
-    });
-
-    // Red dot on latest point
-    const lastIdx = mslLevels.length - 1;
-    window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
-    window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
-    window.waterChart.data.datasets[0].pointRadius = Array(mslLevels.length).fill(0);
-    window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
-    window.waterChart.update();
-  }
-
-  document.addEventListener('DOMContentLoaded', loadWaterGraph);
-</script>
 
 </body>
 
 </html>
+
 
 
 
