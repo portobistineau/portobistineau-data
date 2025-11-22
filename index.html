@@ -794,87 +794,88 @@ document.addEventListener('DOMContentLoaded', function() {
   <script>
     // Water Graph Script (unchanged)
   async function loadWaterGraph() {
-    const canvas = document.getElementById('water-chart');
-    const currentDiv = document.getElementById('current-level');
-    const ctx = canvas.getContext('2d');
-    const DATUM_MSL = 129.84;
+      const canvas = document.getElementById('water-chart');
+      const currentDiv = document.getElementById('current-level');
+      const ctx = canvas.getContext('2d');
+      const DATUM_MSL = 129.84;
 
-    // Cache-buster that works in plain <script> tags
-    const bust = new Date().getTime();
+      try {
+        const res = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active');
+        const data = await res.json();
+        if (!data.value?.timeSeries?.[0]) throw new Error('No data');
 
-    try {
-      const res = await fetch(`https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active&_${bust}`);
-      if (!res.ok) throw new Error('Bad response');
+        const ts = data.value.timeSeries[0];
+        const labels = [];
+        const mslLevels = [];
+        let currentMSL = null;
+        let firstDate = null;
+        let lastDate = null;
 
-      const data = await res.json();
-      const ts = data.value.timeSeries[0];
-      const values = ts.values[0].value;
-
-      const labels = [];
-      const mslLevels = [];
-      let currentMSL = null;
-      let firstDate = null;
-      let lastDate = null;
-
-      values.forEach(val => {
-        if (val.value !== '-999999') {
-          const gageHeight = parseFloat(val.value);
-          const mslElevation = gageHeight + DATUM_MSL;
-          const tsDate = new Date(val.dateTime);
-          const label = tsDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric' });
-          labels.push(label);
-          mslLevels.push(mslElevation);
-          if (!firstDate) firstDate = tsDate;
-          lastDate = tsDate;
-          currentMSL = mslElevation;
-        }
-      });
-
-      if (mslLevels.length === 0) throw new Error('No data');
-
-      const formatDate = date => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
-      currentDiv.innerHTML = `
-        <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
-        <span style="font-weight: normal; color: #666; font-size: 13px;">${formatDate(firstDate)} – ${formatDate(lastDate)}</span>
-      `;
-
-      if (window.waterChart) window.waterChart.destroy();
-      window.waterChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels, datasets: [{ label: 'Elevation (ft MSL)', data: mslLevels, borderColor: '#1e90ff', backgroundColor: 'rgba(30, 144, 255, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0, pointHoverRadius: 5 }] },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          scales: {
-            y: { suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' } },
-            x: { title: { display: true, text: 'Date / Time (CST)' } }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)} ft MSL` } },
-            annotation: { annotations: { poolLine: { type: 'line', yMin: 141, yMax: 141, borderColor: '#28a745', borderWidth: 3, borderDash: [6, 6] } } }
+        const values = ts.values[0].value;
+        values.slice(0, 168).forEach(val => {
+          if (val.value !== '-999999') {
+            const gageHeight = parseFloat(val.value);
+            const mslElevation = gageHeight + DATUM_MSL;
+            const tsDate = new Date(val.dateTime);
+            const label = tsDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric' });
+            labels.push(label);
+            mslLevels.push(mslElevation);
+            if (!firstDate) firstDate = tsDate;
+            lastDate = tsDate;
+            currentMSL = mslElevation;
           }
-        }
-      });
+        });
 
-      // Red dot on the newest point
-      const lastIdx = mslLevels.length - 1;
-      window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
-      window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
-      window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
-      window.waterChart.update();
+        if (mslLevels.length === 0) throw new Error('No valid data');
 
-    } catch (err) {
-      console.error(err);
-      currentDiv.innerHTML = '<p style="color:#d32f2f;">Level temporarily unavailable – <a href="https://waterdata.usgs.gov/la/nwis/uv?site_no=07349250">check USGS</a></p>';
-      canvas.style.display = 'none';
+        const formatDate = (date) => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
+        const dateRange = `${formatDate(firstDate)} – ${formatDate(lastDate)}`;
+
+        currentDiv.innerHTML = `
+          <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
+          <span style="font-weight: normal; color: #666; font-size: 13px;">${dateRange}</span>
+        `;
+
+        if (window.waterChart) window.waterChart.destroy();
+
+        window.waterChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Elevation (ft MSL)', data: mslLevels, borderColor: '#1e90ff', backgroundColor: 'rgba(30, 144, 255, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0, pointHoverRadius: 5 }] },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+              x: { title: { display: true, text: 'Date / Time (CST)' }, grid: { color: 'rgba(0,0,0,0.1)' } }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: context => ` ${context.parsed.y.toFixed(2)} ft MSL` } },
+              annotation: { annotations: { poolLine: { type: 'line', yMin: 141, yMax: 141, borderColor: '#28a745', borderWidth: 3, borderDash: [6, 6] } } }
+            },
+            animation: { duration: 1000 }
+          }
+        });
+
+        const lastIdx = mslLevels.length - 1;
+        window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
+        window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
+        window.waterChart.data.datasets[0].pointRadius = Array(mslLevels.length).fill(0);
+        window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
+        window.waterChart.update();
+
+      } catch (err) {
+        console.error('Water Graph Error:', err);
+        currentDiv.innerHTML = '<p style="color:#d32f2f;">Level unavailable. <a href="https://water.noaa.gov/gauges/07349250">Check NOAA</a></p>';
+        canvas.style.display = 'none';
+      }
     }
-  }
+    document.addEventListener('DOMContentLoaded', loadWaterGraph);
+  </script>
 
-  document.addEventListener('DOMContentLoaded', loadWaterGraph);
-</script>
 </body>
 
 </html>
+
 
 
 
