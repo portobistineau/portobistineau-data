@@ -493,16 +493,18 @@
     }
     forecastHTML += '</div>';
     // --- TOP SECTION (Combines Current Weather and New Radar Widget) ---
-    const topSection = `
-        <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:start;">
-            <div style="flex: 1 1 300px; max-width:100%;">
-                ${currentHTML}
-            </div>
-            <div style="flex: 0 0 auto; max-width:100%; display:flex; justify-content:center;">
-                ${radarHTML}
-            </div>
-        </div>
-    `;
+    const topSection = `
+        <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+            
+            <div style="flex: 1 1 300px; max-width: 400px;">
+                ${currentHTML}
+            </div>
+            
+            <div style="flex: 0 0 400px; max-width: 100%;">
+                ${radarHTML}
+            </div>
+        </div>
+    `;
 
     document.getElementById('bistineauWeather').innerHTML = topSection + forecastHTML;
 
@@ -1021,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
