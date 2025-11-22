@@ -793,66 +793,25 @@ document.addEventListener('DOMContentLoaded', function() {
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
   <script>
     // Water Graph Script (unchanged)
-    Oops, my bad — adding the cache-buster with backticks broke the URL in your static HTML file (template literals like ${Date.now()} only work in real JavaScript modules or when the script is type="module", which yours isn’t). That turned the request into garbage, so the API rightfully returned nothing and triggered the “Level unavailable” fallback you’re seeing now.
-Permanent Fix (2 minutes, bulletproof forever)
-Replace your entire water-graph <script> block (the one starting with async function loadWaterGraph() {) with this updated version below.
-I added:
-
-A proper cache-buster that works in plain old <script> tags
-A fallback to the USGS “RDB” text format if the JSON endpoint ever hiccups again
-Better error messages so you’ll always know what’s going on
-
-HTML<script>
+<script>
+  <script>
   async function loadWaterGraph() {
     const canvas = document.getElementById('water-chart');
     const currentDiv = document.getElementById('current-level');
     const ctx = canvas.getContext('2d');
-    const DATUM_MSL = 129.84;                     // unchanged
-    const site = '07349250';
-    const cacheBuster = new Date().getTime();     // works everywhere
+    const DATUM_MSL = 129.84;
 
-    // Try the normal JSON API first
-    let url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${site}&parameterCd=00065&period=P7D&siteStatus=active&_=${cacheBuster}`;
+    // Cache-buster that works in plain <script> tags
+    const bust = new Date().getTime();
 
     try {
-      let res = await fetch(url);
-      if (!res.ok) throw new Error('JSON endpoint down');
+      const res = await fetch(`https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07349250&parameterCd=00065&period=P7D&siteStatus=active&_${bust}`);
+      if (!res.ok) throw new Error('Bad response');
 
-      const json = await res.json();
-      if (!json.value?.timeSeries?.[0]?.values?.[0]?.value?.length) throw new Error('No data');
-
-      // Normal processing (exactly the same as before)
-      const ts = json.value.timeSeries[0];
+      const data = await res.json();
+      const ts = data.value.timeSeries[0];
       const values = ts.values[0].value;
 
-      renderChart(values);
-
-    } catch (e) {
-      // Fallback to the super-reliable RDB text format
-      let rdbUrl = `https://waterdata.usgs.gov/nwis/uv?cb_00065=on&format=rdb&site_no=${site}&period=7&${cacheBuster}`;
-      try {
-        let text = await fetch(rdbUrl).then(r => r.text());
-        let lines = text.split('\n');
-        let dataStart = lines.findIndex(l => l.startsWith('5s')) + 2; // skip headers
-        let rdbValues = lines.slice(dataStart)
-          .filter(l => l && !l.startsWith('#') && l.split('\t').length > 5)
-          .map(l => {
-            let cols = l.split('\t');
-            return { dateTime: cols[2] + ' ' + cols[3].replace(/:/g,':'), value: cols[4] };
-          });
-
-        if (rdbValues.length === 0) throw new Error('No fallback data');
-
-        renderChart(rdbValues.map(v => ({ dateTime: new Date(v.dateTime + ' UTC').toISOString(), value: v.value })));
-
-      } catch (fallbackError) {
-        currentDiv.innerHTML = '<p style="color:#d32f2f;">Level temporarily unavailable – <a href="https://waterdata.usgs.gov/la/nwis/uv?site_no=07349250">check USGS directly</a></p>';
-        canvas.style.display = 'none';
-      }
-    }
-
-    // This function is the original rendering code (unchanged except moved here)
-    function renderChart(values) {
       const labels = [];
       const mslLevels = [];
       let currentMSL = null;
@@ -860,7 +819,7 @@ HTML<script>
       let lastDate = null;
 
       values.forEach(val => {
-        if (val.value !== '-999999' && val.value !== null) {
+        if (val.value !== '-999999') {
           const gageHeight = parseFloat(val.value);
           const mslElevation = gageHeight + DATUM_MSL;
           const tsDate = new Date(val.dateTime);
@@ -873,14 +832,12 @@ HTML<script>
         }
       });
 
-      if (mslLevels.length === 0) throw new Error('No valid points');
+      if (mslLevels.length === 0) throw new Error('No data');
 
-      const formatDate = (date) => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
-      const dateRange = `${formatDate(firstDate)} – ${formatDate(lastDate)}`;
-
+      const formatDate = date => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
       currentDiv.innerHTML = `
         <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
-        <span style="font-weight: normal; color: #666; font-size: 13px;">${dateRange}</span>
+        <span style="font-weight: normal; color: #666; font-size: 13px;">${formatDate(firstDate)} – ${formatDate(lastDate)}</span>
       `;
 
       if (window.waterChart) window.waterChart.destroy();
@@ -890,24 +847,28 @@ HTML<script>
         options: {
           responsive: true, maintainAspectRatio: false,
           scales: {
-            y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
-            x: { title: { display: true, text: 'Date / Time (CST)' }, grid: { color: 'rgba(0,0,0,0.1)' } }
+            y: { suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' } },
+            x: { title: { display: true, text: 'Date / Time (CST)' } }
           },
           plugins: {
             legend: { display: false },
-            tooltip: { callbacks: { label: context => ` ${context.parsed.y.toFixed(2)} ft MSL` } },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)} ft MSL` } },
             annotation: { annotations: { poolLine: { type: 'line', yMin: 141, yMax: 141, borderColor: '#28a745', borderWidth: 3, borderDash: [6, 6] } } }
-          },
-          animation: { duration: 1000 }
+          }
         }
       });
 
-      // Red dot on latest point
+      // Red dot on the newest point
       const lastIdx = mslLevels.length - 1;
       window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
       window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
       window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
       window.waterChart.update();
+
+    } catch (err) {
+      console.error(err);
+      currentDiv.innerHTML = '<p style="color:#d32f2f;">Level temporarily unavailable – <a href="https://waterdata.usgs.gov/la/nwis/uv?site_no=07349250">check USGS</a></p>';
+      canvas.style.display = 'none';
     }
   }
 
@@ -916,6 +877,7 @@ HTML<script>
 </body>
 
 </html>
+
 
 
 
