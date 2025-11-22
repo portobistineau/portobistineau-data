@@ -618,30 +618,6 @@ function initRadarWidget() {
         })
         .catch(e => console.error("Radar Error:", e));
 }
-  function processRadarFrames(map, apiData) {
-      var radarLayers = [];
-      var past = apiData.radar.past || [];
-      var future = apiData.radar.nowcast || [];
-   
-      // Use up to the last 24 available frames (4 hours of history)
-      var maxPastFrames = 24; 
-      var pastSlice = past.slice(-maxPastFrames); 
-  
-      // Use all available future frames (up to 12 frames, or whatever the API provides)
-      var futureSlice = future.slice(0, 12); 
-      var frames = pastSlice.concat(futureSlice);
-      frames.forEach(function(frameObj, index) {
-          var layer = L.tileLayer(apiData.host + frameObj.path + '/256/{z}/{x}/{y}/2/1_1.png', {
-              opacity: 0,
-              zIndex: 100 // RAIN sits on TOP of everything
-          });
-          layer.isFuture = (index >= pastSlice.length); 
-          layer.timestamp = frameObj.time;
-          layer.addTo(map);
-          radarLayers.push(layer);
-      });
-     
-  }
  function processRadarFrames(map, apiData) {
       window.radarLayers = []; // Set the global variable
       var past = apiData.radar.past || [];
@@ -761,28 +737,7 @@ function changeSpeed(event) {
         startAnimationLoop();
     }
 }
-// ------------------------------------
-    
-      window.radarAnimationTimer = setInterval(function() {
-          var prevIndex = (currentFrameIndex - 1 + layers.length) % layers.length;
-          layers[prevIndex].setOpacity(0);
-          var currentLayer = layers[currentFrameIndex];
-          currentLayer.setOpacity(0.7);
-          var timeLabel = document.getElementById('radar-time');
-          var statusLabel = document.getElementById('radar-status');
-          if(timeLabel && statusLabel) { 
-              timeLabel.textContent = formatTime(currentLayer.timestamp);
-              if (currentLayer.isFuture) {
-                  statusLabel.textContent = "FUTURE";
-                  statusLabel.style.color = "#00ccff";
-              } else {
-                  statusLabel.textContent = "PAST";
-                  statusLabel.style.color = "#00ff00";
-              }
-          }
-          currentFrameIndex = (currentFrameIndex + 1) % layers.length;
-      }, 400);
-  }
+
 
   // --- POPUP DETAIL FUNCTION ---
   window.showDetail = function(dayIndex) {
@@ -1060,6 +1015,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
