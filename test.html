@@ -149,114 +149,118 @@
     .banner { height: 140px; }
     .videos-col .cam iframe { height: 160px; }
   }
-    /* --- RADAR WIDGET STYLES (Responsive and Controls) --- */
+    /* --- UPDATED RADAR WIDGET CSS --- */
 
-/* 1. Default Mobile (Stacked Layout) */
+/* 1. Wrapper: Sets up the main layout for the widget area */
 #radar-widget-wrapper {
-    display: flex;
-    flex-direction: column; /* Stacked layout for mobile */
-    align-items: center;    /* Center content */
-    margin: 15px auto 25px auto;
-    width: 95%; 
+    width: 400px; /* Base width */
+    height: 400px; /* Base height */
     max-width: 100%;
+    margin: 0 auto;
+    display: flex; /* Make it a flex container */
+    flex-direction: column; /* Stack the map and controls vertically */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden; /* Keep content within bounds */
+    background-color: #f0f0f0;
+    position: relative; /* For absolute positioning of map overlays */
 }
 
+/* 2. Map Container: Allows map to fill its space */
 #radar-container {
-    /* Set fluid width on mobile */
-    width: 100%; 
-    height: 350px; 
-    max-width: 400px; 
-    border-radius:15px; 
-    overflow:hidden; 
-    box-shadow:0 4px 15px rgba(0,0,0,0.3); 
-    background:#000;
+    flex-grow: 1; /* Allow map to take up all available vertical space */
+    position: relative;
+    overflow: hidden;
+    height: 100%;
 }
 
-/* 2. Legend Styling */
+/* 3. Legend (Compact, AccuWeather-style) */
 #radar-legend {
-    width: 100%; 
-    max-width: 400px;
-    margin-top: 15px; 
-    margin-right: 0;
-    
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-family: sans-serif;
-    font-size: 12px;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-    height: fit-content;
-    order: 2; /* Forces it to appear AFTER the map on mobile */
-    display: flex;
-    flex-direction: column;
+    position: absolute; /* Overlay map */
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%); /* Center the block */
+    z-index: 1000;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 10px;
+    border-radius: 4px;
+    color: white;
+    font-size: 10px;
+    display: flex; /* Flexbox for compact horizontal layout */
+    align-items: center;
+    gap: 8px; /* Space between legend groups */
+    pointer-events: none; /* Ignore clicks so map can be used if enabled */
 }
+
 #radar-legend h4 {
-    margin: 0 0 8px 0;
-    font-size: 13px;
-    font-weight: bold;
-    text-align: center;
+    display: none; /* Hide the large title for compact layout */
 }
-.legend-item {
+
+.legend-group {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    gap: 3px;
 }
-.color-box {
-    width: 12px;
-    height: 12px;
-    margin-right: 8px;
-    border-radius: 2px;
-}
-/* RainViewer Color Palettes */
-.light-rain { background-color: #00FF00; } 
-.moderate-rain { background-color: #FFFF00; } 
-.heavy-rain { background-color: #FFA500; } 
-.intense-rain { background-color: #FF0000; } 
-.severe-storm { background-color: #800080; } 
 
-/* 3. Controls Styling */
+.legend-item {
+    display: none; /* Hide all text labels for ultra-compact layout */
+}
+
+/* Only keep the color boxes visible */
+.color-box {
+    display: inline-block;
+    width: 8px; /* Tiny dot size */
+    height: 8px;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* 4. Controls (Moved to Bottom) */
 #radar-controls {
+    position: absolute; /* Overlay map at the bottom */
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%); /* Center the controls */
+    z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    padding: 5px 10px;
+    border-radius: 4px;
     display: flex;
     gap: 8px;
-    justify-content: center;
-    align-items: center;
-    margin-top: 10px;
 }
+
 #radar-controls button, #radar-controls select {
-    padding: 6px 10px;
-    border: 1px solid #004d80;
-    background-color: #0066cc;
+    background: #007bff;
     color: white;
-    border-radius: 5px;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
+    line-height: 1;
     transition: background-color 0.2s;
 }
-#radar-controls button:hover, #radar-controls select:hover {
-    background-color: #004d80;
+
+#radar-controls button:hover {
+    background: #0056b3;
 }
 
+#radar-controls select {
+    background: #444;
+}
 
-/* --- 4. DESKTOP/PC OVERRIDE (Side-by-Side Layout) --- */
-@media (min-width: 768px) {
-    #radar-widget-wrapper {
-        flex-direction: row; /* Switches to row: Legend/Controls on left, Map on right */
-        align-items: flex-start; 
-        width: fit-content; 
-    }
+/* 5. Custom Color Boxes (Keep Existing Styles) */
+.severe-storm { background-color: #FF0000; } /* Red */
+.intense-rain { background-color: #FF8000; } /* Orange */
+.heavy-rain { background-color: #FFFF00; } /* Yellow */
+.moderate-rain { background-color: #00FF00; } /* Green */
+.light-rain { background-color: #00FFFF; } /* Cyan */
 
-    #radar-container {
-        width: 450px; /* Fixed map size on desktop */
-        height: 450px;
-    }
-
-    #radar-legend {
-        width: 200px; /* Fixed width on desktop */
-        margin-right: 20px; 
-        margin-top: 0;
-        order: 0; /* Ensures legend/controls appear BEFORE the map */
-    }
+/* Fix for the L.Map element */
+#radar-map {
+    width: 100%;
+    height: 100%;
 }
 </style>
 
@@ -415,42 +419,44 @@
         </div>
       </div>`;
 
-    // --- NEW: RADAR HTML WITH RESPONSIVE WRAPPER, LEGEND, AND CONTROLS ---
-    const radarHTML = `
+    // --- NEW: RADAR HTML WITH COMPACT LEGEND AND BOTTOM CONTROLS ---
+    const radarHTML = `
         <div id="radar-widget-wrapper">
             
             <div id="radar-legend">
-                <h4>Precipitation Intensity</h4>
-                <div class="legend-item"><span class="color-box severe-storm"></span>Severe Storm/Hail</div>
-                <div class="legend-item"><span class="color-box intense-rain"></span>Intense Rain</div>
-                <div class="legend-item"><span class="color-box heavy-rain"></span>Heavy Rain</div>
-                <div class="legend-item"><span class="color-box moderate-rain"></span>Moderate Rain</div>
-                <div class="legend-item"><span class="color-box light-rain"></span>Light Rain/Drizzle</div>
-
-                <div id="radar-controls">
-                    <button id="radar-rewind" title="Previous Frame"><<</button>
-                    <button id="radar-play-pause" title="Pause/Play">▮▮</button>
-                    <button id="radar-forward" title="Next Frame">>></button>
-                    
-                    <select id="radar-speed-select" title="Animation Speed">
-                        <option value="1200">Slow</option>
-                        <option value="800">Medium</option>
-                        <option value="400" selected>Fast</option>
-                    </select>
+                <div class="legend-group">
+                    Light Rain/Drizzle <span class="color-box light-rain"></span>
+                    Moderate Rain <span class="color-box moderate-rain"></span>
+                    Heavy Rain <span class="color-box heavy-rain"></span>
+                    Intense Rain <span class="color-box intense-rain"></span>
+                    Severe Storm/Hail <span class="color-box severe-storm"></span>
                 </div>
             </div>
 
             <div id="radar-container">
                 <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
                 
-                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
+                <div style="position:absolute; bottom:30px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:1000; pointer-events:none;">
                     <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
                     <span id="radar-time">Loading...</span>
                 </div>
-                <div style="position:absolute; bottom:5px; left:5px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:1000; pointer-events:none; text-shadow:1px 1px 2px black;">
+                <div style="position:absolute; bottom:30px; left:10px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:1000; pointer-events:none; text-shadow:1px 1px 2px black;">
                     Data: RainViewer / Esri
                 </div>
             </div>
+
+            <div id="radar-controls">
+                <button id="radar-rewind" title="Previous Frame"><<</button>
+                <button id="radar-play-pause" title="Pause/Play">▮▮</button>
+                <button id="radar-forward" title="Next Frame">>></button>
+                
+                <select id="radar-speed-select" title="Animation Speed">
+                    <option value="1200">Slow</option>
+                    <option value="800">Medium</option>
+                    <option value="400" selected>Fast</option>
+                </select>
+            </div>
+
         </div>
     `;
 
@@ -1015,6 +1021,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
 
 
 
