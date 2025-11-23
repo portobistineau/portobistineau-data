@@ -470,7 +470,14 @@ body {
 .fb-col {
     flex: 1;
     min-width: 300px;
-    text-align: left;
+    /* CHANGE: Set the content alignment to the right for the column */
+    text-align: right; 
+}
+
+/* NEW: This targets the Facebook widget container to push it to the right within the column */
+.fb-col > div.fb-page {
+    margin-left: auto; 
+    margin-right: 0; 
 }
 .videos-col .cam {
     background: #000;
