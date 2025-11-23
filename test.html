@@ -1049,48 +1049,14 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
+    // NOTE: Added Chartjs-adapter-date-fns for time scale functionality
+    
     const DATUM_MSL = 129.84;
     const currentDiv = document.getElementById('current-level');
     const canvas = document.getElementById('water-chart');
     
-    // --- Tick Callback Function Generator ---
-    function createTickCallback(lastTimeMs) {
-        // 12 hours in milliseconds
-        const INTERVAL_MS = 12 * 60 * 60 * 1000;
-        // INCREASED TOLERANCE to 30 minutes (from 15)
-        const TOLERANCE_MS = 30 * 60 * 1000; 
-
-        return function(value, index, ticks) {
-            const labelTime = new Date(this.getLabelForValue(value)).getTime();
-            const isLastTick = index === ticks.length - 1;
-
-            // 1. Always show the last tick
-            if (isLastTick) {
-                return new Date(labelTime).toLocaleString('en-US', { 
-                    timeZone: 'America/Chicago', 
-                    month: 'short', day: 'numeric', hour: 'numeric', hour12: true 
-                });
-            }
-
-            // 2. Check if this label is near one of the ideal 12-hour steps backward from the last reading.
-            const diff = lastTimeMs - labelTime;
-            const numIntervals = Math.round(diff / INTERVAL_MS);
-            const deviation = Math.abs(diff - (numIntervals * INTERVAL_MS));
-            
-            // If the deviation is less than the tolerance, show the tick
-            if (deviation < TOLERANCE_MS) {
-                return new Date(labelTime).toLocaleString('en-US', { 
-                    timeZone: 'America/Chicago', 
-                    month: 'short', day: 'numeric', hour: 'numeric', hour12: true 
-                });
-            }
-
-            return null; // Hide the tick
-        };
-    }
-
-    // --- Main Graph Loader ---
     async function loadWaterGraph() {
         canvas.style.display = 'block'; 
         currentDiv.innerHTML = '<p>Loading current level...</p>';
@@ -1101,13 +1067,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!data.value?.timeSeries?.[0]) throw new Error('No time series data from USGS');
 
             const ts = data.value.timeSeries[0];
-            const labels = [];
-            const mslLevels = [];
+            const dataPoints = [];
             let currentMSL = null;
             let firstDate = null;
             let lastDate = null;
-            let lastTimeMs = null; 
-
+            
             const values = ts.values[0].value;
             values.forEach(val => { 
                 if (val.value !== '-999999') {
@@ -1115,16 +1079,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     const mslElevation = gageHeight + DATUM_MSL;
                     const tsDate = new Date(val.dateTime);
                     
-                    labels.push(val.dateTime); 
-                    mslLevels.push(mslElevation);
+                    dataPoints.push({
+                        t: tsDate, // Use Date object for time scale
+                        y: mslElevation
+                    });
+                    
                     if (!firstDate) firstDate = tsDate;
                     lastDate = tsDate;
                     currentMSL = mslElevation;
-                    lastTimeMs = tsDate.getTime(); 
                 }
             });
 
-            if (mslLevels.length === 0) throw new Error('No valid data points found in USGS feed');
+            if (dataPoints.length === 0) throw new Error('No valid data points found in USGS feed');
 
             const formatDate = (date) => date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' });
             
@@ -1137,20 +1103,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
             window.waterChart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
-                data: { labels, datasets: [{ label: 'Elevation (ft MSL)', data: mslLevels, borderColor: '#1e90ff', backgroundColor: 'rgba(30, 144, 255, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0, pointHoverRadius: 5 }] },
+                data: { 
+                    // No labels array needed for time scale
+                    datasets: [{ 
+                        label: 'Elevation (ft MSL)', 
+                        data: dataPoints, 
+                        borderColor: '#1e90ff', 
+                        backgroundColor: 'rgba(30, 144, 255, 0.1)', 
+                        borderWidth: 2, 
+                        fill: true, 
+                        tension: 0.1, 
+                        pointRadius: 0, 
+                        pointHoverRadius: 5 
+                    }] 
+                },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    parsing: false, // Optimization: tell Chart.js the data is pre-parsed {t, y}
                     scales: {
                         y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
                         x: { 
-                            type: 'category', 
+                            // *** The Correct Type for Continuous Time Axis ***
+                            type: 'time', 
+                            time: {
+                                // Set the timezone for correct display
+                                timezone: 'America/Chicago', 
+                                unit: 'hour',
+                                stepSize: 12, // Force a tick every 12 hours
+                                displayFormats: {
+                                    hour: 'M/D, h A', // e.g., 11/22, 6 PM
+                                }
+                            },
                             title: { display: true, text: 'Date / Time (CST)' }, 
                             grid: { color: 'rgba(0,0,0,0.1)' }, 
                             ticks: { 
                                 maxRotation: 45, 
                                 minRotation: 45,
-                                autoSkip: false, 
-                                callback: createTickCallback(lastTimeMs)
+                                autoSkip: false, // Rely on stepSize
                             } 
                         }
                     },
@@ -1164,11 +1153,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Highlight the last point
-            const lastIdx = mslLevels.length - 1;
-            if (window.waterChart.data.datasets[0].data.length > 0) {
-                 window.waterChart.data.datasets[0].pointBackgroundColor = Array(mslLevels.length).fill('transparent');
+            const lastIdx = dataPoints.length - 1;
+            if (dataPoints.length > 0) {
+                 window.waterChart.data.datasets[0].pointBackgroundColor = Array(dataPoints.length).fill('transparent');
                  window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
-                 window.waterChart.data.datasets[0].pointRadius = Array(mslLevels.length).fill(0);
+                 window.waterChart.data.datasets[0].pointRadius = Array(dataPoints.length).fill(0);
                  window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
                  window.waterChart.update();
             }
@@ -1184,6 +1173,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
 </body>
 </html>
+
 
 
 
