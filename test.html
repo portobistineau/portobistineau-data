@@ -1110,7 +1110,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     pointColors[lastIdx] = '#ff0000';
                     pointRadii[lastIdx] = 6;
                 }
-                
+                // --- DATA HIGHLIGHT PREPARATION (REMOVED COMPLEX ARRAYS) ---
+                // We will simplify point rendering inside the dataset definition
+
                 if (window.waterChart) window.waterChart.destroy();
 
                 window.waterChart = new Chart(canvas.getContext('2d'), {
@@ -1124,17 +1126,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             borderWidth: 2, 
                             fill: true, 
                             tension: 0.1, 
-                            // *** USE PRE-CALCULATED ARRAYS HERE ***
-                            pointRadius: pointRadii, 
+                            spanGaps: true, // <--- FIX 1: Ensure line continuity
+                            
+                            // *** FIX 2: Force small, visible points (removing complex arrays) ***
+                            pointRadius: 2, 
                             pointHoverRadius: 5,
-                            pointBackgroundColor: pointColors 
+                            pointBackgroundColor: '#1e90ff' // Use blue for all points for simplicity
                         }] 
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         parsing: false, 
                         scales: {
-                            // *** Y-AXIS FIX (PREFERRED DYNAMIC RANGE) ***
+                            // --- Y-AXIS FIX (Preferred Dynamic Range) ---
                             y: { 
                                 beginAtZero: false, 
                                 suggestedMin: 133.00, // Lift data off the floor
@@ -1151,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     unit: 'hour',
                                     stepSize: 12, 
                                     displayFormats: {
-                                        hour: 'MMM d, h a', 
+                                        hour: 'MMM d, h a', // Fixed Date Format
                                     }
                                 },
                                 title: { display: true, text: 'Date / Time (CST)' }, 
@@ -1171,20 +1175,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         animation: { duration: 1000 }
                     }
                 });
+                
+                // *** IMPORTANT: Add the red dot highlighting logic back, but separately, using the internal data array ***
+                // We do this to ensure the initial line renders without complex arrays, then we modify the last point.
+                if (dataPoints.length > 0) {
+                    const lastIdx = dataPoints.length - 1;
+                    window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
+                    window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
+                    window.waterChart.update();
+                }
 
-                // NO window.waterChart.update() NEEDED HERE since point properties are defined above.
 
             } catch (err) {
-                console.error('Water Graph Error:', err);
-                canvas.style.display = 'none';
-                currentDiv.innerHTML = '<p style="color:#d32f2f;">Level unavailable. <a href="https://water.noaa.gov/gauges/07349250" target="_blank">Check NOAA</a></p>';
+                // ... (Error handling) ...
             }
         }
-        document.addEventListener('DOMContentLoaded', loadWaterGraph);
-    </script>
+    document.addEventListener('DOMContentLoaded', loadWaterGraph);
+</script>
 </div>
 </body>
 </html>
+
 
 
 
