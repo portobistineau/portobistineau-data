@@ -264,7 +264,10 @@
     border-radius: 4px;
     display: flex;
     gap: 8px;
-    width: 400px; /* <--- NEW: Set the width to match the map */
+    /* --- NEW/UPDATED FIX FOR MOBILE --- */
+    width: 100%;        /* Use 100% of the available width on small screens */
+    max-width: 400px;   /* But don't exceed the map's 400px width on large screens */
+    /* ---------------------------------- */
 }
 
 #radar-controls button, #radar-controls select {
@@ -1218,6 +1221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 </body>
 </html>
+
 
 
 
