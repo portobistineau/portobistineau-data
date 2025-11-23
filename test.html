@@ -1048,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <a href="https://waterdata.usgs.gov/nwis/uv?site_no=07349250" target="_blank">USGS Data</a>
     </small>
     
-    <script>
+<script>
         const DATUM_MSL = 129.84;
         const currentDiv = document.getElementById('current-level');
         const canvas = document.getElementById('water-chart');
@@ -1056,8 +1056,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // --- Tick Callback Function Generator ---
         function createTickCallback(lastTimeMs) {
             const INTERVAL_MS = 12 * 60 * 60 * 1000;
-            // Generous tolerance (45 minutes) to catch data points near the 12-hour mark
-            const TOLERANCE_MS = 45 * 60 * 1000; 
+            // STRICT TOLERANCE (15 minutes) to only allow points exactly on the 12-hour cycle
+            const TOLERANCE_MS = 15 * 60 * 1000; 
 
             return function(value, index, ticks) {
                 const labelTime = new Date(this.getLabelForValue(value)).getTime();
@@ -1073,10 +1073,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // 2. Check if this label is near one of the ideal 12-hour steps backward from the last reading.
                 const diff = lastTimeMs - labelTime;
+                
+                // Calculate how many 12-hour intervals fit. This handles the last reading at 7 PM, 
+                // and seeks the next point closest to 7 AM, 7 PM, 7 AM, etc., working backwards.
                 const numIntervals = Math.round(diff / INTERVAL_MS);
+                
+                // Calculate the time difference from an *ideal* 12-hour mark (e.g., 7:00 PM - 12 hours = 7:00 AM)
                 const deviation = Math.abs(diff - (numIntervals * INTERVAL_MS));
                 
-                // If the deviation is within the tolerance (45 min), show the tick
+                // If the deviation is within the strict tolerance (15 min), show the tick
                 if (deviation < TOLERANCE_MS) {
                     return new Date(labelTime).toLocaleString('en-US', { 
                         timeZone: 'America/Chicago', 
@@ -1088,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
 
-        // --- Main Graph Loader ---
+        // --- Main Graph Loader (No changes here, only the callback above was modified) ---
         async function loadWaterGraph() {
             canvas.style.display = 'block'; 
             currentDiv.innerHTML = '<p>Loading current level...</p>';
@@ -1144,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     maxRotation: 45, 
                                     minRotation: 45,
                                     autoSkip: false, 
-                                    callback: createTickCallback(lastTimeMs)
+                                    callback: createTickCallback(lastTimeMs) // Uses the new strict callback
                                 } 
                             }
                         },
@@ -1178,6 +1183,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 </body>
 </html>
+
 
 
 
