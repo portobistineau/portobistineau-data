@@ -1100,6 +1100,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span style="font-weight: normal; color: #666; font-size: 13px;">Last reading: ${lastDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}</span>
                 `;
 
+                // --- DATA HIGHLIGHT PREPARATION ---
+                // Create point arrays before chart initialization
+                const pointColors = Array(dataPoints.length).fill('transparent');
+                const pointRadii = Array(dataPoints.length).fill(0);
+                const lastIdx = dataPoints.length - 1;
+                
+                if (lastIdx >= 0) {
+                    pointColors[lastIdx] = '#ff0000';
+                    pointRadii[lastIdx] = 6;
+                }
+                
                 if (window.waterChart) window.waterChart.destroy();
 
                 window.waterChart = new Chart(canvas.getContext('2d'), {
@@ -1113,23 +1124,32 @@ document.addEventListener('DOMContentLoaded', function() {
                             borderWidth: 2, 
                             fill: true, 
                             tension: 0.1, 
-                            pointRadius: 0, 
-                            pointHoverRadius: 5 
+                            // *** USE PRE-CALCULATED ARRAYS HERE ***
+                            pointRadius: pointRadii, 
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: pointColors 
                         }] 
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         parsing: false, 
                         scales: {
-                            y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+                            // *** Y-AXIS FIX (PREFERRED DYNAMIC RANGE) ***
+                            y: { 
+                                beginAtZero: false, 
+                                suggestedMin: 133.00, // Lift data off the floor
+                                suggestedMax: 146.00, // Keep pool line visible
+                                title: { display: true, text: 'Elevation (ft above MSL)' }, 
+                                grid: { color: 'rgba(0,0,0,0.1)' } 
+                            },
                             x: { 
                                 type: 'time', 
-                                min: startTime, // Set start time 3 hours before first point
-                                max: lastDataTime, // Force end time to last reading
+                                min: startTime, 
+                                max: lastDataTime, 
                                 time: {
                                     timezone: 'America/Chicago', 
                                     unit: 'hour',
-                                    stepSize: 12, // FORCES 12-HOUR TICKS
+                                    stepSize: 12, 
                                     displayFormats: {
                                         hour: 'MMM d, h a', 
                                     }
@@ -1152,15 +1172,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Highlight the last point
-                const lastIdx = dataPoints.length - 1;
-                if (dataPoints.length > 0) {
-                     window.waterChart.data.datasets[0].pointBackgroundColor = Array(dataPoints.length).fill('transparent');
-                     window.waterChart.data.datasets[0].pointBackgroundColor[lastIdx] = '#ff0000';
-                     window.waterChart.data.datasets[0].pointRadius = Array(dataPoints.length).fill(0);
-                     window.waterChart.data.datasets[0].pointRadius[lastIdx] = 6;
-                     window.waterChart.update();
-                }
+                // NO window.waterChart.update() NEEDED HERE since point properties are defined above.
 
             } catch (err) {
                 console.error('Water Graph Error:', err);
@@ -1173,6 +1185,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 </body>
 </html>
+
 
 
 
