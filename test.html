@@ -1050,11 +1050,53 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
 <script>
-    // Constants are now outside the function for better scope management
     const DATUM_MSL = 129.84;
     const currentDiv = document.getElementById('current-level');
     const canvas = document.getElementById('water-chart');
     
+    // --- Tick Callback Function Generator ---
+    function createTickCallback(lastTimeMs) {
+        // 12 hours in milliseconds
+        const INTERVAL_MS = 12 * 60 * 60 * 1000;
+        // 15 minutes tolerance for matching the ideal 12-hour point
+        const TOLERANCE_MS = 15 * 60 * 1000; 
+
+        return function(value, index, ticks) {
+            const labelTime = new Date(this.getLabelForValue(value)).getTime();
+            const isLastTick = index === ticks.length - 1;
+
+            // 1. Always show the last tick
+            if (isLastTick) {
+                return new Date(labelTime).toLocaleString('en-US', { 
+                    timeZone: 'America/Chicago', 
+                    month: 'short', day: 'numeric', hour: 'numeric', hour12: true 
+                });
+            }
+
+            // 2. Check if this label is near one of the ideal 12-hour steps backward from the last reading.
+            
+            // Calculate time difference from the last reading to the current label
+            const diff = lastTimeMs - labelTime;
+
+            // Calculate how many 12-hour intervals fit in that difference
+            const numIntervals = Math.round(diff / INTERVAL_MS);
+
+            // Calculate the time difference from an *ideal* 12-hour mark
+            const deviation = Math.abs(diff - (numIntervals * INTERVAL_MS));
+            
+            // If the deviation is less than the tolerance (15 minutes), show the tick
+            if (deviation < TOLERANCE_MS) {
+                return new Date(labelTime).toLocaleString('en-US', { 
+                    timeZone: 'America/Chicago', 
+                    month: 'short', day: 'numeric', hour: 'numeric', hour12: true 
+                });
+            }
+
+            return null; // Hide the tick
+        };
+    }
+
+    // --- Main Graph Loader ---
     async function loadWaterGraph() {
         canvas.style.display = 'block'; 
         currentDiv.innerHTML = '<p>Loading current level...</p>';
@@ -1070,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let currentMSL = null;
             let firstDate = null;
             let lastDate = null;
+            let lastTimeMs = null; // New variable to store the last timestamp
 
             const values = ts.values[0].value;
             values.forEach(val => { 
@@ -1078,19 +1121,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     const mslElevation = gageHeight + DATUM_MSL;
                     const tsDate = new Date(val.dateTime);
                     
-                    const label = tsDate.toLocaleString('en-US', { 
-                        timeZone: 'America/Chicago', 
-                        month: 'short', 
-                        day: 'numeric', 
-                        hour: 'numeric', 
-                        hour12: true 
-                    }); 
-                    
-                    labels.push(label);
+                    // Store the raw ISO time strings in labels for the callback to parse
+                    labels.push(val.dateTime); 
                     mslLevels.push(mslElevation);
                     if (!firstDate) firstDate = tsDate;
                     lastDate = tsDate;
                     currentMSL = mslElevation;
+                    lastTimeMs = tsDate.getTime(); // Capture the last reading's timestamp
                 }
             });
 
@@ -1113,29 +1150,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     scales: {
                         y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
                         x: { 
+                            type: 'category', 
                             title: { display: true, text: 'Date / Time (CST)' }, 
                             grid: { color: 'rgba(0,0,0,0.1)' }, 
                             ticks: { 
-                                maxTicksLimit: 12, // Still limits tick count
                                 maxRotation: 45, 
                                 minRotation: 45,
-                                callback: function(value, index, ticks) {
-                                    // Use Chart.js's internal logic to determine if a tick should be skipped
-                                    // and then override it for the last item.
-                                    const isLastTick = index === ticks.length - 1;
-                                    
-                                    // This checks the internal `major` property Chart.js sets during auto-skipping
-                                    // If we are using a category scale, the label is determined by index.
-                                    const label = this.getLabelForValue(value);
-
-                                    // Check if the label is one Chart.js wants to show (based on autoSkip)
-                                    // OR if it's the last index.
-                                    if (label && (ticks.length < this.options.maxTicksLimit || isLastTick || ticks[index].major)) {
-                                         return label;
-                                    }
-                                    
-                                    return null;
-                                }
+                                autoSkip: false, 
+                                // Pass the last reading's timestamp to generate the callback logic
+                                callback: createTickCallback(lastTimeMs)
                             } 
                         }
                     },
@@ -1169,5 +1192,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
 </body>
 </html>
+
 
 
