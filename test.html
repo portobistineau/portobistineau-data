@@ -1078,7 +1078,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const mslElevation = gageHeight + DATUM_MSL;
                     const tsDate = new Date(val.dateTime);
                     
-                    // Simple, compact label format
                     const label = tsDate.toLocaleString('en-US', { 
                         timeZone: 'America/Chicago', 
                         month: 'short', 
@@ -1101,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             currentDiv.innerHTML = `
                 <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
-                <span style="font-weight: normal; color: #666; font-size: 13px;">Last reading: ${formatDate(lastDate)}</span>
+                <span style="font-weight: normal; color: #666; font-size: 13px;">Last reading: ${lastDate.toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}</span>
             `;
 
             if (window.waterChart) window.waterChart.destroy();
@@ -1117,11 +1116,26 @@ document.addEventListener('DOMContentLoaded', function() {
                             title: { display: true, text: 'Date / Time (CST)' }, 
                             grid: { color: 'rgba(0,0,0,0.1)' }, 
                             ticks: { 
-                                // Limit to 12 labels
-                                maxTicksLimit: 12,
-                                // Rotate the labels 45 degrees
+                                maxTicksLimit: 12, // Still limits tick count
                                 maxRotation: 45, 
-                                minRotation: 45 
+                                minRotation: 45,
+                                callback: function(value, index, ticks) {
+                                    // Use Chart.js's internal logic to determine if a tick should be skipped
+                                    // and then override it for the last item.
+                                    const isLastTick = index === ticks.length - 1;
+                                    
+                                    // This checks the internal `major` property Chart.js sets during auto-skipping
+                                    // If we are using a category scale, the label is determined by index.
+                                    const label = this.getLabelForValue(value);
+
+                                    // Check if the label is one Chart.js wants to show (based on autoSkip)
+                                    // OR if it's the last index.
+                                    if (label && (ticks.length < this.options.maxTicksLimit || isLastTick || ticks[index].major)) {
+                                         return label;
+                                    }
+                                    
+                                    return null;
+                                }
                             } 
                         }
                     },
@@ -1155,4 +1169,5 @@ document.addEventListener('DOMContentLoaded', function() {
   
 </body>
 </html>
+
 
