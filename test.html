@@ -1090,10 +1090,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // --- CALCULATE MIN/MAX BOUNDARIES ---
                 const lastDataTime = dataPoints[dataPoints.length - 1].t;
+                const firstDataTime = dataPoints[0].t; 
                 
-                // Calculate 7 days prior to the last reading
-                const startTime = new Date(lastDataTime.getTime());
-                startTime.setDate(startTime.getDate() - 7);
+                // Calculate start time to be 3 hours BEFORE the first data point
+                const startTime = new Date(firstDataTime.getTime() - (3 * 60 * 60 * 1000));
                 
                 currentDiv.innerHTML = `
                     <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
@@ -1124,14 +1124,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             y: { beginAtZero: false, suggestedMin: 135, suggestedMax: 145, title: { display: true, text: 'Elevation (ft above MSL)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
                             x: { 
                                 type: 'time', 
-                                min: startTime, // Force start time to 7 days ago
+                                min: startTime, // Set start time 3 hours before first point
                                 max: lastDataTime, // Force end time to last reading
                                 time: {
                                     timezone: 'America/Chicago', 
                                     unit: 'hour',
                                     stepSize: 12, // FORCES 12-HOUR TICKS
                                     displayFormats: {
-                                        hour: 'MMM d, h a', // FIXES: D, A -> d, a
+                                        hour: 'MMM d, h a', 
                                     }
                                 },
                                 title: { display: true, text: 'Date / Time (CST)' }, 
@@ -1173,6 +1173,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 </body>
 </html>
+
 
 
 
