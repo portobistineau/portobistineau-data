@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- ============================================= -->
-  <!-- SEO & YouTube Growth Meta Tags -->
-  <!-- ============================================= -->
+  
+  <link rel="stylesheet" href="styles.css"> 
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
   <title>Port O Bistineau Marina | Lake Bistineau Live Cams, Water Level, Fishing Report</title>
   <meta name="description" content="Real-time Lake Bistineau water level (MSL), solunar fishing times, live marina cams, tournament schedule, and 7-day weather. Best fishing intel for bass, crappie, bream, and catfish in Sibley, LA.">
-  <!-- Open Graph / Facebook -->
   <meta property="og:title" content="Port O Bistineau Marina - Live Lake Bistineau Fishing Report">
   <meta property="og:description" content="Live cams, water level, solunar times, tournaments + weekly fishing reports. Subscribe to our YouTube!">
   <meta property="og:image" content="https://portobistineau.netlify.app/banner.jpg">
   <meta property="og:url" content="https://portobistineau.com">
   <meta property="og:type" content="website">
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Live Bistineau Fishing Report - Port O Bistineau">
   <meta name="twitter:description" content="Water level, best fishing times, live cams + tournaments">
   <meta name="twitter:image" content="https://portobistineau.netlify.app/banner.jpg">
 
-  <!-- Structured Data (Google Rich Results) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -48,478 +46,197 @@
   }
   </script>
 
-  <!-- YouTube Publisher Link -->
   <link rel="publisher" href="https://www.youtube.com/@PortOBistineau">
 
-  <!-- ============================================= -->
-  <!-- Your Existing Styles -->
-  <!-- ============================================= -->
-  <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
-    color: #333;
-    line-height: 1.6;
-    text-align: center;
-  }
-  .container { max-width: 1000px; margin: auto; padding: 0 10px; }
-
-/* PERFECT BANNER — FULL BLEED, NO CUTOFF, NO BLOW-UP */
-.banner {
-  width: 100vw;
-  height: 200px;
-  margin-left: calc(-50vw + 50%);
-  position: relative;
-  overflow: hidden;
-  background: #004d80; /* fallback */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.banner-img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-
-/* MOBILE HEIGHT */
-@media (max-width: 768px) {
-  .banner { height: 160px; }
-}
-@media (max-width: 480px) {
-  .banner { height: 130px; }
-}
-  .tagline { background:rgba(0,77,128,0.8); color:white; padding:10px; font-style:italic; }
-  .section { background:white; margin:20px 0; padding:18px; border-radius:10px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-  .social-block { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 20px; 
-    justify-content: space-between; 
-  }
-  .videos-col { 
-    flex: 1; 
-    min-width: 300px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-  }
-  .fb-col { 
-    flex: 1; 
-    min-width: 300px; 
-    text-align: left; 
-  }
-  .videos-col .cam { background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-  .videos-col .cam iframe { width: 100%; height: 200px; border: none; }
-  .cam-label { background: #004d80; color: white; padding: 8px; font-weight: bold; }
-  .map { height: 300px; width: 100%; border: none; border-radius: 8px; }
-
-  /* FIXED FAQ ARROWS - Real Symbols */
-  .faq { margin-top: 20px; text-align: left; }
-  .faq details { margin-bottom: 8px; cursor: pointer; }
-  .faq summary {
-    font-weight: 600; color: #004d80; list-style: none; position: relative;
-    padding-right: 20px;
-  }
-  .faq summary::after {
-    content: "▼"; /* Down arrow */
-    position: absolute; right: 0; top: 0; font-size: 1.2em;
-    transition: transform .2s;
-  }
-  .faq details[open] summary::after {
-    content: "▲"; /* Up arrow */
-    transform: rotate(180deg);
-  }
-  .faq p { margin: 8px 0 0 0; color: #555; }
-
-  /* MOBILE RESPONSIVE */
-  @media (max-width: 768px) {
-    .banner { height: 160px; }
-    .social-block { flex-direction: column; gap: 15px; }
-    .fb-col { min-width: 100%; order: 2; }
-    .videos-col { order: 1; }
-    .videos-col .cam iframe { height: 180px; }
-    .map { height: 250px; }
-  }
-  @media (max-width: 480px) {
-    .banner { height: 140px; }
-    .videos-col .cam iframe { height: 160px; }
-  }
-    /* --- UPDATED RADAR WIDGET CSS --- */
-
-/* 1. Wrapper: Sets up the main layout for the widget area */
-#radar-widget-wrapper {
-    width: 400px; /* Base width */
-    height: 400px; /* Base height */
-    max-width: 100%;
-    margin: 0 auto;
-    display: flex; /* Make it a flex container */
-    flex-direction: column; /* Stack the map and controls vertically */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 12px;
-    overflow: hidden; /* Keep content within bounds */
-    background-color: #f0f0f0;
-    position: relative; /* For absolute positioning of map overlays */
-}
-
-/* 2. Map Container: Allows map to fill its space and creates padding for overlays */
-#radar-container {
-    flex-grow: 1; 
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-    
-    /* NEW: Add padding to create space for absolutely positioned overlays */
-    padding-top: 35px; 
-    padding-bottom: 35px; 
-}
-
-/* 3. Legend (3-Bar Gradient) */
-#radar-legend {
-    position: absolute; /* Overlay map */
-    top: 0px;
-    left: 50%;
-    transform: translateX(-50%); /* Center the block */
-    z-index: 900;
-    
-    /* NEW STYLING FOR 3-BAR LOOK */
-    width: 100%; /* Take full width of the 400px wrapper */
-    display: flex; /* Allows the three bars to sit side-by-side */
-    justify-content: space-between;
-    background: rgba(0,0,0,0.6);
-    padding: 5px 0; /* Padding inside the legend container */
-    border-radius: 4px 4px 0 0; 
-    pointer-events: none;
-    font-family: Arial, sans-serif;
-}
-
-.legend-bar-wrapper {
-    flex-grow: 1; /* Each bar takes up equal space */
-    text-align: center;
-    padding: 0 5px; /* Space between the three bars */
-}
-
-.legend-label {
-    font-size: 10px;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 2px;
-    text-transform: uppercase;
-    line-height: 1.2;
-}
-
-.gradient-bar {
-    height: 10px; /* Height of the colored bar */
-    width: 100%; 
-    border-radius: 2px;
-}
-
-/* --- Gradient Colors (Your custom colors) --- */
-
-/* RAIN: Blue (Light) to Red (Heavy/Severe) */
-.rain-gradient {
-    background: linear-gradient(to right,
-        rgb(0, 110, 255),  /* Light Blue */
-        rgb(0, 255, 255),  /* Cyan */
-        rgb(102, 255, 0),  /* Green */
-        rgb(255, 255, 0),  /* Yellow */
-        rgb(255, 128, 0),  /* Orange */
-        rgb(255, 0, 0)     /* Red */
-    );
-}
-
-/* ICE: Light Blue/White to Pink/Purple */
-.ice-gradient {
-    background: linear-gradient(to right,
-        rgb(180, 255, 255), /* Very Light Blue/White */
-        rgb(200, 150, 255), /* Lavender */
-        rgb(255, 100, 255), /* Pink/Magenta */
-        rgb(200, 0, 200)    /* Dark Purple */
-    );
-}
-
-/* SNOW: White/Light Blue to Dark Blue */
-.snow-gradient {
-    background: linear-gradient(to right,
-        rgb(255, 255, 255), /* White */
-        rgb(150, 200, 255), /* Light Blue */
-        rgb(0, 100, 255),   /* Medium Blue */
-        rgb(0, 0, 150)      /* Deep Blue */
-    );
-}
-
-/* 4. Controls (Moved to Bottom) */
-#radar-controls {
-    position: absolute; /* Overlay map at the bottom */
-    bottom: 0px;
-    left: 50%;
-    transform: translateX(-50%); /* Center the controls */
-    z-index: 900;
-    background: rgba(0,0,0,0.7);
-    padding: 5px 10px;
-    border-radius: 4px;
-    display: flex;
-    gap: 8px;
-    /* --- NEW/UPDATED FIX FOR MOBILE --- */
-    width: 100%;        /* Use 100% of the available width on small screens */
-    max-width: 400px;   /* But don't exceed the map's 400px width on large screens */
-    /* ---------------------------------- */
-}
-
-#radar-controls button, #radar-controls select {
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    transition: background-color 0.2s;
-}
-
-#radar-controls button:hover {
-    background: #0056b3;
-}
-
-#radar-controls select {
-    background: #444;
-}
-
-
-
-/* Fix for the L.Map element */
-#radar-map {
-    width: 100%;
-    height: 100%;
-}
-</style>
-
-
-  <!-- Facebook SDK -->
   <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0"></script>
 </head>
 <body>
   <div class="container">
-<!-- BANNER — FULL WIDTH, PERFECT ON MOBILE -->
-<div class="banner">
-  <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
-</div>
-<p class="tagline">Your Gateway to Lake Bistineau – Live Lake Views, Lake Updates & More</p>
+    <div class="banner">
+      <img src="banner.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
+    </div>
+    <p class="tagline">Your Gateway to Lake Bistineau – Live Lake Views, Lake Updates & More</p>
 
-<script>
-  // ==== SECRET DOUBLE-CLICK HANDLER (works on both pages) ====
-  let clicks = 0, timer;
-  document.getElementById('banner').addEventListener('click', function(e) {
-    // Do NOT preventDefault() — lets normal click behavior (mobile tap, etc.) work
-    clicks++;
-    if (clicks === 1) {
-      timer = setTimeout(() => clicks = 0, 400);
-    } else if (clicks === 2) {
-      clearTimeout(timer);
-      clicks = 0;
-      // On index.html → go to test.html
-      // On test.html  → stay here (do nothing)
-      if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-        window.location.href = 'test.html';
-      }
-      // else already on test.html → do nothing
-    }
-  });
-</script>
+    <script>
+      // ==== SECRET DOUBLE-CLICK HANDLER (works on both pages) ====
+      let clicks = 0, timer;
+      document.getElementById('banner').addEventListener('click', function(e) {
+        // Do NOT preventDefault() — lets normal click behavior (mobile tap, etc.) work
+        clicks++;
+        if (clicks === 1) {
+          timer = setTimeout(() => clicks = 0, 400);
+        } else if (clicks === 2) {
+          clearTimeout(timer);
+          clicks = 0;
+          // On index.html → go to test.html
+          // On test.html  → stay here (do nothing)
+          if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+            window.location.href = 'test.html';
+          }
+          // else already on test.html → do nothing
+        }
+      });
+    </script>
 
-    <!-- YOUTUBE HERO CTA (After Banner) -->
-    <div style="text-align:center; margin:20px 0; padding:15px; background:#f0f8ff; border-radius:8px;">
-      <p style="margin:5px 0; font-size:18px; font-weight:bold; color:#004d80;">
+    <div class="youtube-cta-box">
+      <p class="youtube-cta-title">
         Weekly Fishing Reports, Live Lake Conditions & Tournament Updates
       </p>
       <a href="https://www.youtube.com/@PortOBistineau?sub_confirmation=1"
-         target="_blank"
-         style="background:#ff0000; color:white; padding:12px 30px; text-decoration:none; border-radius:50px; font-weight:bold; display:inline-block; margin:10px;">
-         SUBSCRIBE ON YOUTUBE
+        target="_blank"
+        class="youtube-subscribe-btn">
+        SUBSCRIBE ON YOUTUBE
       </a>
-      <p style="margin:5px 0; font-size:14px; color:#666;">
+      <p class="youtube-cta-desc">
         Get lake and fishing reports and more!
       </p>
     </div>
 
-<!-- Weather - NATIONAL WEATHER SERVICE (LIVE + HOURLY CACHE + ICON) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <div class="section">
+      <h2>Lake Bistineau Weather</h2>
+      <div id="bistineauWeather">Loading NWS data...</div>
+      <div id="dayDetail"></div>
+      <div id="overlay" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
+      
+      <script src="scripts/weather.js"></script>
+      
+      <script>
+        updateWeather();
+        setInterval(updateWeather, 30 * 60 * 1000);
+      </script>
+    </div>
 
-<div class="section">
-  <h2>Lake Bistineau Weather</h2>
-  <div id="bistineauWeather">Loading NWS data...</div>
-  <div id="dayDetail" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:999;max-width:90%;max-height:90%;overflow:auto;font-family:Arial;"></div>
-  <div id="overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:998;" onclick="this.style.display='none';document.getElementById('dayDetail').style.display='none';"></div>
-  
-  <script src="scripts/weather.js"></script>
-  
-  <script>
-    updateWeather();
-    setInterval(updateWeather, 30 * 60 * 1000);
-  </script>
-</div>
+    <div class="solunar-card">
+      <h2 class="solunar-header">
+        Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
+      </h2>
 
-    
-<!-- TODAY’S BITE FORECAST – CLEANED UP (LOCAL MIDNIGHT FIX, MINOR PERIOD FIX) -->
-<style>
-  /* Default (Desktop/Tablet) */
-  .period-text {
-    font-size: 16px;
-    gap: 8px 10px;
-  }
-  
-  /* Mobile Phones */
-  @media (max-width: 600px) {
-    .period-text {
-      font-size: 14px !important;
-      gap: 8px 4px !important;
-    }
-  }
-</style>
+      <div class="solunar-row">
 
-<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:Arial;">
-  <h2 style="text-align:center;margin:0 0 20px;color:#000;font-size:28px;">
-    Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
-  </h2>
+        <div class="solunar-data-col">
+          <div class="data-columns-flex">
+            
+            <div class="data-block">
+              <h3 class="data-header">Sun Data</h3>
+              <div class="detail-grid">
+                <b>First Light</b> <div id="first" class="grid-value">Calculating…</div>
+                <b>Sunrise</b> <div id="rise" class="grid-value">Calculating…</div>
+                <b>Sunset</b> <div id="set" class="grid-value">Calculating…</div>
+                <b>Last Light</b> <div id="last" class="grid-value">Calculating…</div>
+              </div>
+            </div>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="data-block">
+              <h3 class="data-header">Moon Data</h3>
+              <div class="detail-grid">
+                <b>Rise</b> <div id="moon-rise" class="grid-value">Calculating…</div>
+                <b>Set</b> <div id="moon-set" class="grid-value">Calculating…</div>
+                <b>Overhead</b> <div id="moon-overhead" class="grid-value">Calculating…</div>
+                <b>Underfoot</b> <div id="moon-underfoot" class="grid-value">Calculating…</div>
+              </div>
+            </div>
+          </div>
 
-    <div style="flex: 2 1 0%; background:#f8fdff;padding:25px;border-radius:12px;color:#000;">
-      <div style="display:flex;gap:30px;line-height:1.35;font-size:16px;flex-wrap:wrap;">
-        
-        <div style="flex:1 1 45%;">
-          <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Sun Data</h3>
-          <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
-            <b>First Light</b> <div id="first" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Sunrise</b> <div id="rise" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Sunset</b> <div id="set" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Last Light</b> <div id="last" style="text-align:right;font-weight:normal;">Calculating…</div>
+          <hr class="solunar-separator">
+
+          <div class="period-text period-grid">
+            <b>Major Period 1</b> <div id="maj1" class="grid-value">Calculating…</div>
+            <b>Major Period 2</b> <div id="maj2" class="grid-value">Calculating…</div>
+            <b>Minor Period 1</b> <div id="min1" class="grid-value">Calculating…</div>
+            <b>Minor Period 2</b> <div id="min2" class="grid-value">Calculating…</div>
           </div>
         </div>
 
-        <div style="flex:1 1 45%;">
-          <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;text-align: center;">Moon Data</h3>
-          <div style="display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;">
-            <b>Rise</b> <div id="moon-rise" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Set</b> <div id="moon-set" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Overhead</b> <div id="moon-overhead" style="text-align:right;font-weight:normal;">Calculating…</div>
-            <b>Underfoot</b> <div id="moon-underfoot" style="text-align:right;font-weight:normal;">Calculating…</div>
+        <div class="moon-column">
+          <div class="rating-box">
+            <div id="rating">Calculating…</div>
+          </div>
+
+          <div id="moon-bg">
+            <img id="moon-img" src="" width="160" height="160">
+          </div>
+
+          <div id="phase">—</div>
+          <div id="illum">—</div>
+
+          <div class="solunar-credit">
+            Image Credit: NASA Scientific Visualization Studio
           </div>
         </div>
       </div>
 
-      <hr style="margin: 20px 0 15px 0; border: 0; border-top: 1px solid #ccc;">
-
-      <div class="period-text" style="display:grid;grid-template-columns:max-content 1fr;line-height:1.35;">
-        <b>Major Period 1</b> <div id="maj1" style="text-align:right;font-weight:normal;">Calculating…</div>
-        <b>Major Period 2</b> <div id="maj2" style="text-align:right;font-weight:normal;">Calculating…</div>
-        <b>Minor Period 1</b> <div id="min1" style="text-align:right;font-weight:normal;">Calculating…</div>
-        <b>Minor Period 2</b> <div id="min2" style="text-align:right;font-weight:normal;">Calculating…</div>
-      </div>
+      <p class="solunar-update-text">
+        Updated <span id="date">—</span> – Refresh for latest
+      </p>
     </div>
 
-    <div style="flex: 1 1 0%; background:#000000; padding:25px; border-radius:12px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
-      <div style="margin-top: -10px; min-height: 90px; display: flex; flex-direction: column; justify-content: center;">
-        <div id="rating" style="font-size:30px;color:#ffffff;line-height:1.2;">Calculating…</div>
-      </div>
-
-      <div id="moon-bg" style="position:relative; width:160px;height:160px;margin:10px auto;padding:0;">
-        <img id="moon-img" src="" width="160" height="160" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; border-radius:50%;">
-      </div>
-
-      <div id="phase" style="font-weight:bold;font-size:20px;color:#ffffff;margin:20px 0 4px;">—</div>
-      <div id="illum" style="color:#dddddd;font-size:16px;">—</div>
-
-      <div style="margin-top:20px; font-size:10px; color:#666666; line-height:1.2;">
-        Image Credit: NASA Scientific Visualization Studio
-      </div>
-    </div>
-  </div>
-
-  <p style="text-align:center;color:#666;font-size:12px;margin-top:22px;">
-    Updated <span id="date">—</span> – Refresh for latest
-  </p>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
-<script src="scripts/solunar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+    <script src="scripts/solunar.js"></script>
 
     
-  <div class="section">
-    <h2>Lake Bistineau Water Level (MSL Elevation)</h2>
-    
-    <canvas id="water-chart" width="100%" height="300" style="max-height:300px;"></canvas>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 14px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 24px; height: 3px; background: #28a745; border-radius: 1px; border: 1px dashed #28a745; opacity: 0.9;"></div>
-            <span style="color: #28a745; font-weight: bold;">Normal Pool: 141 ft MSL</span>
+    <div class="section">
+      <h2>Lake Bistineau Water Level (MSL Elevation)</h2>
+      
+      <canvas id="water-chart" width="100%" height="300" style="max-height:300px;"></canvas>
+      
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
+      
+      <div class="water-level-info">
+        <div class="normal-pool-block">
+          <div class="normal-pool-indicator"></div>
+          <span class="normal-pool-text">Normal Pool: 141 ft MSL</span>
         </div>
-        <div id="current-level" style="font-weight: bold; color: #004d80; text-align: right;">
-            <p>Loading current level...</p>
+        <div id="current-level" id="current-level-wrapper">
+          <p>Loading current level...</p>
         </div>
-    </div>
+      </div>
 
-    <small style="display: block; margin-top: 8px; text-align: right;">
-        <a href="https://water.noaa.gov/gauges/07349250" target="_blank">NOAA Gauge</a> | 
+      <small class="gauge-links">
+        <a href="https://water.noaa.gov/gauges/07349250" target="_blank">NOAA Gauge</a> | 
         <a href="https://waterdata.usgs.gov/nwis/uv?site_no=07349250" target="_blank">USGS Data</a>
-    </small>
+      </small>
+      
+      <script src="scripts/water_level.js"></script>
+    </div>
     
-    <script src="scripts/water_level.js"></script>
-</div>
-    
-<!-- ==================================== -->
-<!-- LATEST VIDEO - 100% WORKING (Non-Live) -->
-<!-- ==================================== -->
-<!-- LATEST LAKE REPORT – TITLE + VIDEO IN ONE WHITE CARD -->
-<div style="margin:30px auto;max-width:1000px;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-  <h2 style="text-align:center;color:#000;font-size:28px;margin:0 0 20px;">Latest Lake Report</h2>
-  <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;">
-    <iframe id="latest-video" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" 
-            src="https://www.youtube.com/embed?listType=playlist&list=UUg-udKvya42o1Sw1XvhgpnQ&rel=0" 
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-            allowfullscreen></iframe>
-  </div>
-</div>
+    <div class="video-card">
+      <h2 class="video-header">Latest Lake Report</h2>
+      <div class="video-wrapper">
+        <iframe id="latest-video" class="video-iframe"
+              src="https://www.youtube.com/embed?listType=playlist&list=UUg-udKvya42o1Sw1XvhgpnQ&rel=0" 
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+      </div>
+    </div>
 
 
-
-
-    <!-- Tournament Calendar -->
     <div class="section">
       <h2>Tournament Schedule</h2>
-      <div style="border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <div class="calendar-wrapper">
         <iframe 
           src="https://calendar.google.com/calendar/embed?src=a3ac3e31957eebb61f0a38db32b5f80b160a9c881d2897507ae0edd4552c633c%40group.calendar.google.com&ctz=America%2FChicago"
-          style="border:0; width:100%; height:400px;" 
+          class="calendar-iframe"
           frameborder="0" 
           scrolling="no">
         </iframe>
       </div>
 
-      <div style="margin-top:15px; text-align:center;">
+      <div class="tournament-btn-wrapper">
         <a href="mailto:portobistineau@gmail.com?subject=Tournament%20Schedule%20Request&body=Hi,%0A%0AI'd%20like%20to%20schedule%20a%20tournament%20on%20[DATE].%0A%0ADetails:%0A-%20Expected%20boats:%0A-%20Launch%20location:%0A-%20Weigh-in%20location:%0A%0AThanks!" 
-           style="background:#004d80; color:white; padding:12px 24px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+          class="tournament-schedule-btn">
           Schedule a Tournament (Email Us)
         </a>
       </div>
 
-      <small style="display:block; margin-top:10px; color:#666;">
+      <small class="tournament-note">
         Know of a tournament? <a href="mailto:portobistineau@gmail.com">Let us know</a> to avoid conflicts!
       </small>
     </div>
 
-    <!-- Social Block -->
     <div class="section">
       <h2>Live Views & Social Feed</h2>
       <div class="social-block">
@@ -536,9 +253,9 @@
 
         <div class="fb-col">
           <div class="fb-page" data-href="https://www.facebook.com/PortOBistineau"
-               data-tabs="timeline" data-width="" data-height="510"
-               data-small-header="false" data-adapt-container-width="true"
-               data-hide-cover="false" data-show-facepile="true">
+              data-tabs="timeline" data-width="" data-height="510"
+              data-small-header="false" data-adapt-container-width="true"
+              data-hide-cover="false" data-show-facepile="true">
             <blockquote cite="https://www.facebook.com/PortOBistineau" class="fb-xfbml-parse-ignore">
               <a href="https://www.facebook.com/PortOBistineau">Port O' Bistineau</a>
             </blockquote>
@@ -547,16 +264,14 @@
       </div>
     </div>
 
-    <!-- Google Map -->
     <div class="section">
       <h2>Location Map</h2>
       <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4084.590!2d-93.34883!3d32.4619!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDI3JzQyLjgiTiA5M8KwMjAnNTIuNSciVw!5e0!3m2!1sen!2sus!4v1690000000000" allowfullscreen="" loading="lazy"></iframe>
     </div>
 
-    <!-- Contact + FAQ -->
     <div class="section contact">
-      <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:space-between;">
-        <div style="flex:1; min-width:280px;">
+      <div class="contact-faq-flex">
+        <div class="contact-col">
           <h2>Contact Us</h2>
           <p><strong>Port O' Bistineau</strong></p>
           <p>Address: 1788 Yellow Pine Road, Sibley, LA 71073</p>
@@ -565,8 +280,8 @@
           <p><a href="https://www.google.com/maps/dir/?api=1&destination=32.4619,-93.34883" target="_blank">Get Directions</a></p>
         </div>
 
-        <div style="flex:1; min-width:280px;" class="faq">
-          <h3 style="margin-bottom:10px; color:#004d80;">FAQ</h3>
+        <div class="contact-col faq">
+          <h3 class="faq-header">FAQ</h3>
 
           <details>
             <summary>Do you sell minnows (or any other item)?</summary>
@@ -596,46 +311,35 @@
       </div>
     </div>
 
-    <!-- Social Links with icons -->
-    <div class="social" style="margin:30px 0; text-align:center;">
-      <div style="margin-bottom:12px; font-size:18px; color:#333; font-weight:600;">
+    <div class="social social-icons-wrapper">
+      <div class="social-follow-text">
         Follow us here:
       </div>
-      <div style="font-size:32px; display:flex; gap:50px; justify-content:center; flex-wrap:wrap;">
-        <a href="https://www.facebook.com/PortOBistineau" target="_blank" title="Facebook" style="color:#1877F2;">
+      <div class="icon-container">
+        <a href="https://www.facebook.com/PortOBistineau" target="_blank" title="Facebook" class="icon-facebook">
           <i class="fab fa-facebook-f"></i>
         </a>
-        <a href="https://www.instagram.com/portobistineau/" target="_blank" title="Instagram" style="color:#E4405F;">
+        <a href="https://www.instagram.com/portobistineau/" target="_blank" title="Instagram" class="icon-instagram">
           <i class="fab fa-instagram"></i>
         </a>
-        <a href="https://www.youtube.com/@PortOBistineau" target="_blank" title="YouTube" style="color:#FF0000;">
+        <a href="https://www.youtube.com/@PortOBistineau" target="_blank" title="YouTube" class="icon-youtube">
           <i class="fab fa-youtube"></i>
         </a>
       </div>
     </div>
 
-    <!-- Footer with YouTube CTA -->
     <footer>
       <p>
         Subscribe to us on 
-        <a href="https://www.youtube.com/@PortOBistineau" target="_blank" style="color:#ff0000; font-weight:bold;">
+        <a href="https://www.youtube.com/@PortOBistineau" target="_blank">
           YouTube
         </a> 
         for live lake conditions, fishing reports, and tournament news!
       </p>
-      <p style="margin-top:10px; font-size:12px;">
-        &copy; 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
+      <p class="footer-copyright">
+        © 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
       </p>
-
+    </footer>
+  </div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
