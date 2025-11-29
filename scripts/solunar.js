@@ -121,26 +121,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
-                /* Phase Logic (UPDATED STRICTNESS) */
+                /* Phase Logic (REVISED FOR 50% FIX) */
                 var actualIllum = Math.round(illum);
                 var phaseName = '—';
-                
-                // Changed from >=99 and <=1 to >=100 and <=0
-                // This ensures 1% is still a Crescent and 99% is still Gibbous
+                // Waxing is age < 14.7 days (less than half the cycle)
+                var isWaxing = dayData.moon_age < 14.7; 
+
                 if (actualIllum >= 100) {
                     phaseName = 'Full Moon';
                 } else if (actualIllum <= 0) {
                     phaseName = 'New Moon';
-                } else if (dayData.moon_age > 7.3 && dayData.moon_age < 7.6) {
-                    phaseName = 'First Quarter';
-                } else if (dayData.moon_age > 21.9 && dayData.moon_age < 22.3) {
-                    phaseName = 'Last Quarter';
+                } else if (actualIllum == 50) {
+                    // FIX: Exactly 50% illumination is a Quarter Moon.
+                    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
                 } else {
-                    // Waxing vs Waning
-                    if (dayData.moon_age < 14.7) {
-                        phaseName = (illum < 50) ? 'Waxing Crescent' : 'Waxing Gibbous';
+                    // Handle the Crescent/Gibbous ranges
+                    if (isWaxing) {
+                        // If waxing and > 50% -> Gibbous, else Crescent
+                        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
                     } else {
-                        phaseName = (illum < 50) ? 'Waning Crescent' : 'Waning Gibbous';
+                        // If waning and > 50% -> Gibbous, else Crescent
+                        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
                     }
                 }
 
