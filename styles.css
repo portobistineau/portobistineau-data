@@ -636,11 +636,11 @@ footer p a {
 /* Rule 2: Style the new subheading/attestation line */
 .subheading-attestation {
     /* Override the large default top margin of the <p> element */
-    margin-top: 2px !important;
+    margin-top: 1px !important;
     /* Reduce the margin below the paragraph to keep content tight */
-    margin-bottom: 10px !important;
+    margin-bottom: 5px !important;
     /* Use your desired styles */
-    font-size: 12px;
+    font-size: 11px;
     color: #666; /* Slightly muted color for attribution */
-    line-height: 1.2;
+    line-height: 1;
 }
