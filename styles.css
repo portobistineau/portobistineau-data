@@ -1,6 +1,6 @@
 /* =============================================
-   1. GLOBAL & RESET STYLES
-   ============================================= */
+  1. GLOBAL & RESET STYLES
+  ============================================= */
 * {
     margin: 0;
     padding: 0;
@@ -20,8 +20,8 @@ body {
 }
 
 /* =============================================
-   2. BANNER & GLOBAL CARD STYLES
-   ============================================= */
+  2. BANNER & GLOBAL CARD STYLES
+  ============================================= */
 /* PERFECT BANNER — FULL BLEED, NO CUTOFF, NO BLOW-UP */
 .banner {
     width: 100vw;
@@ -57,8 +57,8 @@ body {
 }
 
 /* =============================================
-   3. YOUTUBE CTA STYLES
-   ============================================= */
+  3. YOUTUBE CTA STYLES
+  ============================================= */
 .youtube-cta-box {
     text-align: center;
     margin: 20px 0;
@@ -89,8 +89,8 @@ body {
 }
 
 /* =============================================
-   4. WEATHER & RADAR WIDGET STYLES
-   ============================================= */
+  4. WEATHER & RADAR WIDGET STYLES
+  ============================================= */
 
 /* Weather Popups/Overlay */
 #dayDetail {
@@ -221,8 +221,8 @@ body {
 }
 
 /* =============================================
-   5. SOLUNAR CARD STYLES
-   ============================================= */
+  5. SOLUNAR CARD STYLES
+  ============================================= */
 .solunar-card {
     margin: 30px auto;
     max-width: 1000px;
@@ -349,8 +349,8 @@ body {
 }
 
 /* =============================================
-   6. WATER LEVEL STYLES
-   ============================================= */
+  6. WATER LEVEL STYLES
+  ============================================= */
 .water-level-info {
     display: flex;
     justify-content: space-between;
@@ -387,8 +387,8 @@ body {
 }
 
 /* =============================================
-   7. LATEST VIDEO STYLES
-   ============================================= */
+  7. LATEST VIDEO STYLES
+  ============================================= */
 .video-card {
     margin: 30px auto;
     max-width: 1000px;
@@ -420,8 +420,8 @@ body {
 }
 
 /* =============================================
-   8. TOURNAMENT CALENDAR STYLES
-   ============================================= */
+  8. TOURNAMENT CALENDAR STYLES
+  ============================================= */
 .calendar-wrapper {
     border-radius: 8px;
     overflow: hidden;
@@ -452,8 +452,8 @@ body {
 }
 
 /* =============================================
-   9. SOCIAL, CONTACT & FAQ STYLES
-   ============================================= */
+  9. SOCIAL, CONTACT & FAQ STYLES
+  ============================================= */
 .social-block {
     display: flex;
     flex-wrap: wrap;
@@ -587,8 +587,8 @@ footer p a {
 }
 
 /* =============================================
-   10. MEDIA QUERIES
-   ============================================= */
+  10. MEDIA QUERIES
+  ============================================= */
 @media (max-width: 768px) {
     .banner {
         height: 160px;
@@ -622,4 +622,25 @@ footer p a {
     .videos-col .cam iframe {
         height: 160px;
     }
+}
+
+/* =============================================
+  11. ATTRIBUTION & SUBHEADING STYLES
+  ============================================= */
+
+/* Rule 1: Remove default space below the H2 in a section */
+.section h2 {
+    margin-bottom: 0 !important;
+}
+
+/* Rule 2: Style the new subheading/attestation line */
+.subheading-attestation {
+    /* Override the large default top margin of the <p> element */
+    margin-top: 2px !important;
+    /* Reduce the margin below the paragraph to keep content tight */
+    margin-bottom: 10px !important;
+    /* Use your desired styles */
+    font-size: 12px;
+    color: #666; /* Slightly muted color for attribution */
+    line-height: 1.2;
 }
