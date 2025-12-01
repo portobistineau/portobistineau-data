@@ -24,7 +24,7 @@ async function updateWeather() {
     let grid;
     try {
       const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
-        headers: { 'User-Agent': 'LakeBistineauWeather/1.0 (contact@louisianajedi.com)' }
+        headers: { 'User-Agent': 'PortOBistineauWeather/1.0 (portobistineau@gmail.com)' }
       }).then(r => r.json());
       grid = point.properties;
     } catch(e) {
