@@ -28,8 +28,13 @@ def calculate_data():
     
     # DETERMINE TODAY'S DATE IN LOCAL TIME (CST)
     now_cst = datetime.now(CST_TZ)
-    start_date_cst = now_cst.date()
-
+    
+    # --- CRITICAL FIX: START CALCULATION ONE DAY PRIOR ---
+    # This ensures that a phase moment occurring just after midnight (local time)
+    # is captured in the JSON under the correct preceding date.
+    start_date_cst = now_cst.date() - timedelta(days=1)
+    # ---------------------------------------------------
+    
     # Define a temporary location object for finding the New Moon
     temp_location = ephem.Observer()
     temp_location.lat = LATITUDE
@@ -41,7 +46,8 @@ def calculate_data():
     # Define Moon object globally for the loop
     moon = ephem.Moon()
 
-    for i in range(DAYS_TO_CALCULATE):
+    # We iterate for DAYS_TO_CALCULATE + 1 day to account for the extra day we added backward
+    for i in range(DAYS_TO_CALCULATE + 1):
         target_date_cst = start_date_cst + timedelta(days=i)
         
         # --- Define the UTC 24-hour window corresponding to the target CST day ---
