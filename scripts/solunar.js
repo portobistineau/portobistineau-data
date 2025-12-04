@@ -121,30 +121,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
-                /* Phase Logic (FIXED FOR 99.6% FULL MOON) */
-                var actualIllum = Math.round(illum); 
-                var phaseName = '—';
-                // Waxing is age < 14.7 days (less than half the cycle)
-                var isWaxing = dayData.moon_age < 14.7; 
+               /* Phase Logic (FINAL REVISION) */
+var illum = dayData.moon_illum; 
+var actualIllum = Math.round(illum); 
+var phaseName = '—';
+var isWaxing = dayData.moon_age < 14.7; 
 
-                // FIX: Use 99.6% on the raw (one decimal) illumination value for Full Moon naming
-                if (illum >= 99.6) { // <--- FIX
-                    phaseName = 'Full Moon';
-                } else if (illum <= 0.4) { // FIX: Use 0.4% for New Moon naming
-                    phaseName = 'New Moon';
-                } else if (actualIllum == 50) {
-                    // FIX: Exactly 50% illumination is a Quarter Moon.
-                    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
-                } else {
-                    // Handle the Crescent/Gibbous ranges
-                    if (isWaxing) {
-                        // If waxing and > 50% -> Gibbous, else Crescent
-                        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
-                    } else {
-                        // If waning and > 50% -> Gibbous, else Crescent
-                        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
-                    }
-                }
+// 1. Check for the definitive primary phases first (Full, New, Quarter)
+if (illum >= 99.6) { // Full Moon Check (e.g., 99.6% to 100.0%)
+    phaseName = 'Full Moon';
+} else if (illum <= 0.4) { // New Moon Check (e.g., 0.0% to 0.4%)
+    phaseName = 'New Moon';
+} else if (actualIllum === 50) { // Quarter Moon Check (exactly 50%)
+    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
+} 
+// 2. Only if none of the primary phases matched, use the intermediate Gibbous/Crescent logic
+else {
+    if (isWaxing) {
+        // Waxing Gibbous: growing and > 50%
+        // Waxing Crescent: growing and < 50%
+        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
+    } else {
+        // Waning Gibbous: shrinking and > 50%
+        // Waning Crescent: shrinking and < 50%
+        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
+    }
+}
 
                 if(document.getElementById('phase')) document.getElementById('phase').textContent = phaseName;
                 if(document.getElementById('illum')) document.getElementById('illum').textContent = actualIllum + '% Illuminated';
