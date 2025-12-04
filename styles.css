@@ -305,7 +305,7 @@ body {
 /* --- New Rule for Phase Moment Text --- */
 .phase-moment-text-fix {
     /* Overrides the 12px inherited from .solunar-update-text */
-    font-size: 10px;
+    font-size: 8px;
     /* You can also use this class to fine-tune spacing if needed */
     margin-top: 10px !important; 
 }
