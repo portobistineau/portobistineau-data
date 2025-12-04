@@ -12,32 +12,44 @@ function formatLocalTime(dateObj) {
     });
 }
 
-/* --- NEW UTILITY: PHASE TIME FORMATTER (Includes date) --- */
+/* --- NEW UTILITY: PHASE TIME FORMATTER (Includes date and conditional logic) --- */
 function formatPhaseTime(utcString, phaseType) {
-    if (!utcString || !phaseType) return '—';
+    // 1. Define the phases that should trigger the display
+    const requiredPhases = [
+        "New Moon",
+        "First Quarter",
+        "Full Moon",
+        "Last Quarter"
+    ];
+
+    // If the phase type is not one of the required ones, return an empty string to hide the element.
+    if (!utcString || !requiredPhases.includes(phaseType)) {
+        return '';
+    }
+
     try {
         const d = new Date(utcString);
-        if (isNaN(d.getTime())) return '—';
+        if (isNaN(d.getTime())) return ''; // Return empty string on invalid date
 
-        // Format: XX:XX:XX AM/PM CST
+        // Format: XX:XX AM/PM (Local Time)
         const time = d.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit', 
-            second: '2-digit', 
             hour12: true 
         });
-        
-        // Format: MM/DD/YYYY
+
+        // Format: MM/DD/YYYY (Local Date)
         const date = d.toLocaleDateString('en-US', { 
             month: 'numeric', 
             day: 'numeric', 
             year: 'numeric' 
         });
 
-        return `The moon reached ${phaseType} at ${time} CST on ${date}.`;
+        // Construct the final message exactly as requested
+        return `The moon reached **${phaseType}** at precisely **${time} on ${date}**.`;
     } catch (e) {
         console.error("Error formatting phase time:", e);
-        return '—';
+        return ''; // Return empty string on error
     }
 }
 
@@ -49,14 +61,14 @@ function fetchMoonImageFromLocalJson(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const todayKey = `${year}-${month}-${day}`; 
+    const todayKey = `${year}-${month}-${day}`;
     
     if (!moonImage) return;
 
     // Fetch the local JSON file
-    fetch('moon_urls.json?t=' + new Date().getTime()) 
+    fetch('moon_urls.json?t=' + new Date().getTime())
         .then(response => {
-            if (!response.ok) throw new Error("Could not fetch moon_urls.json.");
+            if (!response.ok) throw new new Error("Could not fetch moon_urls.json.");
             return response.json();
         })
         .then(data => {
@@ -131,8 +143,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(document.getElementById('min2')) document.getElementById('min2').textContent = dayData.minor_2_utc ? mkRange(dayData.minor_2_utc, 30) : '—';
 
                 /* Phase Logic (Updated to use High-Precision Data for display) */
-                var illum = dayData.moon_illum; 
-                var moonAge = dayData.moon_age; 
+                var illum = dayData.moon_illum;
+                var moonAge = dayData.moon_age;
                 var actualIllum = Math.round(illum); // Still used for rating/simple phase check
 
                 // --- 1. SET HIGH PRECISION DISPLAY ---
@@ -158,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 /* Phase Name Assignment (Robust Logic) */
                 var phaseName = '—';
-                var isWaxing = moonAge < 14.7; 
+                var isWaxing = moonAge < 14.7;
 
                 // --- 1. FULL MOON ---
                 if (illum >= 99.0 && (moonAge >= 13.7 && moonAge <= 15.7)) {
@@ -188,14 +200,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const phaseMomentUtc = dayData.phase_moment_utc;
                 const phaseMomentType = dayData.phase_moment_type;
                 
-                if (document.getElementById('phase-moment-line')) {
+                // Use the correct ID and call the updated function
+                if (document.getElementById('phase-moment-text')) { 
                     const phaseText = formatPhaseTime(phaseMomentUtc, phaseMomentType);
-                    // Only display the detailed text if an event occurred today
-                    if (phaseText !== '—') {
-                         document.getElementById('phase-moment-line').textContent = phaseText;
-                    } else {
-                         document.getElementById('phase-moment-line').textContent = '';
-                    }
+                    
+                    // Display the text if it's a major/quarter phase, otherwise hide the element
+                    document.getElementById('phase-moment-text').innerHTML = phaseText;
+                    document.getElementById('phase-moment-text').style.display = phaseText ? 'block' : 'none';
                 }
             })
             .catch(function(e) { console.error("Error:", e); });
