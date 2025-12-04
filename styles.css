@@ -302,12 +302,12 @@ body {
     padding: 25px;      /* Restores the inner padding */
     border-radius: 12px; /* Gives the black box its rounded corners */
 }
-.moon-caption-fix {
-    /* Ensures it is below the black box */
-    margin-top: 10px; 
-    
-    /* Inherits small font size and centered alignment from .solunar-update-text */
-    display: block; 
+/* --- New Rule for Phase Moment Text --- */
+.phase-moment-text-fix {
+    /* Overrides the 12px inherited from .solunar-update-text */
+    font-size: 10px;
+    /* You can also use this class to fine-tune spacing if needed */
+    margin-top: 10px !important; 
 }
 .rating-box {
     margin-top: -10px;
