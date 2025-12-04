@@ -128,7 +128,7 @@ var phaseName = '—';
 var isWaxing = dayData.moon_age < 14.7; 
 
 // 1. Check for the definitive primary phases first (Full, New, Quarter)
-if (illum >= 99.6) { // Full Moon Check (e.g., 99.6% to 100.0%)
+if (illum >= 99.5) { // Full Moon Check (e.g., 99.5% to 100.0%)
     phaseName = 'Full Moon';
 } else if (illum <= 0.4) { // New Moon Check (e.g., 0.0% to 0.4%)
     phaseName = 'New Moon';
