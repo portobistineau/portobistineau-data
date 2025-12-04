@@ -121,31 +121,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
-               /* Phase Logic (FINAL REVISION) */
-var illum = dayData.moon_illum; 
-var actualIllum = Math.round(illum); 
-var phaseName = '—';
-var isWaxing = dayData.moon_age < 14.7; 
+               /* Phase Logic (FINAL, ROBUST VERSION) */
+                var illum = dayData.moon_illum; // e.g., 99.483 (Highly precise value)
+                var actualIllum = Math.round(illum); // e.g., 100 (Rounded for user display)
+                var moonAge = dayData.moon_age; // e.g., 14.217 (Highly precise age)
+                var phaseName = '—';
 
-// 1. Check for the definitive primary phases first (Full, New, Quarter)
-if (illum >= 99.5) { // Full Moon Check (e.g., 99.5% to 100.0%)
-    phaseName = 'Full Moon';
-} else if (illum <= 0.4) { // New Moon Check (e.g., 0.0% to 0.4%)
-    phaseName = 'New Moon';
-} else if (actualIllum === 50) { // Quarter Moon Check (exactly 50%)
-    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
-} 
-// 2. Only if none of the primary phases matched, use the intermediate Gibbous/Crescent logic
-else {
-    if (isWaxing) {
-        // Waxing Gibbous: growing and > 50%
-        // Waxing Crescent: growing and < 50%
-        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
-    } else {
-        // Waning Gibbous: shrinking and > 50%
-        // Waning Crescent: shrinking and < 50%
-        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
-    }
+            // Check if the Moon Age is in the WAXING half of the cycle (before 14.7 days)
+                var isWaxing = moonAge < 14.7; 
+
+            // --- 1. FULL MOON (Highest Priority) ---
+            // If it rounds to 100% AND the age is reasonably close to the peak (13.7 to 15.7 days).
+            // The age check prevents a gibbous moon on day 10 from accidentally being named Full Moon
+                if (actualIllum === 100 && (moonAge >= 13.7 && moonAge <= 15.7)) {
+                    phaseName = 'Full Moon';
+            } 
+
+            // --- 2. NEW MOON ---
+            // If it rounds to 0% AND the age is reasonably close to 0 or 29.5
+                else if (actualIllum === 0 && (moonAge <= 1.0 || moonAge >= 28.5)) {
+                    phaseName = 'New Moon';
+            }
+
+            // --- 3. QUARTER MOONS ---
+            // Quarter Moons are exactly 50%
+                else if (actualIllum === 50) { 
+                    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
+            } 
+
+            // --- 4. INTERMEDIATE PHASES (Gibbous/Crescent) ---
+                else {
+                if (isWaxing) {
+                   // Must be waxing (1-49% or 51-99%)
+                phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
+                } else {
+                // Must be waning (1-49% or 51-99%)
+                    phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
+            }
 }
 
                 if(document.getElementById('phase')) document.getElementById('phase').textContent = phaseName;
