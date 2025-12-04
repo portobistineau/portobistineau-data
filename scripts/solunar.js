@@ -123,16 +123,26 @@ function determinePhase(illumination, age) {
  * Updates the Solunar/Moon data display.
  */
 function updateSolunarDisplay() {
-    // Get today's date in the local timezone (CST) and format to YYYY-MM-DD
     const today = new Date();
-    const todayKey = today.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: TIME_ZONE }).replace(/\//g, '-');
     
+    // --- FIXED KEY GENERATION ---
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayKey = `${year}-${month}-${day}`; // Format: YYYY-MM-DD
+    // ----------------------------
+
     // --- Determine yesterday's key for phase moment lookup ---
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-    const yesterdayKey = yesterday.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: TIME_ZONE }).replace(/\//g, '-');
-
-
+    
+    // --- FIXED KEY GENERATION ---
+    const yYear = yesterday.getFullYear();
+    const yMonth = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const yDay = String(yesterday.getDate()).padStart(2, '0');
+    const yesterdayKey = `${yYear}-${yMonth}-${yDay}`; // Format: YYYY-MM-DD
+    // ----------------------------
+    
     // 1. Get Today's Data
     let data = solunarData[todayKey];
     
