@@ -184,8 +184,10 @@ def calculate_data():
         # CRITICAL FIX: CALCULATE AGE RELATIVE TO NEW MOON EPOCH
         time_elapsed = illum_calc_time_utc - last_new_moon_utc # <--- FIX: Use Noon UTC for age
         moon_age_calculated = time_elapsed.total_seconds() / 86400.0
-        moon_age = round(moon_age_calculated % LUNAR_CYCLE_DAYS, 1)
-
+        
+        # INCREASE PRECISION TO 3 DECIMAL PLACES FOR ACCURATE AGE
+        moon_age = round(moon_age_calculated % LUNAR_CYCLE_DAYS, 3) # <--- CHANGE
+        
         # --- Final Data Collation ---
         data_key = target_date_cst.strftime("%Y-%m-%d")
 
@@ -206,7 +208,7 @@ def calculate_data():
             "moon_underfoot_utc": format_utc(moon_underfoot_utc),
             
             # Moon data
-            "moon_illum": round(illum, 1),
+            "moon_illum": round(illum, 3),
             "moon_age": moon_age, # Now calculated relative to the true New Moon
         }
 
