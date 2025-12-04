@@ -121,15 +121,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
-                /* Phase Logic (REVISED FOR 50% FIX) */
-                var actualIllum = Math.round(illum);
+                /* Phase Logic (FIXED FOR 99.6% FULL MOON) */
+                var actualIllum = Math.round(illum); 
                 var phaseName = '—';
                 // Waxing is age < 14.7 days (less than half the cycle)
                 var isWaxing = dayData.moon_age < 14.7; 
 
-                if (actualIllum >= 100) {
+                // FIX: Use 99.6% on the raw (one decimal) illumination value for Full Moon naming
+                if (illum >= 99.6) { // <--- FIX
                     phaseName = 'Full Moon';
-                } else if (actualIllum <= 0) {
+                } else if (illum <= 0.4) { // FIX: Use 0.4% for New Moon naming
                     phaseName = 'New Moon';
                 } else if (actualIllum == 50) {
                     // FIX: Exactly 50% illumination is a Quarter Moon.
