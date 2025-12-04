@@ -172,13 +172,17 @@ def calculate_data():
                 return dt.isoformat() + "Z"
             return None
 
-        # --- Moon Phase, Illumination, and Age Calculation ---
-        location.date = target_start_utc
+        # --- Moon Phase, Illumination, and Age Calculation (FIXED AT NOON UTC) ---
+        
+        # Calculate Illumination and Phase Age at Noon UTC (12:00:00) 
+        illum_calc_time_utc = datetime.combine(target_start_utc.date(), time(12, 0, 0)) # <--- FIX: Use Noon UTC
+        
+        location.date = illum_calc_time_utc
         moon.compute(location)
         illum = moon.moon_phase * 100
         
         # CRITICAL FIX: CALCULATE AGE RELATIVE TO NEW MOON EPOCH
-        time_elapsed = target_start_utc - last_new_moon_utc
+        time_elapsed = illum_calc_time_utc - last_new_moon_utc # <--- FIX: Use Noon UTC for age
         moon_age_calculated = time_elapsed.total_seconds() / 86400.0
         moon_age = round(moon_age_calculated % LUNAR_CYCLE_DAYS, 1)
 
