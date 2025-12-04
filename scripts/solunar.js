@@ -1,29 +1,92 @@
-// scripts/solunar.js (Final Content - All JS from your inline block)
+// scripts/solunar.js (Final Content)
+
+/* --- CONFIGURATION --- */
+const TIME_ZONE = 'America/Chicago'; 
 
 /* --- UTILITY: TIME FORMATTER --- */
 function formatLocalTime(dateObj) {
+    // This function formats simple times (Moon Rise, Major/Minor, etc.)
     if (!dateObj) return '—';
     var d = (typeof dateObj === 'string') ? new Date(dateObj) : dateObj;
     if (isNaN(d.getTime())) return '—';
+    
+    // Ensure the timezone is explicitly handled for consistent display
     return d.toLocaleTimeString('en-US', {
+        timeZone: TIME_ZONE,
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
     });
 }
 
+/**
+ * Helper to check if a date string is valid and not empty.
+ * @param {string | null} dtString - The ISO date string.
+ * @returns {boolean} True if the string is valid and non-null.
+ */
+function isValidDate(dtString) {
+    return dtString && dtString.length > 0;
+}
+
+/**
+ * NEW: Formats the Major Phase Moment string with correct tense, date, and time.
+ * @param {string | null} dtString - The UTC date string of the phase moment.
+ * @param {string | null} phaseType - The type of moon phase (e.g., "Full Moon").
+ * @returns {string} The formatted sentence or an empty string.
+ */
+function formatPhaseTime(dtString, phaseType) {
+    if (!isValidDate(dtString) || !phaseType) {
+        return '';
+    }
+    
+    try {
+        const momentUtc = new Date(dtString);
+        const now = new Date();
+        
+        // 1. Determine the verb: Past or Future?
+        const isFuture = momentUtc > now;
+        const verb = isFuture ? 'will reach' : 'reached';
+
+        // 2. Format Time (HH:MM AM/PM CST)
+        const timeStr = momentUtc.toLocaleTimeString('en-US', {
+            timeZone: TIME_ZONE,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        // 3. Format Date (Month Day, Year CST)
+        const dateStr = momentUtc.toLocaleDateString('en-US', {
+            timeZone: TIME_ZONE,
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        // 4. Extract the timezone abbreviation (e.g., CST or CDT)
+        const zoneStr = momentUtc.toLocaleTimeString('en-US', {
+            timeZone: TIME_ZONE,
+            timeZoneName: 'short'
+        }).split(' ').pop(); 
+
+        // 5. Assemble the sentence
+        return `The moon ${verb} ${phaseType} at precisely ${timeStr} ${zoneStr} on ${dateStr}.`;
+
+    } catch (e) {
+        console.error("Error formatting phase moment:", e);
+        return '';
+    }
+}
+
+
 /* --- NASA MOON IMAGE FETCH FROM LOCAL JSON (LOCAL DATE FIX) --- */
 function fetchMoonImageFromLocalJson(date) {
     const moonImage = document.getElementById('moon-img');
     
-    // CRITICAL FIX: Construct the key using LOCAL date components
+    // CRITICAL FIX: Construct the key using LOCAL date components (YYYY-MM-DD)
     const year = date.getFullYear();
-    // Month is 0-indexed, so we add 1 and pad with 0
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    // Day is padded with 0
     const day = String(date.getDate()).padStart(2, '0');
-    
-    // The key should now accurately reflect YYYY-MM-DD local time (e.g., "2025-11-20")
     const todayKey = `${year}-${month}-${day}`; 
     
     if (!moonImage) return;
@@ -38,7 +101,7 @@ function fetchMoonImageFromLocalJson(date) {
             const nasaUrl = data[todayKey];
             
             if (nasaUrl) {
-                // 3. Set the image source directly 
+                // Set the image source directly 
                 moonImage.src = nasaUrl;
             } else {
                 console.error(`Moon URL not found in JSON for date: ${todayKey}. Data not generated yet.`);
@@ -48,12 +111,30 @@ function fetchMoonImageFromLocalJson(date) {
             console.error("Error loading Moon image from local JSON:", error);
         });
 }
+
+
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         var lat = 32.4619;
         var lng = -93.3486;
         var now = new Date();
-        var todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
+        
+        // --- KEY GENERATION FIX (Ensuring YYYY-MM-DD for JSON lookup) ---
+        // Get date components in local time
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const todayKey = `${year}-${month}-${day}`; 
+        
+        // Calculate yesterday's key for phase moment lookup
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const yYear = yesterday.getFullYear();
+        const yMonth = String(yesterday.getMonth() + 1).padStart(2, '0');
+        const yDay = String(yesterday.getDate()).padStart(2, '0');
+        const yesterdayKey = `${yYear}-${yMonth}-${yDay}`;
+        // -----------------------------------------------------------------
+
 
         /* 1. HEADERS & NASA IMAGE */
         document.getElementById('header-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric'});
@@ -81,7 +162,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 return res.json();
             })
             .then(function(fullData) {
+                
+                // --- Phase Moment Lookup Logic (Today OR Yesterday) ---
+                var phaseMomentUtc = null;
+                var phaseMomentType = null;
+
+                // A. Check Today's Data
                 var dayData = fullData[todayKey];
+                if (dayData) {
+                    phaseMomentUtc = dayData.phase_moment_utc;
+                    phaseMomentType = dayData.phase_moment_type;
+                }
+
+                // B. If today has no moment, check Yesterday's Data
+                // Use isValidDate() for reliable check
+                if (!isValidDate(phaseMomentUtc) && fullData[yesterdayKey]) {
+                    var yesterdayData = fullData[yesterdayKey];
+                    if (isValidDate(yesterdayData.phase_moment_utc)) {
+                        phaseMomentUtc = yesterdayData.phase_moment_utc;
+                        phaseMomentType = yesterdayData.phase_moment_type;
+                    }
+                }
+
+                // C. Set the Phase Moment Text
+                if (document.getElementById('phase-moment-text')) {
+                    document.getElementById('phase-moment-text').textContent = formatPhaseTime(phaseMomentUtc, phaseMomentType);
+                }
+                // -----------------------------------------------------
+
                 if (!dayData) throw new Error("Data missing for today.");
                 
                 /* Moon Times */
@@ -121,46 +229,50 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
-/* Phase Logic (FINAL, ROBUST VERSION - Uses 99.0% threshold) */
-var illum = dayData.moon_illum; // e.g., 99.483 (Highly precise value)
-var actualIllum = Math.round(illum); // e.g., 99 (Used ONLY for display and other phase checks)
-var moonAge = dayData.moon_age; // e.g., 14.217 (Highly precise age)
-var phaseName = '—';
-var isWaxing = moonAge < 14.7; 
+                /* Phase Logic (FINAL, ROBUST VERSION - Uses 99.0% threshold) */
+                var illum = dayData.moon_illum; // e.g., 99.483 (Highly precise value)
+                var actualIllum = Math.round(illum); // e.g., 99 (Used ONLY for display and other phase checks)
+                var moonAge = dayData.moon_age; // e.g., 14.217 (Highly precise age)
+                var phaseName = '—';
+                var isWaxing = moonAge < 14.7; 
 
-// --- 1. FULL MOON (Highest Priority - Check the raw ILLUMINATION value) ---
-// If the raw illumination is 99.0% or higher, it is visually a Full Moon.
-// We keep the age check for sanity, but 99.0 is the main flag.
-if (illum >= 99.0 && (moonAge >= 13.7 && moonAge <= 15.7)) {
-    phaseName = 'Full Moon';
-} 
+                // --- 1. FULL MOON (Highest Priority - Check the raw ILLUMINATION value) ---
+                // If the raw illumination is 99.0% or higher, it is visually a Full Moon.
+                // We keep the age check for sanity, but 99.0 is the main flag.
+                if (illum >= 99.0 && (moonAge >= 13.7 && moonAge <= 15.7)) {
+                    phaseName = 'Full Moon';
+                } 
 
-// --- 2. NEW MOON (Check the raw ILLUMINATION value) ---
-// If the raw illumination is 1.0% or lower, it is visually a New Moon.
-else if (illum <= 1.0) {
-    phaseName = 'New Moon';
-}
+                // --- 2. NEW MOON (Check the raw ILLUMINATION value) ---
+                // If the raw illumination is 1.0% or lower, it is visually a New Moon.
+                else if (illum <= 1.0) {
+                    phaseName = 'New Moon';
+                }
 
-// --- 3. QUARTER MOONS ---
-// Quarter Moons are exactly 50%
-else if (actualIllum === 50) { 
-    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
-} 
+                // --- 3. QUARTER MOONS ---
+                // Quarter Moons are exactly 50%
+                else if (actualIllum === 50) { 
+                    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
+                } 
 
-// --- 4. INTERMEDIATE PHASES (Gibbous/Crescent) ---
-else {
-    if (isWaxing) {
-        // This is the line that caused Waxing Gibbous. It is now only reached 
-        // if illumination is NOT 99.0 or higher.
-        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
-    } else {
-        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
-    }
-}
+                // --- 4. INTERMEDIATE PHASES (Gibbous/Crescent) ---
+                else {
+                    if (isWaxing) {
+                        // This is the line that caused Waxing Gibbous. It is now only reached 
+                        // if illumination is NOT 99.0 or higher.
+                        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
+                    } else {
+                        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent';
+                    }
+                }
 
                 if(document.getElementById('phase')) document.getElementById('phase').textContent = phaseName;
                 if(document.getElementById('illum')) document.getElementById('illum').textContent = actualIllum + '% Illuminated';
             })
-            .catch(function(e) { console.error("Error:", e); });
+            .catch(function(e) { 
+                console.error("Error fetching solunar data:", e);
+                if(document.getElementById('phase')) document.getElementById('phase').textContent = 'Error loading data';
+                if(document.getElementById('illum')) document.getElementById('illum').textContent = 'Check console for details';
+            });
     }, 500);
 });
