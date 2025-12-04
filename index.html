@@ -120,77 +120,83 @@
       </script>
     </div>
 
-    <div class="solunar-card">
-      <h2 class="solunar-header">
-        Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
-      </h2>
-      <p class="subheading-attestation">
-        Astronomical data: Suncalc.js. Moon phase images: 
-        <a href="https://svs.gsfc.nasa.gov/" target="_blank">NASA Scientific Visualization Studio</a>.
-    </p>
+   <div class="solunar-card">
+  <h2 class="solunar-header">
+    Solunar Data for <span id="header-date">—</span>, <span id="header-year">2025</span>
+  </h2>
+  <p class="subheading-attestation">
+    Astronomical data: Suncalc.js. Moon phase images: 
+    <a href="https://svs.gsfc.nasa.gov/" target="_blank">NASA Scientific Visualization Studio</a>.
+  </p>
 
 
-      <div class="solunar-row">
+  <div class="solunar-row">
 
-        <div class="solunar-data-col">
-          <div class="data-columns-flex">
-            
-            <div class="data-block">
-              <h3 class="data-header">Sun Data</h3>
-              <div class="detail-grid">
-                <b>First Light</b> <div id="first" class="grid-value">Calculating…</div>
-                <b>Sunrise</b> <div id="rise" class="grid-value">Calculating…</div>
-                <b>Sunset</b> <div id="set" class="grid-value">Calculating…</div>
-                <b>Last Light</b> <div id="last" class="grid-value">Calculating…</div>
-              </div>
-            </div>
+    <div class="solunar-data-col">
+      <div class="data-columns-flex">
 
-            <div class="data-block">
-              <h3 class="data-header">Moon Data</h3>
-              <div class="detail-grid">
-                <b>Rise</b> <div id="moon-rise" class="grid-value">Calculating…</div>
-                <b>Set</b> <div id="moon-set" class="grid-value">Calculating…</div>
-                <b>Overhead</b> <div id="moon-overhead" class="grid-value">Calculating…</div>
-                <b>Underfoot</b> <div id="moon-underfoot" class="grid-value">Calculating…</div>
-              </div>
-            </div>
-          </div>
-
-          <hr class="solunar-separator">
-
-          <div class="period-text period-grid">
-            <b>Major Period 1</b> <div id="maj1" class="grid-value">Calculating…</div>
-            <b>Major Period 2</b> <div id="maj2" class="grid-value">Calculating…</div>
-            <b>Minor Period 1</b> <div id="min1" class="grid-value">Calculating…</div>
-            <b>Minor Period 2</b> <div id="min2" class="grid-value">Calculating…</div>
+        <div class="data-block">
+          <h3 class="data-header">Sun Data</h3>
+          <div class="detail-grid">
+            <b>First Light</b> <div id="first" class="grid-value">Calculating…</div>
+            <b>Sunrise</b> <div id="rise" class="grid-value">Calculating…</div>
+            <b>Sunset</b> <div id="set" class="grid-value">Calculating…</div>
+            <b>Last Light</b> <div id="last" class="grid-value">Calculating…</div>
           </div>
         </div>
 
-        <div class="moon-column">
-          <div class="rating-box">
-            <div id="rating">Calculating…</div>
-          </div>
-
-          <div id="moon-bg">
-            <img id="moon-img" src="" width="160" height="160">
-          </div>
-
-          <div id="phase">—</div>
-          <div id="illum">—</div>
-
-          <div class="solunar-credit">
-            Image Credit: NASA Scientific Visualization Studio
+        <div class="data-block">
+          <h3 class="data-header">Moon Data</h3>
+          <div class="detail-grid">
+            <b>Rise</b> <div id="moon-rise" class="grid-value">Calculating…</div>
+            <b>Set</b> <div id="moon-set" class="grid-value">Calculating…</div>
+            <b>Overhead</b> <div id="moon-overhead" class="grid-value">Calculating…</div>
+            <b>Underfoot</b> <div id="moon-underfoot" class="grid-value">Calculating…</div>
           </div>
         </div>
       </div>
 
-      <p class="solunar-update-text">
-        Updated <span id="date">—</span> – Refresh for latest
-      </p>
+      <hr class="solunar-separator">
+
+      <div class="period-text period-grid">
+        <b>Major Period 1</b> <div id="maj1" class="grid-value">Calculating…</div>
+        <b>Major Period 2</b> <div id="maj2" class="grid-value">Calculating…</div>
+        <b>Minor Period 1</b> <div id="min1" class="grid-value">Calculating…</div>
+        <b>Minor Period 2</b> <div id="min2" class="grid-value">Calculating…</div>
+      </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
-    <script src="scripts/solunar.js"></script>
+    <div class="moon-column">
+
+  <div class="moon-content-box">
+    
+    <div class="rating-box">
+      <div id="rating">Calculating…</div>
+    </div>
+    
+    <div id="moon-bg">
+      <img id="moon-img" src="" width="160" height="160">
+    </div>
+
+    <div id="phase">—</div>
+    <div id="illum">—</div>
+
+    <div class="solunar-credit">
+      Image Credit: NASA Scientific Visualization Studio
+    </div>
+
+  </div> <p id="phase-moment-text" class="solunar-update-text phase-moment-text-fix"></p>
+
+</div>
+  </div>
+  
+  <p class="solunar-update-text">
+    Updated <span id="date">—</span> – Refresh for latest
+  </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+<script src="scripts/solunar.js"></script>
 
     
     <div class="section">
@@ -373,6 +379,7 @@
   </div>
 </body>
 </html>
+
 
 
 
