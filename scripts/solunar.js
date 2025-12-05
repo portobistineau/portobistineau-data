@@ -229,37 +229,44 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
-               /* Phase Logic (FINAL, ROBUST VERSION - Uses Age and Illumination) */
+               /* Phase Logic (FINAL, ROBUST VERSION - Uses Moment Type or Calculation) */
                 var illum = dayData.moon_illum; 
                 var actualIllum = Math.round(illum); 
                 var moonAge = dayData.moon_age; 
                 var phaseName = '—';
-                var isWaxing = moonAge < 14.7; // 14.7 days is the precise split point for waxing/waning
+                
+                // 1. CHECK FOR MOMENT TYPE (Highest Priority)
+                var momentPhaseName = dayData.phase_moment_type;
 
-                // --- 1. FULL MOON (TIGHT AGE CONSTRAINT) ---
-                // We define "Full Moon" strictly around the peak (14.7 days)
-                // The upper bound (15.2) excludes your current age (15.217).
-                if (illum >= 98.5 && moonAge >= 14.2 && moonAge < 15.2) { 
-                    phaseName = 'Full Moon';
-                } 
+                if (momentPhaseName) {
+                    // If the Python script recorded a moment (Full Moon, New Moon, etc.) for today, use it.
+                    phaseName = momentPhaseName;
+                } else {
+                    // 2. FALLBACK TO CALCULATION (If no major moment occurs today)
+                    var isWaxing = moonAge < 14.7;
 
-                // --- 2. NEW MOON (Illumination based) ---
-                else if (illum <= 1.5) { 
-                    phaseName = 'New Moon';
-                }
+                    // --- FULL MOON (TIGHT AGE CONSTRAINT - only necessary if moment_type fails) ---
+                    if (illum >= 98.5 && moonAge >= 14.2 && moonAge < 15.2) { 
+                        phaseName = 'Full Moon';
+                    } 
 
-                // --- 3. QUARTER MOONS ---
-                else if (actualIllum === 50) { 
-                    phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
-                } 
+                    // --- NEW MOON (Illumination based) ---
+                    else if (illum <= 1.5) { 
+                        phaseName = 'New Moon';
+                    }
 
-                // --- 4. INTERMEDIATE PHASES (Gibbous/Crescent) ---
-                else {
-                    if (isWaxing) { // Moon Age < 14.7 days
-                        phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
-                    } else { // Moon Age >= 14.7 days (Waning)
-                        // This path will now be taken for 15.217 age / 99% illum
-                        phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent'; 
+                    // --- QUARTER MOONS ---
+                    else if (actualIllum === 50) { 
+                        phaseName = isWaxing ? 'First Quarter' : 'Last Quarter';
+                    } 
+
+                    // --- INTERMEDIATE PHASES (Gibbous/Crescent) ---
+                    else {
+                        if (isWaxing) { // Moon Age < 14.7 days
+                            phaseName = (actualIllum > 50) ? 'Waxing Gibbous' : 'Waxing Crescent';
+                        } else { // Moon Age >= 14.7 days (Waning)
+                            phaseName = (actualIllum > 50) ? 'Waning Gibbous' : 'Waning Crescent'; 
+                        }
                     }
                 }
 
