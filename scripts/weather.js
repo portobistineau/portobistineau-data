@@ -41,20 +41,19 @@ async function updateWeather() {
 
     let grid;
            try {
-            const pointRes = await fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
-                headers: {
-                    // Randomize the User-Agent on every load → NWS stops throttling us
-                    'User-Agent': `PortOBistineauWeather/1.0 (contact+${Date.now()}@portobistineau.com)`
-                }
-            });
-            if (!pointRes.ok) throw new Error(`HTTP ${pointRes.status}`);
-            grid = (await pointRes.json()).properties;
-        } catch (e) {
-            console.error("NWS point failed:", e);
-            document.getElementById('bistineauWeather').innerHTML =
-                '<div style="padding:20px;color:#900;background:#fff0f0;border-radius:8px;text-align:center;">Weather service slow – will retry soon</div>';
-            return;
+    const pointRes = await fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; PortOBistineauWeather/1.0; +https://portobistineau.com)'
         }
+    });
+    if (!pointRes.ok) throw new Error(`HTTP ${pointRes.status}`);
+    grid = (await pointRes.json()).properties;
+} catch (e) {
+    console.error("NWS point failed:", e);
+    document.getElementById('bistineauWeather').innerHTML =
+        '<div style="padding:20px;color:#900;background:#fff0f0;border-radius:8px;text-align:center;">Weather service slow – will retry soon</div>';
+    return;
+}
 
     try {
         const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
