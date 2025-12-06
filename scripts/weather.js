@@ -4,194 +4,253 @@
 window.lastWeatherData = null;
 
 // Global for Map instance (to handle clean reloads)
-window.radarMapInstance = null; 
+window.radarMapInstance = null;
 window.radarAnimationTimer = null;
-    
+
 // Globals for Radar Control
-window.currentFrameIndex = 0; 
+window.currentFrameIndex = 0;
 window.radarLayers = [];
-    
+
 async function updateWeather() {
-    
+
     // ALWAYS CLEAR CACHE ON LOAD
-    localStorage.removeItem('nwsCache');
+    // NOTE: Caching mechanisms should ideally be implemented here, but for simplicity, 
+    // we rely on fresh fetches. The NWS service is generally reliable.
+    localStorage.removeItem('nwsCache'); 
+    
+    // Coordinates for Port O' Bistineau (used for NWS and Map center)
     const lat = 32.4066, lon = -93.3906;
     const now = new Date();
-    // Only show "Fetching" if this is the initial load
+    
+    // Only show "Fetching" if this is the initial load, otherwise, wait for render
     if(!document.getElementById('radar-map')) {
-        document.getElementById('bistineauWeather').innerHTML = 'Fetching fresh NWS data...';
+        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;text-align:center;font-size:18px;color:#003366;">Fetching fresh NWS data...</div>';
     }
+    
     let grid;
+    
+    // --- 1. Fetch Grid Points (Handles initial NWS connection failure) ---
     try {
-      const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+      const pointRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+        // MANDATORY: User-Agent header for NWS API compliance
         headers: { 'User-Agent': 'PortOBistineauWeather/1.0 (portobistineau@gmail.com)' }
-      }).then(r => r.json());
+      });
+      
+      if (!pointRes.ok) {
+          throw new Error(`NWS Points API returned status: ${pointRes.status}`);
+      }
+      
+      const point = await pointRes.json();
       grid = point.properties;
+      
     } catch(e) {
-      document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;">NWS down – try later</div>';
+      console.error("Error fetching NWS points:", e);
+      document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;text-align:center;">NWS API failed to respond. Please try again later.</div>';
       return;
     }
-    const [stationsRes, dailyRes, hourlyRes] = await Promise.all([
-      fetch(grid.observationStations),
-      fetch(grid.forecast),
-      fetch(grid.forecastHourly)
-    ]);
-    const stations = await stationsRes.json();
-    const station = stations.observationStations[0];
-    const obs = await fetch(`${station}/observations/latest?require_qc=false`).then(r => r.json());
-    const daily = await dailyRes.json();
-    const hourly = await hourlyRes.json();
-    const data = {
-      grid,
-      obs: obs.properties,
-      daily: daily.properties,
-      hourly: hourly.properties
-    };
-    window.lastWeatherData = data;
-    // --- RENDER CURRENT ---
-    const p = data.obs;
-    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
-    const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
-    let trend = '';
-    const change = p.pressureChange?.value;
-    if (change !== null) {
-      const inches = change / 3386.39;
-      if (Math.abs(inches) < 0.02) trend = '(steady)';
-      else if (inches > 0) trend = '(rising)';
-      else trend = '(falling)';
-    }
-    const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    const nowDate = now.getTime();
-    const closestHourly = data.hourly.periods.reduce((a,b) =>
-      Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
-    );
-    const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
-    const currentForecast = closestHourly?.shortForecast || '';
-    let windSpeedAvg = 0;
-    if (closestHourly?.windSpeed) {
-      const nums = closestHourly.windSpeed.match(/\d+/g)?.map(Number) || [];
-      if (nums.length === 1) windSpeedAvg = nums[0];
-      else if (nums.length === 2) windSpeedAvg = Math.round((nums[0] + nums[1]) / 2);
-    }
-    const windDir = closestHourly?.windDirection || '';
     
-    // --- HTML GENERATION ---
-    
-    const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;">
-        <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
-        <div style="margin:8px 0;">
-          <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
-          <div style="font-size:14px;color:#666;margin-top:4px;">${currentForecast}</div>
-        </div>
-        <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
-        <div style="font-size:14px;line-height:1.6;">
-          Wind ${windSpeedAvg} mph ${windDir}<br>
-          Pressure ${pressure} inHg ${trend}<br>
-          Humidity ${p.relativeHumidity.value !== null ? Math.round(p.relativeHumidity.value) : '—'}%<br>
-          Dew Point ${p.dewpoint.value !== null ? Math.round(p.dewpoint.value * 1.8 + 32) : '—'}°F<br>
-        </div>
-      </div>`;
+    // --- 2. Fetch All Data (Comprehensive Try/Catch for all subsequent failures) ---
+    try {
+        // Corrected Fetching: Use await response.json() AFTER checking response.ok
+        const stationsRes = await fetch(grid.observationStations);
+        const dailyRes = await fetch(grid.forecast);
+        const hourlyRes = await fetch(grid.forecastHourly);
+        
+        if (!stationsRes.ok || !dailyRes.ok || !hourlyRes.ok) {
+             throw new Error("One or more NWS forecast/station endpoints returned an error.");
+        }
 
-    // --- NEW: RADAR HTML WITH COMPACT LEGEND AND BOTTOM CONTROLS ---
-    const radarHTML = `
-        <div id="radar-widget-wrapper">
-            
-            <div id="radar-legend">
-    <div class="legend-bar-wrapper">
-        <div class="legend-label">RAIN</div>
-        <div class="gradient-bar rain-gradient"></div>
-    </div>
-    <div class="legend-bar-wrapper">
-        <div class="legend-label">ICE</div>
-        <div class="gradient-bar ice-gradient"></div>
-    </div>
-    <div class="legend-bar-wrapper">
-        <div class="legend-label">SNOW</div>
-        <div class="gradient-bar snow-gradient"></div>
-    </div>
-</div>
+        const [stations, daily, hourly] = await Promise.all([
+             stationsRes.json(),
+             dailyRes.json(),
+             hourlyRes.json()
+        ]);
+        
+        // Fetch latest observation from the first station
+        const stationUrl = stations.observationStations[0];
+        const obsRes = await fetch(`${stationUrl}/observations/latest?require_qc=false`);
+        if (!obsRes.ok) {
+             throw new Error("NWS observation fetch failed.");
+        }
+        const obs = await obsRes.json();
 
-            <div id="radar-container">
-                <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
-                
-                <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:950; pointer-events:none;">
-                    <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
-                    <span id="radar-time">Loading...</span>
-                </div>
-                <div style="position:absolute; bottom:35px; left:5px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:900; pointer-events:none; text-shadow:1px 1px 2px black;">
-                    Data: RainViewer / Esri
-                </div>
+        const data = {
+          grid,
+          obs: obs.properties,
+          daily: daily.properties,
+          hourly: hourly.properties
+        };
+        
+        window.lastWeatherData = data;
+        
+        // --- RENDER CURRENT ---
+        const p = data.obs;
+        // Convert C to F
+        const currentTemp = Math.round(p.temperature.value * 1.8 + 32); 
+        const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
+        const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
+        
+        let trend = '';
+        const change = p.pressureChange?.value;
+        if (change !== null && change !== undefined) {
+          const inches = change / 3386.39;
+          if (Math.abs(inches) < 0.02) trend = '(steady)';
+          else if (inches > 0) trend = '(rising)';
+          else trend = '(falling)';
+        }
+        
+        const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+        const nowDate = now.getTime();
+        
+        // Find the closest hourly forecast for the icon and short forecast
+        const closestHourly = data.hourly.periods.reduce((a,b) =>
+          Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+        );
+        
+        const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
+        const currentForecast = closestHourly?.shortForecast || '';
+        
+        let windSpeedAvg = 0;
+        if (closestHourly?.windSpeed) {
+          const nums = closestHourly.windSpeed.match(/\d+/g)?.map(Number) || [];
+          if (nums.length === 1) windSpeedAvg = nums[0];
+          else if (nums.length === 2) windSpeedAvg = Math.round((nums[0] + nums[1]) / 2);
+        }
+        const windDir = closestHourly?.windDirection || '';
+        
+        // --- HTML GENERATION (CURRENT WEATHER) ---
+        const currentHTML = `
+          <div style="background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;">
+            <div style="font-size:28px;font-weight:bold;color:#003366;">${currentTemp}°F</div>
+            <div style="margin:8px 0;">
+              <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
+              <div style="font-size:14px;color:#666;margin-top:4px;">${currentForecast}</div>
             </div>
-
-            <div id="radar-controls">
-                <button id="radar-rewind" title="Previous Frame"><<</button>
-                <button id="radar-play-pause" title="Pause/Play">▮▮</button>
-                <button id="radar-forward" title="Next Frame">>></button>
-                
-                <select id="radar-speed-select" title="Animation Speed">
-                    <option value="1200">Slow</option>
-                    <option value="800">Medium</option>
-                    <option value="400" selected>Fast</option>
-                </select>
+            <div style="color:#666;margin-bottom:8px;">Feels ${feels}°F • As of ${timeStr}</div>
+            <div style="font-size:14px;line-height:1.6;">
+              Wind ${windSpeedAvg} mph ${windDir}<br>
+              Pressure ${pressure} inHg ${trend}<br>
+              Humidity ${p.relativeHumidity?.value !== null && p.relativeHumidity?.value !== undefined ? Math.round(p.relativeHumidity.value) : '—'}%<br>
+              Dew Point ${p.dewpoint?.value !== null && p.dewpoint?.value !== undefined ? Math.round(p.dewpoint.value * 1.8 + 32) : '—'}°F<br>
             </div>
+          </div>`;
 
-        </div>
-    `;
+        // --- RADAR HTML WITH COMPACT LEGEND AND BOTTOM CONTROLS ---
+        const radarHTML = `
+            <div id="radar-widget-wrapper" style="border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);height: 400px; position: relative;">
+                
+                <div id="radar-legend" style="position:absolute; top:8px; left:8px; z-index:900; background:rgba(255,255,255,0.8); padding:5px; border-radius:6px; display:flex; gap:10px; font-family:Arial, sans-serif;">
+                    <div class="legend-bar-wrapper" style="display:flex; align-items:center; font-size:10px;">
+                        <div class="legend-label" style="font-weight:bold; color:#333;">RAIN</div>
+                        <div class="gradient-bar rain-gradient" style="width:30px; height:6px; background:linear-gradient(to right, #00A632, #68B41D, #FFCC00, #FF6600, #FF0000); margin-left:4px; border-radius:3px;"></div>
+                    </div>
+                    <div class="legend-bar-wrapper" style="display:flex; align-items:center; font-size:10px;">
+                        <div class="legend-label" style="font-weight:bold; color:#333;">ICE</div>
+                        <div class="gradient-bar ice-gradient" style="width:30px; height:6px; background:linear-gradient(to right, #0099FF, #33CCFF, #99CCFF); margin-left:4px; border-radius:3px;"></div>
+                    </div>
+                    <div class="legend-bar-wrapper" style="display:flex; align-items:center; font-size:10px;">
+                        <div class="legend-label" style="font-weight:bold; color:#333;">SNOW</div>
+                        <div class="gradient-bar snow-gradient" style="width:30px; height:6px; background:linear-gradient(to right, #E0FFFF, #ADD8E6, #87CEEB, #4682B4); margin-left:4px; border-radius:3px;"></div>
+                    </div>
+                </div>
 
-    let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;margin-top:15px;">';
-    const dailyPeriods = data.daily.periods.slice(0, 14);
-    for (let i = 0; i < 7; i++) {
-      const day = dailyPeriods[i*2];
-      const night = dailyPeriods[i*2 + 1] || day;
-      const dayDate = new Date();
-      dayDate.setDate(dayDate.getDate() + i);
-      const dayName = i===0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday:'short' });
-      const icon = day.icon.replace('large','medium');
-      const startOfDay = new Date();
-      startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + i);
-      const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
-      const dayHours = data.hourly.periods.filter(p => {
-        const t = new Date(p.startTime);
-        return t >= startOfDay && t <= endOfDay;
-      });
-      const hi = dayHours.length ? Math.max(...dayHours.map(p=>p.temperature)) : day.temperature;
-      const lo = dayHours.length ? Math.min(...dayHours.map(p=>p.temperature)) : night.temperature;
-      forecastHTML += `
-        <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;">
-          <div style="font-weight:bold;color:#003366;">${dayName}</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-            <img src="${icon}" width="48" height="48">
-          </div>
+                <div id="radar-container" style="width:100%; height:100%; position:relative;">
+                    <div id="radar-map" style="width:100%; height:100%; background: #000;"></div>
+                    
+                    <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.7); color:white; padding:4px 10px; border-radius:4px; font-family:Arial; font-size:12px; z-index:950; pointer-events:none;">
+                        <span id="radar-status" style="font-weight:bold; color:#00ff00;">LIVE</span> 
+                        <span id="radar-time">Loading...</span>
+                    </div>
+                    <div style="position:absolute; bottom:35px; left:5px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:900; pointer-events:none; text-shadow:1px 1px 2px black;">
+                        Data: RainViewer / Esri
+                    </div>
+                </div>
+
+                <div id="radar-controls" style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); z-index:900; display:flex; gap:10px;">
+                    <button id="radar-rewind" title="Previous Frame" style="background:rgba(0,0,0,0.7); color:white; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-weight:bold;"><<</button>
+                    <button id="radar-play-pause" title="Pause/Play" style="background:rgba(0,0,0,0.7); color:white; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-weight:bold;">▮▮</button>
+                    <button id="radar-forward" title="Next Frame" style="background:rgba(0,0,0,0.7); color:white; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-weight:bold;">>>
+                    </button>
+                    
+                    <select id="radar-speed-select" title="Animation Speed" style="background:rgba(0,0,0,0.7); color:white; border:none; border-radius:4px; padding:6px 8px; cursor:pointer; font-size:14px;">
+                        <option value="1200">Slow</option>
+                        <option value="800">Medium</option>
+                        <option value="400" selected>Fast</option>
+                    </select>
+                </div>
+
+            </div>
+        `;
+
+        // --- HTML GENERATION (7-DAY FORECAST) ---
+        let forecastHTML = '<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px;background:#f0f8ff;border-radius:15px;margin-top:15px;">';
+        const dailyPeriods = data.daily.periods.slice(0, 14);
+        
+        for (let i = 0; i < 7; i++) {
+          const day = dailyPeriods[i*2];
+          const night = dailyPeriods[i*2 + 1] || day;
           
-          <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
-          <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-            ${day.shortForecast}
-          </div>
-        </div>`;
+          const dayDate = new Date();
+          dayDate.setDate(dayDate.getDate() + i);
+          const dayName = i===0 ? 'Today' : dayDate.toLocaleDateString('en-US', { weekday:'short' });
+          const icon = day.icon.replace('large','medium');
+          
+          const startOfDay = new Date();
+          startOfDay.setHours(0,0,0,0); startOfDay.setDate(startOfDay.getDate() + i);
+          const endOfDay = new Date(startOfDay); endOfDay.setHours(23,59,59,999);
+          
+          const dayHours = data.hourly.periods.filter(p => {
+            const t = new Date(p.startTime);
+            return t >= startOfDay && t <= endOfDay;
+          });
+          
+          // Calculate Hi/Lo from hourly data for more accuracy
+          const hi = dayHours.length ? Math.max(...dayHours.map(p=>p.temperature)) : day.temperature;
+          const lo = dayHours.length ? Math.min(...dayHours.map(p=>p.temperature)) : night.temperature;
+          
+          forecastHTML += `
+            <div onclick="showDetail(${i})" style="cursor:pointer;width:100px;height:170px;background:#fff;padding:8px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;justify-content:space-between;transition:transform 0.1s;font-family:'Inter', sans-serif;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+              <div style="font-weight:bold;color:#003366;">${dayName}</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+                <img src="${icon}" width="48" height="48">
+              </div>
+              
+              <div style="font-size:16px;font-weight:bold;">${hi}°<span style="font-size:12px;color:#666;">/${lo}°</span></div>
+              <div style="font-size:11px;line-height:1.25;height:40px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                ${day.shortForecast}
+              </div>
+            </div>`;
+        }
+        forecastHTML += '</div>';
+        
+        // --- TOP SECTION (Combines Current Weather and New Radar Widget) ---
+        const topSection = `
+            <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+                
+                <div style="flex: 1 1 300px; max-width: 400px;">
+                    ${currentHTML}
+                </div>
+                
+                <div style="flex: 0 0 400px; max-width: 100%;">
+                    ${radarHTML}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('bistineauWeather').innerHTML = topSection + forecastHTML;
+
+        // --- Initialize Leaflet Map and Radar ---
+        initRadarWidget();
+        
+    } catch(e) {
+        // GLOBAL CATCH for all processing and data parsing errors
+        console.error("NWS Data Processing/Rendering Error:", e);
+        document.getElementById('bistineauWeather').innerHTML = '<div style="padding:20px;color:red;text-align:center;">Error processing weather data. Details logged to console.</div>';
+        return;
     }
-    forecastHTML += '</div>';
-    // --- TOP SECTION (Combines Current Weather and New Radar Widget) ---
-    const topSection = `
-        <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
-            
-            <div style="flex: 1 1 300px; max-width: 400px;">
-                ${currentHTML}
-            </div>
-            
-            <div style="flex: 0 0 400px; max-width: 100%;">
-                ${radarHTML}
-            </div>
-        </div>
-    `;
+ }
 
-    document.getElementById('bistineauWeather').innerHTML = topSection + forecastHTML;
-
-    initRadarWidget();
-  }
-
-  // --- RADAR INITIALIZATION (UPDATED) ---
+ // --- RADAR INITIALIZATION (UPDATED) ---
 function initRadarWidget() {
     if (window.radarMapInstance) {
         window.radarMapInstance.remove();
@@ -206,7 +265,7 @@ function initRadarWidget() {
     var centerLat = 32.42; 
     var centerLng = -93.40;
     // FINAL ZOOM: Fractional Zoom 9.5
-    var zoomLevel = 9.5; // <-- CHANGED TO 9.5
+    var zoomLevel = 9.5; 
 
     var map = L.map('radar-map', {
         center: [centerLat, centerLng],
@@ -247,7 +306,7 @@ function initRadarWidget() {
                   style: lakeStyle
               }).addTo(map);
           } else {
-              console.error('Lake Bistineau not found in DOTD NHD layer.');
+              console.warn('Lake Bistineau GeoJSON data not found in DOTD NHD layer.');
           }
       })
       .catch(error => console.error('Error loading DOTD NHD GeoJSON data:', error));
@@ -299,12 +358,21 @@ function initRadarWidget() {
         document.getElementById('radar-speed-select').onchange = changeSpeed;
     }
 
+    // --- Fetch RainViewer Data ---
     fetch('https://api.rainviewer.com/public/weather-maps.json')
         .then(res => res.json())
         .then(data => {
             processRadarFrames(map, data);
         })
-        .catch(e => console.error("Radar Error:", e));
+        .catch(e => {
+            console.error("RainViewer Radar Error:", e);
+            // Update status text on the radar widget itself
+            const statusElement = document.getElementById('radar-status');
+            if (statusElement) {
+                statusElement.textContent = 'Error';
+                statusElement.style.color = '#ff4444';
+            }
+        });
 }
  function processRadarFrames(map, apiData) {
     window.radarLayers = [];
@@ -329,7 +397,7 @@ function initRadarWidget() {
     });
     // Start immediately after loading
     startAnimationLoop(); 
-  }
+ }
 
 // ------------------------------------
 // --- NEW CONTROL FUNCTIONS ---
@@ -373,86 +441,4 @@ function startAnimationLoop() {
         window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarLayers.length;
         updateRadarDisplay();
     }, interval);
-    // Update button state visually
-    const button = document.getElementById('radar-play-pause');
-    if (button) button.innerHTML = '▮▮';
-    // Pause symbol
-}
-
-function toggleAnimation() {
-    const button = document.getElementById('radar-play-pause');
-    if (window.radarAnimationTimer) {
-        clearInterval(window.radarAnimationTimer);
-        window.radarAnimationTimer = null;
-        if (button) button.innerHTML = '►';
-    // Play symbol
-    } else {
-        startAnimationLoop();
-    }
-}
-
-function scrubFrame(direction) {
-    pauseAnimation(); // Always pause when scrubbing
-
-    const newIndex = window.currentFrameIndex + direction;
-    const totalFrames = window.radarLayers.length;
-
-    if (totalFrames > 0) {
-        // Calculate new index, wrapping around if necessary
-        window.currentFrameIndex = (newIndex % totalFrames + totalFrames) % totalFrames;
-        updateRadarDisplay();
-    }
-}
-
-function pauseAnimation() {
-    if (window.radarAnimationTimer) {
-        clearInterval(window.radarAnimationTimer);
-        window.radarAnimationTimer = null;
-        const button = document.getElementById('radar-play-pause');
-        if (button) button.innerHTML = '►';
-    // Play symbol
-    }
-}
-
-function changeSpeed(event) {
-    // Only restart the loop if it was already playing
-    if (window.radarAnimationTimer) {
-        startAnimationLoop();
-    }
-}
-
-
-// --- POPUP DETAIL FUNCTION ---
-// MUST be a window function because it is called directly from the onclick attribute in the HTML string
-window.showDetail = function(dayIndex) {
-    const data = window.lastWeatherData;
-    if (!data) return;
-    const startOfDay = new Date();
-    startOfDay.setHours(0,0,0,0); 
-    startOfDay.setDate(startOfDay.getDate() + dayIndex);
-    const endOfDay = new Date(startOfDay); 
-    endOfDay.setHours(23,59,59,999);
-    const periods = data.hourly.periods.filter(p => {
-        const t = new Date(p.startTime);
-        return t >= startOfDay && t <= endOfDay;
-    });
-    let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-    periods.forEach(p => {
-      const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
-      const temp = p.temperature;
-      const windStr = p.windSpeed.replace(' mph','');
-      const dir = p.windDirection;
-      detailHTML += `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
-          <div style="width:50px;">${time}</div>
-          <img src="${p.icon.replace('large','small')}" width="32" height="32">
-          <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-          <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
-          <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
-        </div>`;
-    });
-    detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
-    document.getElementById('dayDetail').innerHTML = detailHTML;
-    document.getElementById('dayDetail').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-};
+    //
