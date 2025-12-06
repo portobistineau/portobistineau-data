@@ -116,7 +116,15 @@
       
       <script>
        // updateWeather();
-        setInterval(updateWeather, 30 * 60 * 1000);
+       // setInterval(updateWeather, 30 * 60 * 1000);
+        document.addEventListener('DOMContentLoaded', function () {
+    // Force a refresh every 30 minutes (you asked for this)
+    setInterval(function () {
+      if (typeof updateWeather === 'function') {
+        updateWeather();
+      }
+    }, 30 * 60 * 1000);
+  });
       </script>
     </div>
 
@@ -379,6 +387,7 @@
   </div>
 </body>
 </html>
+
 
 
 
