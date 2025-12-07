@@ -708,6 +708,22 @@ footer p a {
     border: 1px solid #28a745;
     animation: flash-text-light 1s infinite alternate;
 }
+/* --- NEW: Advisory Styling --- */
+.nws-advisory-active {
+    background-color: #17a2b8; /* Muted Cyan/Blue for Advisories */
+    color: white !important;
+    border: 1px solid #005664;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    animation: pulse-advisory 2s infinite;
+}
+
+/* Advisory Pulse is slower and less aggressive */
+@keyframes pulse-advisory {
+    0% { background-color: #17a2b8; }
+    50% { background-color: #20c997; } /* Briefly flash to a lighter color */
+    100% { background-color: #17a2b8; }
+}
 
 
 /* --- Flashing Keyframes for Text (Dark/Black Text) --- */
