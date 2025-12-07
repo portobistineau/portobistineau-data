@@ -3,7 +3,7 @@
   ============================================= */
 * {
     margin: 0;
-    padding: 0;
+    padding: 0;F
     box-sizing: border-box;
 }
 body {
@@ -675,8 +675,8 @@ footer p a {
     cursor: pointer;
     text-decoration: none; /* Treat it like a clickable block */
     color: initial; /* Default text color */
-    background: #ffffff; /* Default white background */
-    border: 1px solid #f0f0f0; /* Change to a very light gray */
+    background-color: #ffffff; 
+    border: 1px solid #ffffff; /* <--- FINAL CHANGE: Make the border pure white */
 }
 
 #nws-alert-card > div {
