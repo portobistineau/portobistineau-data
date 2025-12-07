@@ -218,7 +218,22 @@ async function checkNWSAlerts() {
         }
         const data = await response.json();
         const alerts = data.features;
-        
+        /* --- START TEMPORARY TEST CODE --- */
+// !!! REMOVE THIS BLOCK AFTER TESTING !!!
+if (true) {
+    const testAlerts = [
+        {
+            properties: {
+                event: 'Flash Flood Warning', // Test the Warning state (RED)
+                description: 'TEST ALERT: This message is injected by your script to test functionality. The NWS connection may be failing, but the card logic should work.',
+                url: 'https://alerts.weather.gov/cap/wwacapget.php?x=LA123456789.0001.0001',
+            }
+        }
+    ];
+    // Force the script to use our test alerts instead of the real data
+    data.features = testAlerts; 
+}
+/* --- END TEMPORARY TEST CODE --- */
         if (alerts.length > 0) {
             // Find the highest priority alert based on type
             let alert = alerts[0].properties;
