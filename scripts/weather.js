@@ -597,7 +597,7 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION (FINAL WITH ICON SPACING) ---
+// --- POPUP DETAIL FUNCTION (FINAL WITH INCREASED ICON SPACING) ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
@@ -631,9 +631,9 @@ window.showDetail = function(dayIndex) {
           
           <div style="width:50px;">${time}</div>
           
-          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle; margin-right: 8px;">
+          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle; margin-right: 12px;">
           
-          <div style="width:122px;text-align:left;">${p.shortForecast}</div> 
+          <div style="width:118px;text-align:left;">${p.shortForecast}</div> 
           
           <div style="font-weight:bold;width:50px;text-align:right;">${temp}°F</div>
           <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
