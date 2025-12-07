@@ -597,39 +597,57 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION (EXISTING CODE BELOW) ---
+// --- POPUP DETAIL FUNCTION (FINAL CORRECTED CODE) ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
     if (!data) return;
+    
     const startOfDay = new Date();
     startOfDay.setHours(0,0,0,0); 
     startOfDay.setDate(startOfDay.getDate() + dayIndex);
+    
     const endOfDay = new Date(startOfDay); 
     endOfDay.setHours(23,59,59,999);
+    
     const periods = data.hourly.periods.filter(p => {
         const t = new Date(p.startTime);
         return t >= startOfDay && t <= endOfDay;
     });
+    
     let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
+    
+    // Add header row for better clarity in the popup
+    detailHTML += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;font-size:12px;font-weight:bold;color:#003366;border-bottom:2px solid #ccc;">
+          <div style="width:50px;">TIME</div>
+          <div style="width:30px;"></div> <div style="width:100px;text-align:left;">FORECAST</div>
+          <div style="width:30px;text-align:right;">TEMP</div>
+          <div style="width:30px;text-align:right;">PoP</div> <div style="width:50px;text-align:right;">WIND</div>
+        </div>`;
+    
     periods.forEach(p => {
       const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
       const temp = p.temperature;
       const windStr = p.windSpeed.replace(' mph','');
       const dir = p.windDirection;
+      // Use the probabilityOfPrecipitation.value, defaulting to 0 if null
+      const pop = p.probabilityOfPrecipitation?.value || 0; 
+      
       detailHTML += `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
           <div style="width:50px;">${time}</div>
           <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle;">
-          <div style="width:120px;text-align:left;">${p.shortForecast}</div>
-          <div style="font-weight:bold;width:40px;text-align:right;">${temp}°F</div>
-          <div style="width:60px;text-align:right;">${windStr} ${dir}</div>
+          <div style="width:100px;text-align:left;">${p.shortForecast}</div>
+          <div style="font-weight:bold;width:30px;text-align:right;">${temp}°</div>
+          <div style="width:30px;text-align:right;">${pop}%</div> <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
         </div>`;
     });
+    
     detailHTML += '</div>';
 
-    // Show the popup
+    // Show the popup (using your existing closing logic for consistency)
     document.getElementById('dayDetail').innerHTML = detailHTML;
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('dayDetail').style.display = 'block';
-  }
+};
