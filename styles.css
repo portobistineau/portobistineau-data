@@ -676,7 +676,7 @@ footer p a {
     text-decoration: none; /* Treat it like a clickable block */
     color: initial; /* Default text color */
     background: #ffffff; /* Default white background */
-    border: 1px solid #e0e0e0; /* Subtle border on non-alert days */
+    border: 1px solid #f0f0f0; /* Change to a very light gray */
 }
 
 #nws-alert-card > div {
