@@ -597,7 +597,7 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION (FINAL CORRECTED CODE) ---
+// --- POPUP DETAIL FUNCTION (FINAL CLEANED CODE) ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
@@ -615,16 +615,8 @@ window.showDetail = function(dayIndex) {
         return t >= startOfDay && t <= endOfDay;
     });
     
+    // 1. Remove the header row
     let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-    
-    // Add header row for better clarity in the popup
-    detailHTML += `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;font-size:12px;font-weight:bold;color:#003366;border-bottom:2px solid #ccc;">
-          <div style="width:50px;">TIME</div>
-          <div style="width:30px;"></div> <div style="width:100px;text-align:left;">FORECAST</div>
-          <div style="width:30px;text-align:right;">TEMP</div>
-          <div style="width:30px;text-align:right;">PoP</div> <div style="width:50px;text-align:right;">WIND</div>
-        </div>`;
     
     periods.forEach(p => {
       const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
@@ -636,11 +628,17 @@ window.showDetail = function(dayIndex) {
       
       detailHTML += `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
+          
           <div style="width:50px;">${time}</div>
+          
           <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle;">
-          <div style="width:100px;text-align:left;">${p.shortForecast}</div>
-          <div style="font-weight:bold;width:30px;text-align:right;">${temp}°</div>
-          <div style="width:30px;text-align:right;">${pop}%</div> <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
+          
+          <div style="width:130px;text-align:left;">${p.shortForecast}</div>
+          
+          <div style="font-weight:bold;width:50px;text-align:right;">${temp}°F</div>
+          <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
+          <div style="width:50px;text-align:right;">${pop}%</div>
+          
         </div>`;
     });
     
