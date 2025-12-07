@@ -656,3 +656,115 @@ footer p a {
     color: #666; /* Slightly muted color for attribution */
     line-height: 1;
 }
+/* =============================================
+  12. NWS ALERT & POPUP STYLES (NEW)
+  ============================================= */
+
+/* --- ALERT CARD CONTAINER (White on normal days) --- */
+#nws-alert-card {
+    min-height: 120px; /* Ensure a minimum visible box size */
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    display: flex; /* Centers content vertically */
+    flex-direction: column;
+    justify-content: center;
+    transition: background-color 0.3s, color 0.3s;
+    cursor: pointer;
+    text-decoration: none; /* Treat it like a clickable block */
+    color: initial; /* Default text color */
+    background: #ffffff; /* Default white background */
+    border: 1px solid #e0e0e0; /* Subtle border on non-alert days */
+}
+
+#nws-alert-card > div {
+    /* Style for the three lines of text inside the card */
+    line-height: 1.4;
+    font-weight: bold;
+}
+
+/* --- WATCH STATE (Yellow, Flashing Black Text) --- */
+.nws-watch-active {
+    background-color: #ffc107; /* Yellow */
+    color: #000000; /* Black text */
+    border: 1px solid #ffc107;
+    animation: flash-text-dark 1s infinite alternate;
+}
+
+/* --- WARNING STATE (Red, Flashing White Text) --- */
+.nws-warning-active {
+    background-color: #dc3545; /* Red */
+    color: #ffffff; /* White text */
+    border: 1px solid #dc3545;
+    animation: flash-text-light 1s infinite alternate;
+}
+
+/* --- STATEMENT STATE (Green, Flashing White Text) --- */
+.nws-statement-active {
+    background-color: #28a745; /* Green */
+    color: #ffffff; /* White text */
+    border: 1px solid #28a745;
+    animation: flash-text-light 1s infinite alternate;
+}
+
+
+/* --- Flashing Keyframes for Text (Dark/Black Text) --- */
+@keyframes flash-text-dark {
+    from { opacity: 1; }
+    to { opacity: 0.7; } 
+}
+
+/* --- Flashing Keyframes for Text (Light/White Text) --- */
+@keyframes flash-text-light {
+    from { opacity: 1; }
+    to { opacity: 0.7; }
+}
+
+
+/* --- General Popup Styling (Modal window for alert details) --- */
+
+/* Note: The old popup styles for #dayDetail and #overlay are Z-index 998/999.
+ * We must use a higher Z-index for the NWS alert popup to ensure it overlays everything. */
+.nws-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1500; /* Ensure this is on top of all other weather popups */
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.nws-popup-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    font-family: Arial, sans-serif;
+}
+
+.nws-popup-content h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.nws-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+}
