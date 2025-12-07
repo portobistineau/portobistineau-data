@@ -24,7 +24,7 @@ async function updateWeather() {
     let grid;
     try {
       const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
-        headers: { 'User-Agent': 'PortOBistineauWeather/1.0 (portobistineau@gmail.com)' }
+        headers: { 'User-Agent': 'PortOBistineauWeather/1.0 (portobistineau.com, portobistineau@gmail.com)' }
       }).then(r => r.json());
       grid = point.properties;
     } catch(e) {
@@ -79,7 +79,7 @@ async function updateWeather() {
     // --- HTML GENERATION ---
     
     const currentHTML = `
-      <div style="background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;">
+      <div id="weather-details-box" style="background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);height:auto;">
         <div style="font-size:28px;font-weight:bold;">${currentTemp}°F</div>
         <div style="margin:8px 0;">
           <img src="${currentIcon}" width="85" height="85" style="vertical-align:middle;margin:0 auto;display:block;">
@@ -93,6 +93,10 @@ async function updateWeather() {
           Dew Point ${p.dewpoint.value !== null ? Math.round(p.dewpoint.value * 1.8 + 32) : '—'}°F<br>
         </div>
       </div>`;
+    
+    // Placeholder for the NWS Alert Card
+    // Note: The onclick="event.preventDefault();" prevents the <a> tag from navigating away when empty
+    const alertPlaceholder = '<a id="nws-alert-card" href="#" onclick="event.preventDefault();"></a>';
 
     // --- NEW: RADAR HTML WITH COMPACT LEGEND AND BOTTOM CONTROLS ---
     const radarHTML = `
@@ -172,13 +176,13 @@ async function updateWeather() {
         </div>`;
     }
     forecastHTML += '</div>';
-    // --- TOP SECTION (Combines Current Weather and New Radar Widget) ---
+    // --- TOP SECTION (Combines Current Weather, New Alert Card, and New Radar Widget) ---
     const topSection = `
         <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
             
             <div style="flex: 1 1 300px; max-width: 400px;">
                 ${currentHTML}
-            </div>
+                ${alertPlaceholder} </div>
             
             <div style="flex: 0 0 400px; max-width: 100%;">
                 ${radarHTML}
@@ -189,9 +193,166 @@ async function updateWeather() {
     document.getElementById('bistineauWeather').innerHTML = topSection + forecastHTML;
 
     initRadarWidget();
+    checkNWSAlerts(); // NEW: Call the alert check function
   }
 
-  // --- RADAR INITIALIZATION (UPDATED) ---
+
+// ------------------------------------
+// --- NEW NWS ALERT LOGIC ---
+// ------------------------------------
+
+async function checkNWSAlerts() {
+    const alertCard = document.getElementById('nws-alert-card');
+    const countyUGC = 'LAC119'; // Webster Parish, LA
+    const nwsApiUrl = `https://api.weather.gov/alerts/active/counties?area=${countyUGC}`;
+
+    // NWS requires a custom User-Agent header
+    const headers = {
+        'User-Agent': 'PortOBistineau.com Weather Alert Script (portobistineau.com, portobistineau@gmail.com)'
+    };
+
+    try {
+        const response = await fetch(nwsApiUrl, { headers: headers });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const alerts = data.features;
+        
+        if (alerts.length > 0) {
+            // Find the highest priority alert based on type
+            let alert = alerts[0].properties;
+            let type = '';
+
+            // Prioritize: Warning > Watch > Special Statement
+            for (const a of alerts) {
+                const event = a.properties.event;
+                const description = a.properties.description;
+                
+                // 1. WARNING (Highest Priority)
+                if (event.includes('Warning')) {
+                    alert = a.properties;
+                    type = 'warning';
+                    break; // Stop and use this one
+                } 
+                
+                // 2. WATCH (If no Warning found yet)
+                if (event.includes('Watch') && type !== 'warning') {
+                    alert = a.properties;
+                    type = 'watch';
+                } 
+                
+                // 3. STATEMENT (Lowest Priority, only if no Warning or Watch found yet)
+                if (type !== 'warning' && type !== 'watch') {
+                     if (event.includes('Special Weather Statement') || description.includes('SPECIAL WEATHER STATEMENT')) {
+                         alert = a.properties;
+                         type = 'statement';
+                     }
+                }
+            }
+
+            let headlineText = '';
+            let alertClass = '';
+            
+            if (type === 'warning') {
+                headlineText = 'WEATHER WARNING ISSUED!';
+                alertClass = 'nws-warning-active';
+            } else if (type === 'watch') {
+                headlineText = 'WEATHER WATCH ISSUED!';
+                alertClass = 'nws-watch-active';
+            } else if (type === 'statement') {
+                headlineText = 'SPECIAL WEATHER STATEMENT!';
+                alertClass = 'nws-statement-active';
+            } else {
+                 // No relevant alert found after filtering
+                 alertCard.className = '';
+                 alertCard.innerHTML = '';
+                 return;
+            }
+            
+            // Set the appearance and content
+            alertCard.className = alertClass;
+            // The text content is wrapped in <div>s using 'color:inherit' to ensure 
+            // the text color follows the CSS class (white or black) and the flashing animation.
+            alertCard.innerHTML = `
+                <div style="font-size:1.4em; color:inherit;">${headlineText}</div>
+                <div style="font-size:1em; line-height:1.4; color:inherit;">IMPORTANT ALERT FROM THE NATIONAL WEATHER SERVICE! PLEASE CLICK TO READ!</div>
+                <div style="font-size:1.4em; color:inherit;">${headlineText}</div>
+            `;
+            
+            // Attach the click handler to open the popup
+            // We clone and replace the element to prevent duplicate event listeners on updates
+            const oldCard = alertCard.cloneNode(true);
+            alertCard.parentNode.replaceChild(oldCard, alertCard);
+            const newCard = document.getElementById('nws-alert-card');
+
+            newCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                showNWSAlertPopup(alert.event, alert.description, alert.url);
+            });
+
+        } else {
+            // No active alerts, reset the card to empty white state
+            alertCard.className = '';
+            alertCard.innerHTML = '';
+        }
+
+    } catch (error) {
+        console.error('Error fetching NWS alerts:', error);
+        alertCard.className = '';
+        alertCard.innerHTML = '<p style="color:red; font-size:12px;">Alert service unavailable.</p>';
+    }
+}
+
+
+window.showNWSAlertPopup = function(headline, description, fullUrl) {
+    // Determine header color for the popup
+    let headerColor = '#333';
+    if (headline.includes('Warning')) {
+        headerColor = '#dc3545';
+    } else if (headline.includes('Watch')) {
+        headerColor = '#ffc107';
+    } else if (headline.includes('Statement')) {
+        headerColor = '#28a745';
+    }
+
+    const popupHTML = `
+        <div class="nws-popup-overlay" id="nws-popup-overlay">
+            <div class="nws-popup-content">
+                <span class="nws-close-btn" onclick="document.getElementById('nws-popup-overlay').style.display='none';">&times;</span>
+                <h3 style="color: ${headerColor};">${headline}</h3>
+                <p style="white-space: pre-wrap; font-size: 14px;">${description}</p>
+                <p style="text-align: center; margin-top: 20px;">
+                    <a href="${fullUrl}" target="_blank" style="color: blue; font-weight: bold;">View Official NWS Details</a>
+                </p>
+                <div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('nws-popup-overlay').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>
+            </div>
+        </div>
+    `;
+
+    // Add or update the popup element
+    let popup = document.getElementById('nws-popup-overlay');
+    if (!popup) {
+        document.body.insertAdjacentHTML('beforeend', popupHTML);
+        popup = document.getElementById('nws-popup-overlay');
+    } else {
+         // Update content of existing popup
+         document.querySelector('.nws-popup-content').innerHTML = `
+            <span class="nws-close-btn" onclick="document.getElementById('nws-popup-overlay').style.display='none';">&times;</span>
+            <h3 style="color: ${headerColor};">${headline}</h3>
+            <p style="white-space: pre-wrap; font-size: 14px;">${description}</p>
+            <p style="text-align: center; margin-top: 20px;">
+                <a href="${fullUrl}" target="_blank" style="color: blue; font-weight: bold;">View Official NWS Details</a>
+            </p>
+            <div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('nws-popup-overlay').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>
+         `;
+    }
+
+    // Display the popup
+    popup.style.display = 'flex';
+}
+
+// --- RADAR INITIALIZATION (EXISTING CODE BELOW) ---
 function initRadarWidget() {
     if (window.radarMapInstance) {
         window.radarMapInstance.remove();
@@ -203,10 +364,10 @@ function initRadarWidget() {
     }
     window.currentFrameIndex = 0; // Reset index on new init
 
-    var centerLat = 32.42; 
+    var centerLat = 32.42;  
     var centerLng = -93.40;
     // FINAL ZOOM: Fractional Zoom 9.5
-    var zoomLevel = 9.5; // <-- CHANGED TO 9.5
+    var zoomLevel = 9.5; 
 
     var map = L.map('radar-map', {
         center: [centerLat, centerLng],
@@ -230,16 +391,16 @@ function initRadarWidget() {
     
     const lakeStyle = {
         fillColor: "#0084FF", 
-        weight: 0,           
+        weight: 0,          
         fillOpacity: 0.35    
     };
 
     fetch(dotdGeoJsonUrl)
       .then(response => {
-          if (!response.ok) {
-              throw new Error(`Failed to fetch DOTD NHD data: ${response.status}`);
-          }
-          return response.json();
+           if (!response.ok) {
+               throw new Error(`Failed to fetch DOTD NHD data: ${response.status}`);
+           }
+           return response.json();
       })
       .then(data => {
           if (data.features && data.features.length > 0) {
@@ -318,7 +479,7 @@ function initRadarWidget() {
     
     var frames = pastSlice.concat(futureSlice);
     frames.forEach(function(frameObj, index) {
-        var layer = L.tileLayer(apiData.host + frameObj.path + '/256/{z}/{x}/{y}/2/1_1.png', {
+        var layer = L.tileLayer(apiData.host + frameObj.path + '/256/{z}/{y}/{x}/2/1_1.png', {
             opacity: 0,
             zIndex: 100 
         });
@@ -329,10 +490,10 @@ function initRadarWidget() {
     });
     // Start immediately after loading
     startAnimationLoop(); 
-  }
+ }
 
 // ------------------------------------
-// --- NEW CONTROL FUNCTIONS ---
+// --- EXISTING CONTROL FUNCTIONS ---
 // ------------------------------------
 
 function formatTime(ts) {
@@ -422,7 +583,7 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION ---
+// --- POPUP DETAIL FUNCTION (EXISTING CODE BELOW) ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
@@ -445,14 +606,16 @@ window.showDetail = function(dayIndex) {
       detailHTML += `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
           <div style="width:50px;">${time}</div>
-          <img src="${p.icon.replace('large','small')}" width="32" height="32">
-          <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-          <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
-          <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
+          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle;">
+          <div style="width:120px;text-align:left;">${p.shortForecast}</div>
+          <div style="font-weight:bold;width:40px;text-align:right;">${temp}°F</div>
+          <div style="width:60px;text-align:right;">${windStr} ${dir}</div>
         </div>`;
     });
-    detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
+    detailHTML += '</div>';
+
+    // Show the popup
     document.getElementById('dayDetail').innerHTML = detailHTML;
-    document.getElementById('dayDetail').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
-};
+    document.getElementById('dayDetail').style.display = 'block';
+  }
