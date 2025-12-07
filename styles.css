@@ -710,19 +710,19 @@ footer p a {
 }
 /* --- NEW: Advisory Styling --- */
 .nws-advisory-active {
-    background-color: #17a2b8; /* Muted Cyan/Blue for Advisories */
-    color: white !important;
-    border: 1px solid #005664;
+    background-color: #ff9900; /* Bright Orange for Advisories (Consistent with TV) */
+    color: black !important; /* Use black text for contrast on orange */
+    border: 1px solid #cc7a00;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     animation: pulse-advisory 2s infinite;
 }
 
-/* Advisory Pulse is slower and less aggressive */
+/* Advisory Pulse is slower and less aggressive, flashing to a yellow */
 @keyframes pulse-advisory {
-    0% { background-color: #17a2b8; }
-    50% { background-color: #20c997; } /* Briefly flash to a lighter color */
-    100% { background-color: #17a2b8; }
+    0% { background-color: #ff9900; }
+    50% { background-color: #ffc107; } /* Briefly flash to a warning yellow */
+    100% { background-color: #ff9900; }
 }
 
 
