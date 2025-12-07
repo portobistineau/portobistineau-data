@@ -201,46 +201,25 @@ async function updateWeather() {
 // --- NEW NWS ALERT LOGIC ---
 // ------------------------------------
 
-// --- NEW CORRECTED NWS ALERT LOGIC ---
+// --- NWS ALERT LOGIC (FINAL LIVE VERSION) ---
 async function checkNWSAlerts() {
     const alertCard = document.getElementById('nws-alert-card');
-    const countyUGC = 'LAC119'; // Webster Parish, LA
     
-    // CORRECTED API URL: Targets the standard alerts endpoint and filters by the county UGC code
-    const nwsApiUrl = `https://api.weather.gov/alerts/active?region=LCL&area=${countyUGC}`; 
-
-    // NWS requires a custom User-Agent header
-  //  const headers = {
- //       'User-Agent': 'PortOBistineau.com Weather Alert Script (portobistineau.com, portobistineau@gmail.com)'
-  //  };
+    // Use the central point of the area
+    const lakeCenterLat = 32.4066;
+    const lakeCenterLon = -93.3906;
+    const pointQuery = `${lakeCenterLat},${lakeCenterLon}`;
+    
+    // NEW: Use the 'point' parameter for maximum precision, covering all 3 parishes
+    const nwsApiUrl = `https://api.weather.gov/alerts/active?point=${pointQuery}`; 
 
     try {
-        const response = await fetch(nwsApiUrl);
+        // Fetch without custom headers to avoid the 400 error
+        const response = await fetch(nwsApiUrl); 
         if (!response.ok) {
-            // This catches the 404 and other connection errors
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-
-
-        /* --- START TEMPORARY TEST BLOCK: REMOVE AFTER TESTING --- */
-        // SET 'if (true)' TO RUN THE TEST. SET 'if (false)' OR REMOVE TO GO LIVE.
-        if (true) {
-            const testAlerts = [
-                {
-                    properties: {
-                        event: 'Flash Flood Warning', // Change to 'Severe Thunderstorm Watch' or 'Special Weather Statement' to test colors
-                        description: 'TEST ALERT: This is a simulated alert for testing purposes only. Click to view the details in the popup window.',
-                        url: 'https://alerts.weather.gov/cap/wwacapget.php?x=LA123456789.0001.0001',
-                    }
-                }
-            ];
-            // Force the script to use our test alerts instead of the real data
-            data.features = testAlerts; 
-        }
-        /* --- END TEMPORARY TEST BLOCK: REMOVE AFTER TESTING --- */
-
-
         const alerts = data.features;
         
         if (alerts.length > 0) {
@@ -302,7 +281,7 @@ async function checkNWSAlerts() {
                 <div style="font-size:1.4em; color:inherit;">${headlineText}</div>
             `;
             
-            // Re-attach the click handler to open the popup (prevents multiple listeners)
+            // Re-attach the click handler (clone-replace prevents duplicate listeners)
             const oldCard = alertCard.cloneNode(true);
             alertCard.parentNode.replaceChild(oldCard, alertCard);
             const newCard = document.getElementById('nws-alert-card');
@@ -321,7 +300,7 @@ async function checkNWSAlerts() {
     } catch (error) {
         console.error('Error fetching NWS alerts:', error);
         alertCard.className = '';
-        // Only show 'Alert service unavailable' if the error is a connection failure, not if no alerts exist.
+        // Display user-friendly error if the connection fails
         if (error.message && error.message.includes('HTTP error')) {
             alertCard.innerHTML = '<p style="color:red; font-size:12px;">Alert service unavailable (API error).</p>';
         }
