@@ -210,12 +210,12 @@ async function checkNWSAlerts() {
     const nwsApiUrl = `https://api.weather.gov/alerts/active?region=LCL&area=${countyUGC}`; 
 
     // NWS requires a custom User-Agent header
-    const headers = {
-        'User-Agent': 'PortOBistineau.com Weather Alert Script (portobistineau.com, portobistineau@gmail.com)'
-    };
+  //  const headers = {
+ //       'User-Agent': 'PortOBistineau.com Weather Alert Script (portobistineau.com, portobistineau@gmail.com)'
+  //  };
 
     try {
-        const response = await fetch(nwsApiUrl, { headers: headers });
+        const response = await fetch(nwsApiUrl);
         if (!response.ok) {
             // This catches the 404 and other connection errors
             throw new Error(`HTTP error! status: ${response.status}`);
