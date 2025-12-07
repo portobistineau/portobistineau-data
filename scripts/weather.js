@@ -597,21 +597,29 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION ---
+// --- POPUP DETAIL FUNCTION (FINAL CLEANED CODE) ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
     if (!data) return;
+    
     const startOfDay = new Date();
     startOfDay.setHours(0,0,0,0); 
     startOfDay.setDate(startOfDay.getDate() + dayIndex);
+    
     const endOfDay = new Date(startOfDay); 
     endOfDay.setHours(23,59,59,999);
+    
     const periods = data.hourly.periods.filter(p => {
         const t = new Date(p.startTime);
         return t >= startOfDay && t <= endOfDay;
     });
+    
+    // START HERE: detailHTML now begins directly with the date header and the scroll container.
     let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
+    
+    // The previous code block that added the header row is now removed.
+    
     periods.forEach(p => {
       const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
       const temp = p.temperature;
@@ -635,9 +643,11 @@ window.showDetail = function(dayIndex) {
           
         </div>`;
     });
-    detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
-    document.getElementById('dayDetail').innerHTML = detailHTML;
-    document.getElementById('dayDetail').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-};
+    
+    detailHTML += '</div>';
 
+    // Show the popup (using your existing closing logic for consistency)
+    document.getElementById('dayDetail').innerHTML = detailHTML;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('dayDetail').style.display = 'block';
+};
