@@ -201,10 +201,13 @@ async function updateWeather() {
 // --- NEW NWS ALERT LOGIC ---
 // ------------------------------------
 
+// --- NEW CORRECTED NWS ALERT LOGIC ---
 async function checkNWSAlerts() {
     const alertCard = document.getElementById('nws-alert-card');
     const countyUGC = 'LAC119'; // Webster Parish, LA
-    const nwsApiUrl = `https://api.weather.gov/alerts/active/counties?area=${countyUGC}`;
+    
+    // CORRECTED API URL: Targets the standard alerts endpoint and filters by the county UGC code
+    const nwsApiUrl = `https://api.weather.gov/alerts/active?region=LCL&area=${countyUGC}`; 
 
     // NWS requires a custom User-Agent header
     const headers = {
@@ -214,26 +217,32 @@ async function checkNWSAlerts() {
     try {
         const response = await fetch(nwsApiUrl, { headers: headers });
         if (!response.ok) {
+            // This catches the 404 and other connection errors
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        const alerts = data.features;
-        /* --- START TEMPORARY TEST CODE --- */
-// !!! REMOVE THIS BLOCK AFTER TESTING !!!
-if (true) {
-    const testAlerts = [
-        {
-            properties: {
-                event: 'Flash Flood Warning', // Test the Warning state (RED)
-                description: 'TEST ALERT: This message is injected by your script to test functionality. The NWS connection may be failing, but the card logic should work.',
-                url: 'https://alerts.weather.gov/cap/wwacapget.php?x=LA123456789.0001.0001',
-            }
+
+
+        /* --- START TEMPORARY TEST BLOCK: REMOVE AFTER TESTING --- */
+        // SET 'if (true)' TO RUN THE TEST. SET 'if (false)' OR REMOVE TO GO LIVE.
+        if (true) {
+            const testAlerts = [
+                {
+                    properties: {
+                        event: 'Flash Flood Warning', // Change to 'Severe Thunderstorm Watch' or 'Special Weather Statement' to test colors
+                        description: 'TEST ALERT: This is a simulated alert for testing purposes only. Click to view the details in the popup window.',
+                        url: 'https://alerts.weather.gov/cap/wwacapget.php?x=LA123456789.0001.0001',
+                    }
+                }
+            ];
+            // Force the script to use our test alerts instead of the real data
+            data.features = testAlerts; 
         }
-    ];
-    // Force the script to use our test alerts instead of the real data
-    data.features = testAlerts; 
-}
-/* --- END TEMPORARY TEST CODE --- */
+        /* --- END TEMPORARY TEST BLOCK: REMOVE AFTER TESTING --- */
+
+
+        const alerts = data.features;
+        
         if (alerts.length > 0) {
             // Find the highest priority alert based on type
             let alert = alerts[0].properties;
@@ -248,7 +257,7 @@ if (true) {
                 if (event.includes('Warning')) {
                     alert = a.properties;
                     type = 'warning';
-                    break; // Stop and use this one
+                    break; 
                 } 
                 
                 // 2. WATCH (If no Warning found yet)
@@ -287,16 +296,13 @@ if (true) {
             
             // Set the appearance and content
             alertCard.className = alertClass;
-            // The text content is wrapped in <div>s using 'color:inherit' to ensure 
-            // the text color follows the CSS class (white or black) and the flashing animation.
             alertCard.innerHTML = `
                 <div style="font-size:1.4em; color:inherit;">${headlineText}</div>
                 <div style="font-size:1em; line-height:1.4; color:inherit;">IMPORTANT ALERT FROM THE NATIONAL WEATHER SERVICE! PLEASE CLICK TO READ!</div>
                 <div style="font-size:1.4em; color:inherit;">${headlineText}</div>
             `;
             
-            // Attach the click handler to open the popup
-            // We clone and replace the element to prevent duplicate event listeners on updates
+            // Re-attach the click handler to open the popup (prevents multiple listeners)
             const oldCard = alertCard.cloneNode(true);
             alertCard.parentNode.replaceChild(oldCard, alertCard);
             const newCard = document.getElementById('nws-alert-card');
@@ -315,7 +321,10 @@ if (true) {
     } catch (error) {
         console.error('Error fetching NWS alerts:', error);
         alertCard.className = '';
-        alertCard.innerHTML = '<p style="color:red; font-size:12px;">Alert service unavailable.</p>';
+        // Only show 'Alert service unavailable' if the error is a connection failure, not if no alerts exist.
+        if (error.message && error.message.includes('HTTP error')) {
+            alertCard.innerHTML = '<p style="color:red; font-size:12px;">Alert service unavailable (API error).</p>';
+        }
     }
 }
 
