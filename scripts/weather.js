@@ -597,55 +597,38 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION (FINAL CLEANED CODE) ---
+// --- POPUP DETAIL FUNCTION ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
     if (!data) return;
-    
     const startOfDay = new Date();
     startOfDay.setHours(0,0,0,0); 
     startOfDay.setDate(startOfDay.getDate() + dayIndex);
-    
     const endOfDay = new Date(startOfDay); 
     endOfDay.setHours(23,59,59,999);
-    
     const periods = data.hourly.periods.filter(p => {
         const t = new Date(p.startTime);
         return t >= startOfDay && t <= endOfDay;
     });
-    
-    // 1. Remove the header row
     let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-    
     periods.forEach(p => {
       const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
       const temp = p.temperature;
       const windStr = p.windSpeed.replace(' mph','');
       const dir = p.windDirection;
-      // Use the probabilityOfPrecipitation.value, defaulting to 0 if null
-      const pop = p.probabilityOfPrecipitation?.value || 0; 
-      
       detailHTML += `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
-          
           <div style="width:50px;">${time}</div>
-          
-          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle;">
-          
-          <div style="width:130px;text-align:left;">${p.shortForecast}</div>
-          
-          <div style="font-weight:bold;width:50px;text-align:right;">${temp}°F</div>
-          <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
-          <div style="width:50px;text-align:right;">${pop}%</div>
-          
+          <img src="${p.icon.replace('large','small')}" width="32" height="32">
+          <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
+          <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
+          <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
         </div>`;
     });
-    
-    detailHTML += '</div>';
-
-    // Show the popup (using your existing closing logic for consistency)
+    detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
     document.getElementById('dayDetail').innerHTML = detailHTML;
-    document.getElementById('overlay').style.display = 'block';
     document.getElementById('dayDetail').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
 };
+
