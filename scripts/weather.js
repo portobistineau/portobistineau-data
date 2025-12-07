@@ -617,13 +617,22 @@ window.showDetail = function(dayIndex) {
       const temp = p.temperature;
       const windStr = p.windSpeed.replace(' mph','');
       const dir = p.windDirection;
+      // Use the probabilityOfPrecipitation.value, defaulting to 0 if null
+      const pop = p.probabilityOfPrecipitation?.value || 0; 
+      
       detailHTML += `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:14px;">
+          
           <div style="width:50px;">${time}</div>
-          <img src="${p.icon.replace('large','small')}" width="32" height="32">
-          <div style="width:60px;text-align:right;font-weight:bold;">${temp}°</div>
-          <div style="width:80px;text-align:center;">${windStr} ${dir}</div>
-          <div style="width:50px;text-align:right;">${p.probabilityOfPrecipitation.value || 0}%</div>
+          
+          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle;">
+          
+          <div style="width:130px;text-align:left;">${p.shortForecast}</div>
+          
+          <div style="font-weight:bold;width:50px;text-align:right;">${temp}°F</div>
+          <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
+          <div style="width:50px;text-align:right;">${pop}%</div>
+          
         </div>`;
     });
     detailHTML += `</div><div style="text-align:center;margin-top:10px;"><button onclick="document.getElementById('overlay').style.display='none';document.getElementById('dayDetail').style.display='none';" style="padding:8px 16px;background:#003366;color:#fff;border:none;border-radius:6px;cursor:pointer;">Close</button></div>`;
