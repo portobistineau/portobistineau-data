@@ -597,7 +597,7 @@ function changeSpeed(event) {
 }
 
 
-// --- POPUP DETAIL FUNCTION (FINAL CLEANED CODE) ---
+// --- POPUP DETAIL FUNCTION (FINAL WITH ICON SPACING) ---
 // MUST be a window function because it is called directly from the onclick attribute in the HTML string
 window.showDetail = function(dayIndex) {
     const data = window.lastWeatherData;
@@ -615,10 +615,8 @@ window.showDetail = function(dayIndex) {
         return t >= startOfDay && t <= endOfDay;
     });
     
-    // START HERE: detailHTML now begins directly with the date header and the scroll container.
+    // detailHTML now begins directly with the date header and the scroll container.
     let detailHTML = `<h3 style="margin-top:0;text-align:center;">${startOfDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'})}</h3><div style="max-height:60vh;overflow-y:auto;">`;
-    
-    // The previous code block that added the header row is now removed.
     
     periods.forEach(p => {
       const time = new Date(p.startTime).toLocaleTimeString('en-US', {hour:'numeric'});
@@ -633,9 +631,9 @@ window.showDetail = function(dayIndex) {
           
           <div style="width:50px;">${time}</div>
           
-          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle;">
+          <img src="${p.icon.replace('large','small')}" width="30" height="30" style="vertical-align:middle; margin-right: 8px;">
           
-          <div style="width:130px;text-align:left;">${p.shortForecast}</div>
+          <div style="width:122px;text-align:left;">${p.shortForecast}</div> 
           
           <div style="font-weight:bold;width:50px;text-align:right;">${temp}°F</div>
           <div style="width:50px;text-align:right;">${windStr} ${dir}</div>
