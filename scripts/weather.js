@@ -252,6 +252,14 @@ async function checkNWSAlerts() {
                          type = 'statement';
                      }
                 }
+                
+                // 4. NEW ADVISORY CHECK (If no Warning, Watch, or Statement found yet)
+                if (type !== 'warning' && type !== 'watch' && type !== 'statement') {
+                     if (event.includes('Advisory')) {
+                         alert = a.properties;
+                         type = 'advisory'; // <--- NEW TYPE DEFINITION
+                     }
+                }
             }
 
             let headlineText = '';
@@ -266,6 +274,9 @@ async function checkNWSAlerts() {
             } else if (type === 'statement') {
                 headlineText = 'SPECIAL WEATHER STATEMENT!';
                 alertClass = 'nws-statement-active';
+            } else if (type === 'advisory') { // <--- NEW RENDERING CHECK
+                headlineText = 'WEATHER ADVISORY ISSUED!';
+                alertClass = 'nws-advisory-active'; // <--- NEW CLASS
             } else {
                  // No relevant alert found after filtering
                  alertCard.className = '';
