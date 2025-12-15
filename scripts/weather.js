@@ -50,8 +50,17 @@ async function updateWeather() {
     window.lastWeatherData = data;
     // --- RENDER CURRENT ---
     const p = data.obs;
-    const currentTemp = Math.round(p.temperature.value * 1.8 + 32);
-    const feels = Math.round(p.apparentTemperature?.value * 1.8 + 32) || currentTemp;
+    const currentTempC = p.temperature.value;
+    const currentTemp = Math.round(currentTempC * 1.8 + 32);
+
+    // Determine Feels Like: use windChill if available, then heatIndex, otherwise actual temp
+    let feelsLikeC = currentTempC;
+    if (p.windChill?.value !== null) {
+        feelsLikeC = p.windChill.value;
+    } else if (p.heatIndex?.value !== null) {
+        feelsLikeC = p.heatIndex.value;
+    }
+    const feels = Math.round(feelsLikeC * 1.8 + 32);
     const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
     let trend = '';
     const change = p.pressureChange?.value;
