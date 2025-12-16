@@ -77,13 +77,37 @@ async function updateWeather() {
     );
     const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
     const currentForecast = closestHourly?.shortForecast || '';
+        // Use actual observed wind from KSHV station
     let windSpeedAvg = 0;
-    if (closestHourly?.windSpeed) {
-      const nums = closestHourly.windSpeed.match(/\d+/g)?.map(Number) || [];
-      if (nums.length === 1) windSpeedAvg = nums[0];
-      else if (nums.length === 2) windSpeedAvg = Math.round((nums[0] + nums[1]) / 2);
+    let windDir = '';
+
+    const obsWindSpeedKmH = p.windSpeed?.value;       // in km/h, can be null
+    const obsWindDirDeg = p.windDirection?.value;     // in degrees (true), 0=north, can be null
+
+    if (obsWindSpeedKmH !== null && obsWindSpeedKmH !== undefined) {
+      windSpeedAvg = Math.round(obsWindSpeedKmH * 0.621371);  // convert km/h to mph
     }
-    const windDir = closestHourly?.windDirection || '';
+
+    if (obsWindDirDeg !== null && obsWindDirDeg !== undefined) {
+      // Convert degrees to 16-point cardinal direction (N, NNE, NE, etc.)
+      const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                    "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+      const index = Math.round(obsWindDirDeg / 22.5) % 16;
+      windDir = dirs[index];
+    }
+
+    // Special case: if observed speed is very low (< 3 mph) and direction is missing/variable,
+    // or if the original forecast said something like "Light and Variable", fall back to that text
+    if (windSpeedAvg < 3 || !windDir) {
+      const forecastWind = closestHourly?.windSpeed || '';
+      const forecastDir = closestHourly?.windDirection || '';
+      if (forecastWind.includes('Light') || forecastDir.toLowerCase().includes('variable')) {
+        windSpeedAvg = 0;  // or keep low number if you prefer
+        windDir = 'Light and Variable';
+      } else if (!windDir) {
+        windDir = 'Calm';
+      }
+    }
     
     // --- HTML GENERATION ---
     
