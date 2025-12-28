@@ -1,11 +1,4 @@
 {
-    "2025-12-20": "https://moon.nasa.gov/mvg.2025/8485.jpg",
-    "2025-12-21": "https://moon.nasa.gov/mvg.2025/8509.jpg",
-    "2025-12-22": "https://moon.nasa.gov/mvg.2025/8533.jpg",
-    "2025-12-23": "https://moon.nasa.gov/mvg.2025/8557.jpg",
-    "2025-12-24": "https://moon.nasa.gov/mvg.2025/8581.jpg",
-    "2025-12-25": "https://moon.nasa.gov/mvg.2025/8605.jpg",
-    "2025-12-26": "https://moon.nasa.gov/mvg.2025/8629.jpg",
     "2025-12-27": "https://moon.nasa.gov/mvg.2025/8653.jpg",
     "2025-12-28": "https://moon.nasa.gov/mvg.2025/8677.jpg",
     "2025-12-29": "https://moon.nasa.gov/mvg.2025/8701.jpg",
@@ -89,5 +82,12 @@
     "2026-03-17": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1813.jpg",
     "2026-03-18": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1837.jpg",
     "2026-03-19": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1861.jpg",
-    "2026-03-20": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1885.jpg"
+    "2026-03-20": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1885.jpg",
+    "2026-03-21": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1909.jpg",
+    "2026-03-22": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1933.jpg",
+    "2026-03-23": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1957.jpg",
+    "2026-03-24": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.1981.jpg",
+    "2026-03-25": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.2005.jpg",
+    "2026-03-26": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.2029.jpg",
+    "2026-03-27": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/moon.2053.jpg"
 }
