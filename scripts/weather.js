@@ -451,22 +451,23 @@ function initRadarWidget() {
 
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { zIndex: 50 }).addTo(map);
 
-    // ⭐ RED STAR (Port O Bistineau)
-    var redStarIcon = L.divIcon({
-        className: 'marina-star-icon',  
-        html: '<i class="fa-solid fa-star fa-lg" style="color: red; text-shadow: 0 0 5px white;"></i>',
-        iconSize: [20, 20], iconAnchor: [10, 10]
-    });
-    L.marker([32.4619, -93.34883], { icon: redStarIcon }).addTo(map);
+    // 1. THE RED STAR (Existing)
+var redStarIcon = L.divIcon({
+    className: 'marina-star-icon',  
+    html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9; text-shadow: 0 0 5px white;"></i>',
+    iconSize: [20, 20], 
+    iconAnchor: [10, 10]
+});
+L.marker([marinaLat, marinaLng], { icon: redStarIcon }).addTo(map);
 
-    // 2. THE "PORT O BISTINEAU" TEXT
+// 2. ADD THIS: THE "PORT O BISTINEAU" TEXT
 var textLabelIcon = L.divIcon({
     className: 'marina-text-label', 
     html: '<span style="color: white; font-weight: bold; font-size: 11px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
     iconSize: [120, 20], 
-    iconAnchor: [-5, 10]
+    iconAnchor: [-5, 10] // Shifts text slightly to the right of the star
 });
-// Add "zIndexOffset" here to lift it above the rain
+// The zIndexOffset: 1000 ensures it stays ON TOP of the rain images
 L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 1000 }).addTo(map);
     
     // --- GENERATE RADAR LAYERS (1 Hour of History) ---
