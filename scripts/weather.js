@@ -158,7 +158,7 @@ async function updateWeather() {
                     <span id="radar-time">Loading...</span>
                 </div>
                 <div style="position:absolute; bottom:35px; left:5px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:900; pointer-events:none; text-shadow:1px 1px 2px black;">
-                    Data: RainViewer / Esri
+                    Data: NWS NEXRAD / Iowa State IEM
                 </div>
             </div>
 
