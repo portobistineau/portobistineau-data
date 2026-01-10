@@ -401,10 +401,13 @@ window.showNWSAlertPopup = function(headline, description, fullUrl) {
 
 // HELPER: Generates UTC timestamps rounded to the nearest 5 mins for IEM Radar
 function getIEMTimestamp(offsetMinutes) {
-    let d = new Date(Date.now() - offsetMinutes * 60000);
-    let minutes = Math.floor(d.getUTCMinutes() / 5) * 5;
+    let d = new Date();
+    // Subtract offset PLUS 5 extra minutes for "Server Processing Time"
+    d.setMinutes(d.getMinutes() - offsetMinutes); 
     
+    let minutes = Math.floor(d.getUTCMinutes() / 5) * 5;
     const pad = (n) => n.toString().padStart(2, '0');
+    
     return d.getUTCFullYear().toString() + 
            pad(d.getUTCMonth() + 1) + 
            pad(d.getUTCDate()) + 
@@ -482,16 +485,16 @@ function initRadarWidget() {
     // ----------------------------------------
 
     // --- GENERATE RADAR LAYERS (IEM NWS DATA) ---
-    for (let i = 50; i >= 5; i -= 5) {
-        let ts = getIEMTimestamp(i);
-        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913-${ts}/{z}/{x}/{y}.png`, {
-            opacity: 0,
-            zIndex: 40 // Sits above satellite but below roads/labels
-        });
-        layer.timestamp = ts;
-        layer.addTo(map);
-        window.radarLayers.push(layer);
-    }
+    for (let i = 60; i >= 15; i -= 5) {
+    let ts = getIEMTimestamp(i);
+    let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-${ts}/{z}/{x}/{y}.png`, {
+    opacity: 0,
+    zIndex: 40
+});
+    layer.timestamp = ts;
+    layer.addTo(map);
+    window.radarLayers.push(layer);
+}
 
     if (window.radarLayers.length > 0) {
         startAnimationLoop();
