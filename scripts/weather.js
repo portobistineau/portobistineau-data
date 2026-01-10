@@ -451,6 +451,10 @@ function initRadarWidget() {
 
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { zIndex: 50 }).addTo(map);
 
+     // --- ⭐ MARINA MARKER & LABEL SECTION ---
+    var marinaLat = 32.4619;
+    var marinaLng = -93.34883;
+
     // 1. THE RED STAR (Existing)
 var redStarIcon = L.divIcon({
     className: 'marina-star-icon',  
@@ -468,7 +472,7 @@ var textLabelIcon = L.divIcon({
     iconAnchor: [-5, 10] // Shifts text slightly to the right of the star
 });
 // The zIndexOffset: 1000 ensures it stays ON TOP of the rain images
-L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 1000 }).addTo(map);
+L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).addTo(map);
     
     // --- GENERATE RADAR LAYERS (1 Hour of History) ---
     for (let i = 45; i >= 0; i -= 5) {
