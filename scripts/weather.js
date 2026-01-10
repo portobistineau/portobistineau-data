@@ -431,8 +431,8 @@ function initRadarWidget() {
     window.isPaused = false; // The switch for our play button
 
     var map = L.map('radar-map', {
-        center: [32.42, -93.40],
-        zoom: 9.5,
+        center: [32.42, -93.37],
+        zoom: 10.5,
         zoomControl: false,
         attributionControl: false,
         scrollWheelZoom: false, 
@@ -459,6 +459,16 @@ function initRadarWidget() {
     });
     L.marker([32.4619, -93.34883], { icon: redStarIcon }).addTo(map);
 
+    // 2. THE "PORT O BISTINEAU" TEXT
+var textLabelIcon = L.divIcon({
+    className: 'marina-text-label', 
+    html: '<span style="color: white; font-weight: bold; font-size: 11px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
+    iconSize: [120, 20], 
+    iconAnchor: [-5, 10]
+});
+// Add "zIndexOffset" here to lift it above the rain
+L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 1000 }).addTo(map);
+    
     // --- GENERATE RADAR LAYERS (1 Hour of History) ---
     for (let i = 45; i >= 0; i -= 5) {
         let ts = getIEMTimestamp(i);
