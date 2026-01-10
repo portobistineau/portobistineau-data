@@ -432,7 +432,7 @@ function initRadarWidget() {
 
     var map = L.map('radar-map', {
         center: [32.42, -93.37],
-        zoom: 10.5,
+        zoom: 10,
         zoomControl: false,
         attributionControl: false,
         scrollWheelZoom: false, 
