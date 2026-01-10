@@ -399,6 +399,19 @@ window.showNWSAlertPopup = function(headline, description, fullUrl) {
     popup.style.display = 'flex';
 }
 
+// HELPER: Generates UTC timestamps rounded to the nearest 5 mins for IEM Radar
+function getIEMTimestamp(offsetMinutes) {
+    let d = new Date(Date.now() - offsetMinutes * 60000);
+    let minutes = Math.floor(d.getUTCMinutes() / 5) * 5;
+    
+    const pad = (n) => n.toString().padStart(2, '0');
+    return d.getUTCFullYear().toString() + 
+           pad(d.getUTCMonth() + 1) + 
+           pad(d.getUTCDate()) + 
+           pad(d.getUTCHours()) + 
+           pad(minutes);
+}
+
 // --- RADAR INITIALIZATION (EXISTING CODE BELOW) ---
 function initRadarWidget() {
     if (window.radarMapInstance) {
@@ -409,11 +422,11 @@ function initRadarWidget() {
         clearInterval(window.radarAnimationTimer);
         window.radarAnimationTimer = null;
     }
-    window.currentFrameIndex = 0; // Reset index on new init
+    window.currentFrameIndex = 0; 
+    window.radarLayers = [];
 
     var centerLat = 32.42;  
     var centerLng = -93.40;
-    // FINAL ZOOM: Fractional Zoom 9.5
     var zoomLevel = 9.5; 
 
     var map = L.map('radar-map', {
@@ -423,121 +436,68 @@ function initRadarWidget() {
         attributionControl: false,
         scrollWheelZoom: false, 
         dragging: !L.Browser.mobile,
-        zoomSnap: 0.1 
+        zoomSnap: 0.1  
     });
     window.radarMapInstance = map;
 
-    // 1. Base Satellite Layer (z-index 0)
+    // 1. Base Satellite Layer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
         zIndex: 0
     }).addTo(map);
 
-    // 2. FINAL, CORRECT DOTD NHD GeoJSON Layer (z-index 40)
+    // 2. Lake Outline (Bistineau)
     const dotdGeoJsonUrl = "https://maps.dotd.la.gov/topo/rest/services/OpenData/NHD/FeatureServer/3/query?where=GNIS_Name%3D'Lake%20Bistineau'&outFields=*&f=geojson&returnGeometry=true";
-    
-    const lakeStyle = {
-        fillColor: "#0084FF", 
-        weight: 0,          
-        fillOpacity: 0.35    
-    };
+    fetch(dotdGeoJsonUrl).then(res => res.json()).then(data => {
+        if (data.features) L.geoJson(data, { style: { fillColor: "#0084FF", weight: 0, fillOpacity: 0.35 } }).addTo(map);
+    });
 
-    fetch(dotdGeoJsonUrl)
-      .then(response => {
-           if (!response.ok) {
-               throw new Error(`Failed to fetch DOTD NHD data: ${response.status}`);
-           }
-           return response.json();
-      })
-      .then(data => {
-          if (data.features && data.features.length > 0) {
-              L.geoJson(data, {
-                  style: lakeStyle
-              }).addTo(map);
-          } else {
-              console.error('Lake Bistineau not found in DOTD NHD layer.');
-          }
-      })
-      .catch(error => console.error('Error loading DOTD NHD GeoJSON data:', error));
-
-
-    // 3. Reference Overlay (Roads/Labels) (z-index 50) - Remains on top
+    // 3. Labels Layer (Roads and Cities)
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
         zIndex: 50
     }).addTo(map);
 
-    // --- FINAL MARINA MARKER AND LABEL ---
-    
+    // --- ⭐ MARINA MARKER & LABEL SECTION ---
     var marinaLat = 32.4619;
     var marinaLng = -93.34883;
 
-    // 1. STAR ICON MARKER
+    // 1. THE RED STAR
     var redStarIcon = L.divIcon({
-        className: 'marina-star-icon', 
-        html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9;"></i>',
+        className: 'marina-star-icon',  
+        html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9; text-shadow: 0 0 5px white;"></i>',
         iconSize: [20, 20], 
         iconAnchor: [10, 10]
     });
-
     L.marker([marinaLat, marinaLng], { icon: redStarIcon }).addTo(map);
 
-
-    // 2. TEXT LABEL MARKER
+    // 2. THE "PORT O BISTINEAU" TEXT
     var textLabelIcon = L.divIcon({
         className: 'marina-text-label', 
-        html: '<span style="color: white; font-weight: bold; font-size: 10px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
+        html: '<span style="color: white; font-weight: bold; font-size: 11px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
         iconSize: [120, 20], 
-        iconAnchor: [0, 10] 
+        iconAnchor: [-5, 10] // Shifts text slightly to the right of the star
     });
-    
-    var labelLat = marinaLat + 0.01;
-    var labelLng = marinaLng - 0.01;
+    L.marker([marinaLat, marinaLng], { icon: textLabelIcon }).addTo(map);
+    // ----------------------------------------
 
-    L.marker([labelLat, labelLng], { icon: textLabelIcon }).addTo(map);
-
-    // ------------------------------------
-    
-    // --- NEW: CONTROL EVENT LISTENERS ---
-    const controlsExist = document.getElementById('radar-play-pause');
-    if (controlsExist) {
-        document.getElementById('radar-play-pause').onclick = toggleAnimation;
-        document.getElementById('radar-rewind').onclick = function() { scrubFrame(-1); };
-        document.getElementById('radar-forward').onclick = function() { scrubFrame(1); };
-        document.getElementById('radar-speed-select').onchange = changeSpeed;
+    // --- GENERATE RADAR LAYERS (IEM NWS DATA) ---
+    for (let i = 50; i >= 5; i -= 5) {
+        let ts = getIEMTimestamp(i);
+        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913-${ts}/{z}/{x}/{y}.png`, {
+            opacity: 0,
+            zIndex: 40 // Sits above satellite but below roads/labels
+        });
+        layer.timestamp = ts;
+        layer.addTo(map);
+        window.radarLayers.push(layer);
     }
 
-    fetch('https://api.rainviewer.com/public/weather-maps.json')
-        .then(res => res.json())
-        .then(data => {
-            processRadarFrames(map, data);
-        })
-        .catch(e => console.error("Radar Error:", e));
+    if (window.radarLayers.length > 0) {
+        startAnimationLoop();
+    }
 }
- function processRadarFrames(map, apiData) {
-    window.radarLayers = [];
-    // Set the global variable
-    var past = apiData.radar.past || [];
-    var future = apiData.radar.nowcast || [];
-    var maxPastFrames = 24; 
-    var pastSlice = past.slice(-maxPastFrames); 
-    
-    var futureSlice = future.slice(0, 12); 
-    
-    var frames = pastSlice.concat(futureSlice);
-    frames.forEach(function(frameObj, index) {
-        var layer = L.tileLayer(apiData.host + frameObj.path + '/256/{z}/{y}/{x}/2/1_1.png', {
-            opacity: 0,
-            zIndex: 100 
-        });
-        layer.isFuture = (index >= pastSlice.length); 
-        layer.timestamp = frameObj.time;
-        layer.addTo(map);
-        window.radarLayers.push(layer); // Populate the global array
-    });
-    // Start immediately after loading
-    startAnimationLoop(); 
- }
+ 
 
 // ------------------------------------
 // --- EXISTING CONTROL FUNCTIONS ---
@@ -549,21 +509,46 @@ function formatTime(ts) {
 }
 
 function updateRadarDisplay() {
-    if (window.radarLayers.length === 0) return;
-    // Fade out previous frame
-    const prevIndex = (window.currentFrameIndex - 1 + window.radarLayers.length) % window.radarLayers.length;
-    window.radarLayers[prevIndex].setOpacity(0);
-    // Display current frame
+    if (!window.radarLayers || window.radarLayers.length === 0) return;
+
+    // 1. Hide all frames first
+    window.radarLayers.forEach(l => l.setOpacity(0));
+
+    // 2. Identify the current frame
     const currentLayer = window.radarLayers[window.currentFrameIndex];
-    currentLayer.setOpacity(0.7);
-    // Update time/status label
-    const timeLabel = document.getElementById('radar-time');
-    const statusLabel = document.getElementById('radar-status');
-    if (timeLabel && statusLabel) { 
-        timeLabel.textContent = formatTime(currentLayer.timestamp);
-        statusLabel.textContent = currentLayer.isFuture ?
-    "FUTURE" : "PAST";
-        statusLabel.style.color = currentLayer.isFuture ? "#00ccff" : "#00ff00";
+    
+    if (currentLayer) {
+        // Show the radar frame (70% visibility so you can still see the lake/star)
+        currentLayer.setOpacity(0.7);
+
+        // 3. Update the Time Label (The "Math" to make it readable)
+        const timeLabel = document.getElementById('radar-time');
+        if (timeLabel && currentLayer.timestamp) {
+            let ts = currentLayer.timestamp;
+            
+            // Extract numbers from "202601092145"
+            let year = parseInt(ts.substring(0, 4));
+            let month = parseInt(ts.substring(4, 6)) - 1; // JS months are 0-11
+            let day = parseInt(ts.substring(6, 8));
+            let hour = parseInt(ts.substring(8, 10));
+            let min = parseInt(ts.substring(10, 12));
+
+            // Create a Date object in UTC, then convert to your local string
+            let utcDate = new Date(Date.UTC(year, month, day, hour, min));
+            let localTime = utcDate.toLocaleTimeString([], { 
+                hour: 'numeric', 
+                minute: '2-digit' 
+            });
+
+            timeLabel.textContent = localTime;
+        }
+
+        // 4. Update the LIVE status
+        const statusLabel = document.getElementById('radar-status');
+        if (statusLabel) {
+            statusLabel.textContent = "LIVE";
+            statusLabel.style.color = "#00ff00"; // Bright Green
+        }
     }
 }
 
