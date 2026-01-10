@@ -400,10 +400,11 @@ window.showNWSAlertPopup = function(headline, description, fullUrl) {
 }
 
 // HELPER: Generates UTC timestamps rounded to the nearest 5 mins for IEM Radar
+// --- 1. FIXED TIMESTAMP MATH (Starts at 15m ago to avoid 404s) ---
 function getIEMTimestamp(offsetMinutes) {
     let d = new Date();
-    // Subtract offset PLUS 5 extra minutes for "Server Processing Time"
-    d.setMinutes(d.getMinutes() - offsetMinutes); 
+    // We add a 15-minute buffer because Iowa State needs time to process the tiles
+    d.setMinutes(d.getMinutes() - offsetMinutes - 15); 
     
     let minutes = Math.floor(d.getUTCMinutes() / 5) * 5;
     const pad = (n) => n.toString().padStart(2, '0');
@@ -415,7 +416,7 @@ function getIEMTimestamp(offsetMinutes) {
            pad(minutes);
 }
 
-// --- RADAR INITIALIZATION (EXISTING CODE BELOW) ---
+// --- 2. UPDATED RADAR INITIALIZATION ---
 function initRadarWidget() {
     if (window.radarMapInstance) {
         window.radarMapInstance.remove();
@@ -427,14 +428,11 @@ function initRadarWidget() {
     }
     window.currentFrameIndex = 0; 
     window.radarLayers = [];
-
-    var centerLat = 32.42;  
-    var centerLng = -93.40;
-    var zoomLevel = 9.5; 
+    window.isPaused = false; // The switch for our play button
 
     var map = L.map('radar-map', {
-        center: [centerLat, centerLng],
-        zoom: zoomLevel,
+        center: [32.42, -93.40],
+        zoom: 9.5,
         zoomControl: false,
         attributionControl: false,
         scrollWheelZoom: false, 
@@ -443,161 +441,94 @@ function initRadarWidget() {
     });
     window.radarMapInstance = map;
 
-    // 1. Base Satellite Layer
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        zIndex: 0
-    }).addTo(map);
-
-    // 2. Lake Outline (Bistineau)
+    // Base Layers
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { zIndex: 0 }).addTo(map);
+    
     const dotdGeoJsonUrl = "https://maps.dotd.la.gov/topo/rest/services/OpenData/NHD/FeatureServer/3/query?where=GNIS_Name%3D'Lake%20Bistineau'&outFields=*&f=geojson&returnGeometry=true";
     fetch(dotdGeoJsonUrl).then(res => res.json()).then(data => {
         if (data.features) L.geoJson(data, { style: { fillColor: "#0084FF", weight: 0, fillOpacity: 0.35 } }).addTo(map);
     });
 
-    // 3. Labels Layer (Roads and Cities)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        zIndex: 50
-    }).addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { zIndex: 50 }).addTo(map);
 
-    // --- ⭐ MARINA MARKER & LABEL SECTION ---
-    var marinaLat = 32.4619;
-    var marinaLng = -93.34883;
-
-    // 1. THE RED STAR
+    // ⭐ RED STAR (Port O Bistineau)
     var redStarIcon = L.divIcon({
         className: 'marina-star-icon',  
-        html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9; text-shadow: 0 0 5px white;"></i>',
-        iconSize: [20, 20], 
-        iconAnchor: [10, 10]
+        html: '<i class="fa-solid fa-star fa-lg" style="color: red; text-shadow: 0 0 5px white;"></i>',
+        iconSize: [20, 20], iconAnchor: [10, 10]
     });
-    L.marker([marinaLat, marinaLng], { icon: redStarIcon }).addTo(map);
+    L.marker([32.4619, -93.34883], { icon: redStarIcon }).addTo(map);
 
-    // 2. THE "PORT O BISTINEAU" TEXT
-    var textLabelIcon = L.divIcon({
-        className: 'marina-text-label', 
-        html: '<span style="color: white; font-weight: bold; font-size: 11px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
-        iconSize: [120, 20], 
-        iconAnchor: [-5, 10] // Shifts text slightly to the right of the star
-    });
-    L.marker([marinaLat, marinaLng], { icon: textLabelIcon }).addTo(map);
-    // ----------------------------------------
+    // --- GENERATE RADAR LAYERS (1 Hour of History) ---
+    for (let i = 45; i >= 0; i -= 5) {
+        let ts = getIEMTimestamp(i);
+        // Using the "ridge" path which is much more stable for history
+        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-${ts}/{z}/{x}/{y}.png`, {
+            opacity: 0,
+            zIndex: 40 
+        });
+        layer.timestamp = ts;
+        layer.addTo(map);
+        window.radarLayers.push(layer);
+    }
 
-    // --- GENERATE RADAR LAYERS (IEM NWS DATA) ---
-    for (let i = 60; i >= 15; i -= 5) {
-    let ts = getIEMTimestamp(i);
-    let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-${ts}/{z}/{x}/{y}.png`, {
-    opacity: 0,
-    zIndex: 40
-});
-    layer.timestamp = ts;
-    layer.addTo(map);
-    window.radarLayers.push(layer);
-}
+    // Attach button controls immediately
+    const playBtn = document.getElementById('radar-play-pause');
+    if (playBtn) {
+        playBtn.onclick = toggleAnimation;
+        document.getElementById('radar-rewind').onclick = () => scrubFrame(-1);
+        document.getElementById('radar-forward').onclick = () => scrubFrame(1);
+        document.getElementById('radar-speed-select').onchange = startAnimationLoop;
+    }
 
     if (window.radarLayers.length > 0) {
         startAnimationLoop();
     }
 }
- 
 
-// ------------------------------------
-// --- EXISTING CONTROL FUNCTIONS ---
-// ------------------------------------
-
-function formatTime(ts) {
-    var d = new Date(ts * 1000);
-    return d.toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'});
-}
-
+// --- 3. UPDATED DISPLAY & CONTROLS ---
 function updateRadarDisplay() {
     if (!window.radarLayers || window.radarLayers.length === 0) return;
-
-    // 1. Hide all frames first
     window.radarLayers.forEach(l => l.setOpacity(0));
-
-    // 2. Identify the current frame
     const currentLayer = window.radarLayers[window.currentFrameIndex];
-    
     if (currentLayer) {
-        // Show the radar frame (70% visibility so you can still see the lake/star)
         currentLayer.setOpacity(0.7);
-
-        // 3. Update the Time Label (The "Math" to make it readable)
         const timeLabel = document.getElementById('radar-time');
         if (timeLabel && currentLayer.timestamp) {
             let ts = currentLayer.timestamp;
-            
-            // Extract numbers from "202601092145"
-            let year = parseInt(ts.substring(0, 4));
-            let month = parseInt(ts.substring(4, 6)) - 1; // JS months are 0-11
-            let day = parseInt(ts.substring(6, 8));
             let hour = parseInt(ts.substring(8, 10));
-            let min = parseInt(ts.substring(10, 12));
-
-            // Create a Date object in UTC, then convert to your local string
-            let utcDate = new Date(Date.UTC(year, month, day, hour, min));
-            let localTime = utcDate.toLocaleTimeString([], { 
-                hour: 'numeric', 
-                minute: '2-digit' 
-            });
-
-            timeLabel.textContent = localTime;
-        }
-
-        // 4. Update the LIVE status
-        const statusLabel = document.getElementById('radar-status');
-        if (statusLabel) {
-            statusLabel.textContent = "LIVE";
-            statusLabel.style.color = "#00ff00"; // Bright Green
+            let min = ts.substring(10, 12);
+            let utcDate = new Date(Date.UTC(2026, 0, 1, hour, parseInt(min)));
+            timeLabel.textContent = utcDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         }
     }
 }
 
 function startAnimationLoop() {
-    if (window.radarLayers.length === 0) return;
-    // Get speed from the select box, default to 400ms (fast)
-    const speedSelect = document.getElementById('radar-speed-select');
-    const interval = speedSelect ? parseInt(speedSelect.value) : 400;
-
-    // Clear any existing timer
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
-    // Start the new timer
-    window.radarAnimationTimer = setInterval(function() {
-        // Increment frame index
+    const speed = parseInt(document.getElementById('radar-speed-select')?.value || 400);
+    window.radarAnimationTimer = setInterval(() => {
         window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarLayers.length;
         updateRadarDisplay();
-    }, interval);
-    // Update button state visually
-    const button = document.getElementById('radar-play-pause');
-    if (button) button.innerHTML = '▮▮';
-    // Pause symbol
+    }, speed);
+    document.getElementById('radar-play-pause').innerHTML = '▮▮';
 }
 
 function toggleAnimation() {
-    const button = document.getElementById('radar-play-pause');
     if (window.radarAnimationTimer) {
         clearInterval(window.radarAnimationTimer);
         window.radarAnimationTimer = null;
-        if (button) button.innerHTML = '►';
-    // Play symbol
+        document.getElementById('radar-play-pause').innerHTML = '►';
     } else {
         startAnimationLoop();
     }
 }
 
 function scrubFrame(direction) {
-    pauseAnimation(); // Always pause when scrubbing
-
-    const newIndex = window.currentFrameIndex + direction;
-    const totalFrames = window.radarLayers.length;
-
-    if (totalFrames > 0) {
-        // Calculate new index, wrapping around if necessary
-        window.currentFrameIndex = (newIndex % totalFrames + totalFrames) % totalFrames;
-        updateRadarDisplay();
-    }
+    if (window.radarAnimationTimer) toggleAnimation(); // Pause first
+    const total = window.radarLayers.length;
+    window.currentFrameIndex = (window.currentFrameIndex + direction + total) % total;
+    updateRadarDisplay();
 }
 
 function pauseAnimation() {
