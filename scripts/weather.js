@@ -477,8 +477,8 @@ L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).add
     // --- GENERATE RADAR LAYERS (1 Hour of History) ---
     for (let i = 45; i >= 0; i -= 5) {
         let ts = getIEMTimestamp(i);
-        // Change N0Q to REFP-F0000-0 for the "Precipitation Type" filtered version
-let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/hrrr::REFP-F0000-0/{z}/{x}/{y}.png`, {
+        
+let layer = L.tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0r-900913-${ts}/{z}/{x}/{y}.png', {
     opacity: 0.7,
     zIndex: 40
 });
