@@ -477,11 +477,11 @@ L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).add
     // --- GENERATE RADAR LAYERS (1 Hour of History) ---
     for (let i = 45; i >= 0; i -= 5) {
         let ts = getIEMTimestamp(i);
-        // Using the "ridge" path which is much more stable for history
-        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-${ts}/{z}/{x}/{y}.png`, {
-            opacity: 0,
-            zIndex: 40 
-        });
+        // Change N0Q to REFP-F0000-0 for the "Precipitation Type" filtered version
+let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/hrrr::REFP-F0000-0/{z}/{x}/{y}.png`, {
+    opacity: 0.7,
+    zIndex: 40
+});
         layer.timestamp = ts;
         layer.addTo(map);
         window.radarLayers.push(layer);
