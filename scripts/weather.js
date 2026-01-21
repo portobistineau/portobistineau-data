@@ -614,4 +614,10 @@ window.showDetail = function(dayIndex) {
     document.getElementById('dayDetail').innerHTML = detailHTML;
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('dayDetail').style.display = 'block';
+
+    // --- AUTO-REFRESH RADAR EVERY 10 MINUTES ---
+setInterval(() => {
+    console.log("Auto-refreshing radar data...");
+    initRadarWidget();
+}, 600000); // 600,000ms = 10 minutes
 };
