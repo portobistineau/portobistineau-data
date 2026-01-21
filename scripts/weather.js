@@ -478,9 +478,9 @@ L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).add
     for (let i = 45; i >= 0; i -= 5) {
         let ts = getIEMTimestamp(i);
         
-let layer = L.tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0r-900913-${ts}/{z}/{x}/{y}.png', {
-    opacity: 0.7,
-    zIndex: 40
+let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0R-${ts}/{z}/{x}/{y}.png`, {
+    opacity: 0,
+    zIndex: 40 
 });
         layer.timestamp = ts;
         layer.addTo(map);
