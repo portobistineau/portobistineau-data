@@ -417,7 +417,8 @@ function getIEMTimestamp(offsetMinutes) {
 }
 
 // --- 1. CONFIGURATION & STORAGE ---
-const NWS_RADAR_URL = 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity/MapServer/tile/{z}/{y}/{x}';
+// Updated to the WMS endpoint which is more reliable for NWS radar
+const NWS_WMS_URL = 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity/MapServer/WMSServer';
 const MARINA_COORDS = [32.4619, -93.34883];
 window.radarBuffer = []; 
 window.currentFrameIndex = 0;
@@ -471,12 +472,16 @@ function initRadarWidget() {
 // --- 3. THE ROLLING BUFFER ENGINE ---
 function refreshRadarBuffer() {
     const timestamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    const cacheBuster = Date.now();
     
-    const newLayer = L.tileLayer(`${NWS_RADAR_URL}?cb=${cacheBuster}`, {
-        opacity: 0, 
+    // Switch to WMS layer type for better NWS compatibility
+    const newLayer = L.tileLayer.wms(NWS_WMS_URL, {
+        layers: '0',        // Base reflectivity layer
+        format: 'image/png',
+        transparent: true,
+        opacity: 0,         // Managed by updateRadarDisplay
         zIndex: 40,
-        maxNativeZoom: 10
+        version: '1.3.0',
+        crs: L.CRS.EPSG3857 // Standard web map projection
     });
 
     newLayer.timestampLabel = timestamp;
@@ -548,13 +553,12 @@ function changeSpeed() {
     if (window.radarAnimationTimer) startAnimationLoop();
 }
 
-// --- 5. THE AUTO-REFRESH TIMER (Crucial!) ---
-// This runs the "refreshRadarBuffer" every 5 minutes to build your loop
+// --- 5. THE AUTO-REFRESH TIMER ---
 setInterval(() => {
     if (window.radarMapInstance) {
         refreshRadarBuffer();
     }
-}, 300000); // 300,000ms = 5 minutes
+}, 300000); // 5 minutes
 
 
 // --- POPUP DETAIL FUNCTION (FINAL WITH INCREASED ICON SPACING) ---
