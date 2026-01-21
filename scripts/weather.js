@@ -473,11 +473,7 @@ var textLabelIcon = L.divIcon({
 });
 // The zIndexOffset: 1000 ensures it stays ON TOP of the rain images
 L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).addTo(map);
-    
-    // --- GENERATE RADAR LAYERS (1 Hour of History) ---
-    for (let i = 45; i >= 0; i -= 5) {
-        let ts = getIEMTimestamp(i);
-        
+            
 // --- GENERATE RADAR LAYERS (SHV HIGH-RES) ---
     for (let i = 45; i >= 0; i -= 5) {
         let ts = getIEMTimestamp(i);
