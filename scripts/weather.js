@@ -158,7 +158,7 @@ async function updateWeather() {
                     <span id="radar-time">Loading...</span>
                 </div>
                 <div style="position:absolute; bottom:35px; left:5px; font-family:Arial; font-size:10px; color:rgba(255,255,255,0.7); z-index:900; pointer-events:none; text-shadow:1px 1px 2px black;">
-                    Data: NWS NEXRAD / Iowa State IEM
+                    Radar data provided by OpenWeatherMap
                 </div>
             </div>
 
@@ -448,6 +448,15 @@ function initRadarWidget() {
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { zIndex: 0 }).addTo(map);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { zIndex: 50 }).addTo(map);
 
+    // --- RESTORE THE LAKE OVERLAY ---
+const dotdGeoJsonUrl = "https://maps.dotd.la.gov/topo/rest/services/OpenData/NHD/FeatureServer/3/query?where=GNIS_Name%3D'Lake%20Bistineau'&outFields=*&f=geojson&returnGeometry=true";
+fetch(dotdGeoJsonUrl).then(res => res.json()).then(data => {
+    if (data.features) L.geoJson(data, { 
+        style: { fillColor: "#0084FF", weight: 0, fillOpacity: 0.35 },
+        zIndex: 10 // Keeps it above the satellite but below the rain
+    }).addTo(map);
+});
+    
     // B. Generate Animation Layers (Last 60 Mins)
     window.radarLayers = [];
     const now = Math.floor(Date.now() / 1000);
