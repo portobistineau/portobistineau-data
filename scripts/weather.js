@@ -479,10 +479,10 @@ L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).add
         let ts = getIEMTimestamp(i);
         
         // 1. Create the layer
-        let layer = L.tileLayer(`https://mesonet2.agron.iastate.edu/cache/tile.py/1.0.0/ridge::SHV-N0R-${ts}/{z}/{x}/{y}.png`, {
-            opacity: 0,
-            zIndex: 40 
-        });
+        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0r-900913-${ts}/{z}/{x}/{y}.png`, {
+    opacity: 0,
+    zIndex: 40 
+});
 
         // 2. YOU NEED THESE THREE LINES:
         layer.timestamp = ts;             // Tells the clock what time to show
