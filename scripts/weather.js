@@ -432,7 +432,7 @@ function initRadarWidget() {
 
     var map = L.map('radar-map', {
         center: [32.42, -93.37],
-        zoom: 9.5,
+        zoom: 10,
         zoomControl: false,
         attributionControl: false,
         scrollWheelZoom: false, 
@@ -478,13 +478,20 @@ L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).add
     for (let i = 45; i >= 0; i -= 5) {
         let ts = getIEMTimestamp(i);
         
-let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::SHV-N0R-${ts}/{z}/{x}/{y}.png`, {
-    opacity: 0,
-    zIndex: 40 
-});
-        layer.timestamp = ts;
-        layer.addTo(map);
-        window.radarLayers.push(layer);
+// --- GENERATE RADAR LAYERS (SHV HIGH-RES) ---
+    for (let i = 45; i >= 0; i -= 5) {
+        let ts = getIEMTimestamp(i);
+        
+        // 1. Create the layer
+        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::SHV-N0R-${ts}/{z}/{x}/{y}.png`, {
+            opacity: 0,
+            zIndex: 40 
+        });
+
+        // 2. YOU NEED THESE THREE LINES:
+        layer.timestamp = ts;             // Tells the clock what time to show
+        layer.addTo(map);                 // Actually puts the rain on the map
+        window.radarLayers.push(layer);    // Adds it to the play/pause list
     }
 
     // Attach button controls immediately
