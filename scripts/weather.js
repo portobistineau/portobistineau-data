@@ -417,8 +417,7 @@ function getIEMTimestamp(offsetMinutes) {
 }
 
 // --- 1. CONFIGURATION & STORAGE ---
-// Updated to the WMS endpoint which is more reliable for NWS radar
-const NWS_WMS_URL = 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity/MapServer/WMSServer';
+const RAINVIEWER_BASE = 'https://tilecache.rainviewer.com';
 const MARINA_COORDS = [32.4619, -93.34883];
 window.radarBuffer = []; 
 window.currentFrameIndex = 0;
@@ -448,7 +447,7 @@ function initRadarWidget() {
         if (data.features) L.geoJson(data, { style: { fillColor: "#0084FF", weight: 0, fillOpacity: 0.35 } }).addTo(map);
     });
 
-    // C. ⭐ MARINA STAR & LABEL
+    // C. ⭐ MARINA STAR & LABEL (Always on Top)
     var redStarIcon = L.divIcon({
         className: 'marina-star-icon',
         html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9; text-shadow: 0 0 5px white;"></i>',
@@ -469,33 +468,45 @@ function initRadarWidget() {
     refreshRadarBuffer(); 
 }
 
-// --- 3. THE ROLLING BUFFER ENGINE ---
-function refreshRadarBuffer() {
-    const timestamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    
-    // Switch to WMS layer type for better NWS compatibility
-    const newLayer = L.tileLayer.wms(NWS_WMS_URL, {
-        layers: '0',        // Base reflectivity layer
-        format: 'image/png',
-        transparent: true,
-        opacity: 0,         // Managed by updateRadarDisplay
-        zIndex: 40,
-        version: '1.3.0',
-        crs: L.CRS.EPSG3857 // Standard web map projection
-    });
+// --- 3. THE RAINVIEWER ENGINE (Updated 2026) ---
+async function refreshRadarBuffer() {
+    try {
+        // Fetch the 12 most recent valid timestamps
+        const response = await fetch('https://api.rainviewer.com/public/maps.json');
+        const data = await response.json();
+        const timestamps = data.slice(-12); 
+        
+        // Remove old layers from the map to keep it clean
+        window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
+        window.radarBuffer = [];
 
-    newLayer.timestampLabel = timestamp;
-    newLayer.addTo(window.radarMapInstance);
+        // Build the new buffer
+        timestamps.forEach((ts) => {
+            // Using v2 API with high-contrast colors (palette 2)
+            const layer = L.tileLayer(`${RAINVIEWER_BASE}/v2/radar/${ts}/512/{z}/{x}/{y}/2/1_1.png`, {
+                opacity: 0,
+                zIndex: 40
+            });
+            
+            const dateObj = new Date(ts * 1000);
+            layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            
+            layer.addTo(window.radarMapInstance);
+            window.radarBuffer.push(layer);
+        });
 
-    window.radarBuffer.push(newLayer);
+        // Show the latest frame
+        window.currentFrameIndex = window.radarBuffer.length - 1;
+        updateRadarDisplay();
+        
+        // Auto-start animation if it's not already running
+        if (!window.radarAnimationTimer) {
+            startAnimationLoop();
+        }
 
-    if (window.radarBuffer.length > 12) {
-        const oldest = window.radarBuffer.shift();
-        window.radarMapInstance.removeLayer(oldest);
+    } catch (err) {
+        console.error("RainViewer Radar Error:", err);
     }
-
-    window.currentFrameIndex = window.radarBuffer.length - 1;
-    updateRadarDisplay();
 }
 
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
@@ -506,7 +517,7 @@ function updateRadarDisplay() {
     
     const currentLayer = window.radarBuffer[window.currentFrameIndex];
     if (currentLayer) {
-        currentLayer.setOpacity(0.75);
+        currentLayer.setOpacity(0.8); // High visibility for rain
         const timeLabel = document.getElementById('radar-time');
         if (timeLabel) {
             timeLabel.textContent = currentLayer.timestampLabel;
@@ -554,11 +565,12 @@ function changeSpeed() {
 }
 
 // --- 5. THE AUTO-REFRESH TIMER ---
+// Grabs the freshest 12 frames every 5 minutes
 setInterval(() => {
     if (window.radarMapInstance) {
         refreshRadarBuffer();
     }
-}, 300000); // 5 minutes
+}, 300000);
 
 
 // --- POPUP DETAIL FUNCTION (FINAL WITH INCREASED ICON SPACING) ---
