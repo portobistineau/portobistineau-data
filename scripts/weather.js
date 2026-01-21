@@ -416,119 +416,119 @@ function getIEMTimestamp(offsetMinutes) {
            pad(minutes);
 }
 
-// --- 2. UPDATED RADAR INITIALIZATION ---
+// 1. --- CONFIGURATION ---
+const OWM_API_KEY = "7c76a7078b53ad30de0458850dd7b323"; 
+const MARINA_COORDS = [32.4619, -93.34883];
+
+// Global State
+window.radarLayers = [];
+window.currentFrameIndex = 0;
+window.radarAnimationTimer = null;
+window.radarMapInstance = null;
+
+// 2. --- UPDATED RADAR INITIALIZATION ---
 function initRadarWidget() {
     if (window.radarMapInstance) {
         window.radarMapInstance.remove();
         window.radarMapInstance = null;
     }
-    if (window.radarAnimationTimer) {
-        clearInterval(window.radarAnimationTimer);
-        window.radarAnimationTimer = null;
-    }
-    window.currentFrameIndex = 0; 
-    window.radarLayers = [];
-    window.isPaused = false; // The switch for our play button
-
+    
     var map = L.map('radar-map', {
-        center: [32.42, -93.37],
+        center: [32.42, -93.37], 
         zoom: 10,
         zoomControl: false,
         attributionControl: false,
-        scrollWheelZoom: false, 
+        scrollWheelZoom: false,
         dragging: !L.Browser.mobile,
-        zoomSnap: 0.1  
+        zoomSnap: 0.1
     });
     window.radarMapInstance = map;
 
-    // Base Layers
+    // A. Base Layers
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { zIndex: 0 }).addTo(map);
-    
-    const dotdGeoJsonUrl = "https://maps.dotd.la.gov/topo/rest/services/OpenData/NHD/FeatureServer/3/query?where=GNIS_Name%3D'Lake%20Bistineau'&outFields=*&f=geojson&returnGeometry=true";
-    fetch(dotdGeoJsonUrl).then(res => res.json()).then(data => {
-        if (data.features) L.geoJson(data, { style: { fillColor: "#0084FF", weight: 0, fillOpacity: 0.35 } }).addTo(map);
-    });
-
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { zIndex: 50 }).addTo(map);
 
-     // --- ⭐ MARINA MARKER & LABEL SECTION ---
-    var marinaLat = 32.4619;
-    var marinaLng = -93.34883;
+    // B. Generate Animation Layers (Last 60 Mins)
+    window.radarLayers = [];
+    const now = Math.floor(Date.now() / 1000);
+    const tenMins = 600; // 10 minutes in seconds
 
-    // 1. THE RED STAR (Existing)
-var redStarIcon = L.divIcon({
-    className: 'marina-star-icon',  
-    html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9; text-shadow: 0 0 5px white;"></i>',
-    iconSize: [20, 20], 
-    iconAnchor: [10, 10]
-});
-L.marker([marinaLat, marinaLng], { icon: redStarIcon }).addTo(map);
-
-// 2. ADD THIS: THE "PORT O BISTINEAU" TEXT
-var textLabelIcon = L.divIcon({
-    className: 'marina-text-label', 
-    html: '<span style="color: white; font-weight: bold; font-size: 11px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
-    iconSize: [120, 20], 
-    iconAnchor: [-5, 10] // Shifts text slightly to the right of the star
-});
-// The zIndexOffset: 1000 ensures it stays ON TOP of the rain images
-L.marker([marinaLat, marinaLng], { icon: textLabelIcon, zIndexOffset: 100 }).addTo(map);
-            
-// --- GENERATE RADAR LAYERS (SHV HIGH-RES) ---
-    for (let i = 45; i >= 0; i -= 5) {
-        let ts = getIEMTimestamp(i);
+    for (let i = 6; i >= 0; i--) {
+        // Calculate timestamp for each 10-minute step
+        let stepTime = (Math.floor(now / tenMins) * tenMins) - (i * tenMins);
         
-        // 1. Create the layer
-        let layer = L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0r-900913-${ts}/{z}/{x}/{y}.png`, {
-    opacity: 0,
-    zIndex: 40 
-});
+        // OpenWeatherMap Tiles with Time Parameter
+        let layer = L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}&tm=${stepTime}`, {
+            opacity: 0,
+            zIndex: 40
+        });
 
-        // 2. YOU NEED THESE THREE LINES:
-        layer.timestamp = ts;             // Tells the clock what time to show
-        layer.addTo(map);                 // Actually puts the rain on the map
-        window.radarLayers.push(layer);    // Adds it to the play/pause list
+        // Store readable time for the label
+        let dateObj = new Date(stepTime * 1000);
+        layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        
+        layer.addTo(map);
+        window.radarLayers.push(layer);
     }
 
-    // Attach button controls immediately
-    const playBtn = document.getElementById('radar-play-pause');
-    if (playBtn) {
-        playBtn.onclick = toggleAnimation;
-        document.getElementById('radar-rewind').onclick = () => scrubFrame(-1);
-        document.getElementById('radar-forward').onclick = () => scrubFrame(1);
-        document.getElementById('radar-speed-select').onchange = startAnimationLoop;
-    }
+    // C. ⭐ YOUR MARINA MARKER & LABEL
+    var redStarIcon = L.divIcon({
+        className: 'marina-star-icon',
+        html: '<i class="fa-solid fa-star fa-lg" style="color: red; opacity: 0.9; text-shadow: 0 0 5px white;"></i>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+    L.marker(MARINA_COORDS, { icon: redStarIcon, zIndexOffset: 999 }).addTo(map);
+
+    var textLabelIcon = L.divIcon({
+        className: 'marina-text-label',
+        html: '<span style="color: white; font-weight: bold; font-size: 11px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Port O Bistineau</span>',
+        iconSize: [120, 20],
+        iconAnchor: [-5, 10]
+    });
+    L.marker(MARINA_COORDS, { icon: textLabelIcon, zIndexOffset: 1000 }).addTo(map);
+
+    // D. Control Logic & UI
+    document.getElementById('radar-play-pause').onclick = toggleAnimation;
+    document.getElementById('radar-rewind').onclick = () => scrubFrame(-1);
+    document.getElementById('radar-forward').onclick = () => scrubFrame(1);
+    document.getElementById('radar-speed-select').onchange = startAnimationLoop;
 
     if (window.radarLayers.length > 0) {
         startAnimationLoop();
+        // Hide overlay once the first tile loads
+        window.radarLayers[0].on('tileload', () => {
+            const overlay = document.getElementById('radar-loading-overlay');
+            if (overlay) overlay.style.display = 'none';
+        });
     }
 }
 
-// --- 3. UPDATED DISPLAY & CONTROLS ---
+// 3. --- DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
     if (!window.radarLayers || window.radarLayers.length === 0) return;
+    
+    // Hide all frames
     window.radarLayers.forEach(l => l.setOpacity(0));
+    
+    // Show current frame
     const currentLayer = window.radarLayers[window.currentFrameIndex];
     if (currentLayer) {
         currentLayer.setOpacity(0.7);
         const timeLabel = document.getElementById('radar-time');
-        if (timeLabel && currentLayer.timestamp) {
-            let ts = currentLayer.timestamp;
-            let hour = parseInt(ts.substring(8, 10));
-            let min = ts.substring(10, 12);
-            let utcDate = new Date(Date.UTC(2026, 0, 1, hour, parseInt(min)));
-            timeLabel.textContent = utcDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        }
+        if (timeLabel) timeLabel.textContent = currentLayer.timestampLabel;
     }
 }
 
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
     const speed = parseInt(document.getElementById('radar-speed-select')?.value || 400);
+    
     window.radarAnimationTimer = setInterval(() => {
         window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarLayers.length;
         updateRadarDisplay();
     }, speed);
+    
     document.getElementById('radar-play-pause').innerHTML = '▮▮';
 }
 
@@ -543,27 +543,14 @@ function toggleAnimation() {
 }
 
 function scrubFrame(direction) {
-    if (window.radarAnimationTimer) toggleAnimation(); // Pause first
+    if (window.radarAnimationTimer) toggleAnimation();
     const total = window.radarLayers.length;
     window.currentFrameIndex = (window.currentFrameIndex + direction + total) % total;
     updateRadarDisplay();
 }
 
-function pauseAnimation() {
-    if (window.radarAnimationTimer) {
-        clearInterval(window.radarAnimationTimer);
-        window.radarAnimationTimer = null;
-        const button = document.getElementById('radar-play-pause');
-        if (button) button.innerHTML = '►';
-    // Play symbol
-    }
-}
-
 function changeSpeed(event) {
-    // Only restart the loop if it was already playing
-    if (window.radarAnimationTimer) {
-        startAnimationLoop();
-    }
+    if (window.radarAnimationTimer) startAnimationLoop();
 }
 
 
