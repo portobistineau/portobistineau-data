@@ -467,67 +467,140 @@ function initRadarWidget() {
     refreshRadarBuffer(); 
 }
 
-// --- 3. THE RAINVIEWER ENGINE (Updated 2026) ---
+// --- 3. THE RAINVIEWER ENGINE (single-layer, low-request) ---
+window.radarFrames = window.radarFrames || [];
+window.radarTileLayer = window.radarTileLayer || null;
+window.currentFrameIndex = window.currentFrameIndex || 0;
+
+window._radarLastApiFetchMs = window._radarLastApiFetchMs || 0;
+window._radarNextAllowedFetchMs = window._radarNextAllowedFetchMs || 0;
+
+const RADAR_CACHE_KEY = "rv_weather_maps_json_v2";
+const RADAR_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (match your interval)
+const MIN_FETCH_GAP_MS = 60 * 1000;       // safety guard if something calls it too often
+
+function buildRadarTileUrl(host, path, ts) {
+  // FORCE: Universal Blue (2), 512px, maxZoom 7 per RainViewer docs
+  // URL format: {host}{path}/{size}/{z}/{x}/{y}/{color}/{options}.png
+  // options: smooth_snow -> "1_1" (your choice)
+  return `${host}${path}/512/{z}/{x}/{y}/2/1_1.png`;
+}
+
+function readRadarCache() {
+  try {
+    const raw = localStorage.getItem(RADAR_CACHE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || !obj.savedAt || !obj.data) return null;
+    if ((Date.now() - obj.savedAt) > RADAR_CACHE_TTL_MS) return null;
+    return obj.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeRadarCache(data) {
+  try {
+    localStorage.setItem(RADAR_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      data
+    }));
+  } catch {
+    // ignore quota errors
+  }
+}
+
 async function refreshRadarBuffer() {
-    try {
-        const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-        const data = await response.json();
-        
-        // 2026 FIX: Filter out the gaps. Only take frames that actually exist.
-        const pastFrames = data.radar.past.filter(f => f.time > 0);
-        
-        // Clear old layers
-        window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
-        window.radarBuffer = [];
+  try {
+    const now = Date.now();
 
-        pastFrames.forEach((frame) => {
-            const ts = frame.time;
-            // FORCE: Universal Blue (2), 512px, Zoom 7 cap
-            const radarUrl = `https://tilecache.rainviewer.com/v2/radar/${ts}/512/{z}/{x}/{y}/2/1_1.png`;
-            
-            const layer = L.tileLayer(radarUrl, {
-                opacity: 0,
-                zIndex: 40,
-                maxZoom: 7 
-            });
-            
-            layer.timestampLabel = new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            layer.addTo(window.radarMapInstance);
-            window.radarBuffer.push(layer);
-        });
+    // Hard guard: don’t allow repeated calls (prevents accidental spam from other code paths)
+    if (now < window._radarNextAllowedFetchMs) return;
+    if ((now - window._radarLastApiFetchMs) < MIN_FETCH_GAP_MS) return;
 
-        // If data is missing (like right now), jump to the very last valid frame
-        window.currentFrameIndex = window.radarBuffer.length - 1;
-        updateRadarDisplay();
-        
-    } catch (err) {
-        document.getElementById('radar-time').textContent = "Server Busy";
+    // Try cache first
+    let data = readRadarCache();
+
+    if (!data) {
+      window._radarLastApiFetchMs = now;
+
+      const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {
+        cache: "no-store"
+      });
+
+      // Backoff on rate-limit
+      if (response.status === 429) {
+        // wait 10 minutes before trying again
+        window._radarNextAllowedFetchMs = now + (10 * 60 * 1000);
+        const t = document.getElementById("radar-time");
+        if (t) t.textContent = "Rate limited";
+        return;
+      }
+
+      data = await response.json();
+      writeRadarCache(data);
     }
+
+    const host = data.host || "https://tilecache.rainviewer.com";
+    const past = (data?.radar?.past || []).filter(f => f && f.time && f.path);
+
+    // If RainViewer returns nothing, don’t destroy the current working layer
+    if (!past.length) {
+      const t = document.getElementById("radar-time");
+      if (t) t.textContent = "No frames";
+      return;
+    }
+
+    // Store frames (not Leaflet layers)
+    window.radarFrames = past.map(f => ({
+      time: f.time,
+      path: f.path,
+      label: new Date(f.time * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+      url: buildRadarTileUrl(host, f.path, f.time)
+    }));
+
+    // Ensure a single tile layer exists
+    if (!window.radarTileLayer) {
+      window.radarTileLayer = L.tileLayer(window.radarFrames[0].url, {
+        opacity: 0.8,
+        zIndex: 40,
+        maxZoom: 7
+      }).addTo(window.radarMapInstance);
+    }
+
+    // Start on last (freshest) frame
+    window.currentFrameIndex = window.radarFrames.length - 1;
+    updateRadarDisplay();
+
+  } catch (err) {
+    const t = document.getElementById("radar-time");
+    if (t) t.textContent = "Server Busy";
+  }
 }
 
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
-    if (!window.radarBuffer || window.radarBuffer.length === 0) return;
-    
-    window.radarBuffer.forEach(l => l.setOpacity(0));
-    
-    const currentLayer = window.radarBuffer[window.currentFrameIndex];
-    if (currentLayer) {
-        currentLayer.setOpacity(0.8); // High visibility for rain
-        const timeLabel = document.getElementById('radar-time');
-        if (timeLabel) {
-            timeLabel.textContent = currentLayer.timestampLabel;
-        }
-    }
+  if (!window.radarFrames || window.radarFrames.length === 0) return;
+  if (!window.radarTileLayer) return;
+
+  const frame = window.radarFrames[window.currentFrameIndex];
+  if (!frame) return;
+
+  // Swap URL on the ONE layer (this is the key to avoiding tile spam)
+  window.radarTileLayer.setUrl(frame.url);
+
+  const timeLabel = document.getElementById("radar-time");
+  if (timeLabel) timeLabel.textContent = frame.label;
 }
+
 
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
     const speed = parseInt(document.getElementById('radar-speed-select')?.value || 500);
     
     window.radarAnimationTimer = setInterval(() => {
-        if (window.radarBuffer.length > 1) {
-            window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarBuffer.length;
+        if (window.radarFrames.length > 1) {
+            window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarFrames.length;
             updateRadarDisplay();
         }
     }, speed);
@@ -549,8 +622,8 @@ function toggleAnimation() {
 
 function scrubFrame(direction) {
     if (window.radarAnimationTimer) toggleAnimation();
-    if (window.radarBuffer.length > 0) {
-        const total = window.radarBuffer.length;
+    if (window.radarFrames.length > 0) {
+        const total = window.radarFrames.length;
         window.currentFrameIndex = (window.currentFrameIndex + direction + total) % total;
         updateRadarDisplay();
     }
