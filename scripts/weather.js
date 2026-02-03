@@ -417,7 +417,6 @@ function getIEMTimestamp(offsetMinutes) {
 }
 
 // --- 1. CONFIGURATION & STORAGE ---
-const RAINVIEWER_BASE = 'https://tilecache.rainviewer.com';
 const MARINA_COORDS = [32.4619, -93.34883];
 window.radarBuffer = []; 
 window.currentFrameIndex = 0;
@@ -470,75 +469,64 @@ function initRadarWidget() {
 
 // --- 3. THE RAINVIEWER ENGINE (Updated 2026) ---
 async function refreshRadarBuffer() {
-    const CACHE_KEY = 'radar_json_cache';
-    const CACHE_TIME = 10 * 60 * 1000; // 10 minutes
-    const now = Date.now();
-    
-    let data;
-    const cached = localStorage.getItem(CACHE_KEY);
-    const cacheTs = localStorage.getItem(CACHE_KEY + '_ts');
-
-    if (cached && cacheTs && (now - cacheTs < CACHE_TIME)) {
-        // Use the saved data instead of hitting the API
-        data = JSON.parse(cached);
-    } else {
-        // Only fetch if the cache is old or missing
+    try {
         const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-        data = await response.json();
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-        localStorage.setItem(CACHE_KEY + '_ts', now);
+        const data = await response.json();
+        
+        // 2026 FIX: Filter out the gaps. Only take frames that actually exist.
+        const pastFrames = data.radar.past.filter(f => f.time > 0);
+        
+        // Clear old layers
+        window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
+        window.radarBuffer = [];
+
+        pastFrames.forEach((frame) => {
+            const ts = frame.time;
+            // FORCE: Universal Blue (2), 512px, Zoom 7 cap
+            const radarUrl = `https://tilecache.rainviewer.com/v2/radar/${ts}/512/{z}/{x}/{y}/2/1_1.png`;
+            
+            const layer = L.tileLayer(radarUrl, {
+                opacity: 0,
+                zIndex: 40,
+                maxZoom: 7 
+            });
+            
+            layer.timestampLabel = new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            layer.addTo(window.radarMapInstance);
+            window.radarBuffer.push(layer);
+        });
+
+        // If data is missing (like right now), jump to the very last valid frame
+        window.currentFrameIndex = window.radarBuffer.length - 1;
+        updateRadarDisplay();
+        
+    } catch (err) {
+        document.getElementById('radar-time').textContent = "Server Busy";
     }
-    
-    const host = data.host;
-    const timestamps = data.radar.past; // Specifically grab the 'past' array
-
-// 1. Build a simple list of strings (No layers created yet)
-    window.radarBuffer = timestamps.slice(-12).map(frame => {
-        return {
-            url: `${host}${frame.path}/512/{z}/{x}/{y}/1/1_1.webp`,
-            label: new Date(frame.time * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-        };
-    });
-
-    // 2. Create the SINGLE layer if it doesn't exist
-    if (!window.activeRadarLayer) {
-        window.activeRadarLayer = L.tileLayer('', {
-            opacity: 0.8,
-            zIndex: 40,
-            attribution: 'RainViewer'
-        }).addTo(window.radarMapInstance);
-    }
-
-    window.currentFrameIndex = window.radarBuffer.length - 1;
-    updateRadarDisplay();
-    
-    if (!window.radarAnimationTimer) {
-        startAnimationLoop();
-    }           
 }
 
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
-    if (!window.radarBuffer || !window.activeRadarLayer) return;
+    if (!window.radarBuffer || window.radarBuffer.length === 0) return;
     
-    const frame = window.radarBuffer[window.currentFrameIndex];
-
-    // Change the URL of the EXISTING layer instead of adding/removing layers
-    window.activeRadarLayer.setUrl(frame.url);
+    window.radarBuffer.forEach(l => l.setOpacity(0));
     
-    const timeLabel = document.getElementById('radar-time');
-    if (timeLabel) timeLabel.textContent = frame.label;
+    const currentLayer = window.radarBuffer[window.currentFrameIndex];
+    if (currentLayer) {
+        currentLayer.setOpacity(0.8); // High visibility for rain
+        const timeLabel = document.getElementById('radar-time');
+        if (timeLabel) {
+            timeLabel.textContent = currentLayer.timestampLabel;
+        }
+    }
 }
 
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
-    
-    // Force a slower speed. 1500ms is much safer for your IP.
-    let speed = parseInt(document.getElementById('radar-speed-select')?.value || 1000);
-    if (speed < 1000) speed = 1500; 
+    const speed = parseInt(document.getElementById('radar-speed-select')?.value || 500);
     
     window.radarAnimationTimer = setInterval(() => {
-        if (window.radarBuffer && window.radarBuffer.length > 1) {
+        if (window.radarBuffer.length > 1) {
             window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarBuffer.length;
             updateRadarDisplay();
         }
@@ -579,6 +567,7 @@ setInterval(() => {
         refreshRadarBuffer();
     }
 }, 300000);
+
 
 
 // --- POPUP DETAIL FUNCTION (FINAL WITH INCREASED ICON SPACING) ---
