@@ -474,18 +474,24 @@ async function refreshRadarBuffer() {
         // Fetch the 12 most recent valid timestamps
         const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
         const data = await response.json();
-        const timestamps = data.slice(-12); 
-        
-        // Remove old layers from the map to keep it clean
-        window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
+        // Use the host provided by the API to avoid broken hardcoded links
+        const host = data.host; 
+        const timestamps = data.radar.past; // Specifically grab the 'past' array
+
+        // Clear existing buffer and layers
+        if (window.radarBuffer) {
+            window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
+        }
         window.radarBuffer = [];
 
-        // Build the new buffer
-        timestamps.forEach((ts) => {
-            // Using v2 API with high-contrast colors (palette 2)
-            const layer = L.tileLayer(`${RAINVIEWER_BASE}/v2/radar/${ts}/512/{z}/{x}/{y}/2/1_1.png`, {
+        // Build the new buffer (Last 12 frames)
+        timestamps.slice(-12).forEach((frame) => {
+            const ts = frame.time;
+            // Palette 2 is high-contrast; '1_1' = smoothed + snow display
+            const layer = L.tileLayer(`${host}${frame.path}/512/{z}/{x}/{y}/2/1_1.png`, {
                 opacity: 0,
-                zIndex: 40
+                zIndex: 40,
+                attribution: 'RainViewer'
             });
             
             const dateObj = new Date(ts * 1000);
@@ -513,20 +519,25 @@ async function refreshRadarBuffer() {
 function updateRadarDisplay() {
     if (!window.radarBuffer || window.radarBuffer.length === 0) return;
     
-    window.radarBuffer.forEach(l => l.setOpacity(0));
-    
-    const currentLayer = window.radarBuffer[window.currentFrameIndex];
-    if (currentLayer) {
-        currentLayer.setOpacity(0.8); // High visibility for rain
-        const timeLabel = document.getElementById('radar-time');
-        if (timeLabel) {
-            timeLabel.textContent = currentLayer.timestampLabel;
+    // Smooth transition: get reference to old layer before changing index
+    const oldLayer = window.radarBuffer.find(l => l.options.opacity > 0);
+    const newLayer = window.radarBuffer[window.currentFrameIndex];
+
+    if (newLayer) {
+        newLayer.setOpacity(0.8);
+        if (oldLayer && oldLayer !== newLayer) {
+            oldLayer.setOpacity(0);
         }
+        
+        const timeLabel = document.getElementById('radar-time');
+        if (timeLabel) timeLabel.textContent = newLayer.timestampLabel;
     }
 }
 
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
+    
+    // Default to 500ms if select is missing
     const speed = parseInt(document.getElementById('radar-speed-select')?.value || 500);
     
     window.radarAnimationTimer = setInterval(() => {
