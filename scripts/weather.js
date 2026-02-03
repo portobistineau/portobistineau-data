@@ -535,6 +535,7 @@ async function refreshRadarBuffer() {
 
     window.currentFrameIndex = window.radarFrames.length - 1;
     updateRadarDisplay();
+    startAnimationLoop();
 
   } catch (err) {
     const t = document.getElementById("radar-time");
