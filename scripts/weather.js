@@ -508,7 +508,7 @@ async function refreshRadarBuffer() {
                 loading: 'lazy', // This tells the browser not to rush all 48 tiles at once
                 updateWhenIdle: true, // Only fetch when map is quiet
                 keepBuffer: 0        // Don't keep hidden tiles in memory
-                maxZoom: 7
+          //      maxZoom: 7
             });
 
             // Make the VERY LAST frame (the current one) load immediately
