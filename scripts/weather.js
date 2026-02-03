@@ -498,8 +498,8 @@ async function refreshRadarBuffer() {
         });
 
         // If data is missing (like right now), jump to the very last valid frame
-        window.currentFrameIndex = window.radarBuffer.length - 1;
-        updateRadarDisplay();
+//        window.currentFrameIndex = window.radarBuffer.length - 1;
+//        updateRadarDisplay();
         
     } catch (err) {
         document.getElementById('radar-time').textContent = "Server Busy";
