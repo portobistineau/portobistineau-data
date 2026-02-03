@@ -168,9 +168,9 @@ async function updateWeather() {
                 <button id="radar-forward" title="Next Frame">>></button>
                 
                 <select id="radar-speed-select" title="Animation Speed">
-                    <option value="1200">Slow</option>
-                    <option value="800">Medium</option>
-                    <option value="400" selected>Fast</option>
+                    <option value="1600">Slow</option>
+                    <option value="1200">Medium</option>
+                    <option value="800" selected>Fast</option>
                 </select>
             </div>
 
