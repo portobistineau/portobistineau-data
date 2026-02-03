@@ -7,22 +7,16 @@ window.lastWeatherData = null;
 window.radarMapInstance = null; 
 window.radarAnimationTimer = null;
     
-// Globals for Radar Control
-window.currentFrameIndex = 0; 
-// Globals for Radar Control
-window.currentFrameIndex = 0;
+window.radarFrames = window.radarFrames || [];
+window.radarImageOverlay = window.radarImageOverlay || null;
+window.currentFrameIndex = window.currentFrameIndex || 0;
 
-// ⚠️ REMOVE this (it causes tile spam if used)
-// window.radarLayers = [];
+window.MAP_CENTER_LAT = window.MAP_CENTER_LAT ?? 32.42;
+window.MAP_CENTER_LON = window.MAP_CENTER_LON ?? -93.37;
 
-// ✅ NEW radar globals (single-image engine)
-window.radarFrames = [];
-window.radarImageOverlay = null;
+// RainViewer fetch zoom (hard cap)
+window.RADAR_FETCH_ZOOM = 7;
 
-// Marina lock (center + zoom)
-window.MAP_CENTER_LAT = 32.4066;
-window.MAP_CENTER_LON = -93.3906;
-window.RADAR_ZOOM = 7;
     
 async function updateWeather() {
     
@@ -439,6 +433,8 @@ window.radarAnimationTimer = null;
 function initRadarWidget() {
     if (window.radarMapInstance) window.radarMapInstance.remove();
 
+    window.radarImageOverlay = null; // minimal safety on rebuild
+    
     var map = L.map('radar-map', {
         center: [32.42, -93.37],
         zoom: 10,
@@ -448,6 +444,12 @@ function initRadarWidget() {
         dragging: !L.Browser.mobile
     });
     window.radarMapInstance = map;
+
+    map.on("moveend zoomend", () => {
+  if (window.radarImageOverlay) {
+    window.radarImageOverlay.setBounds(map.getBounds());
+  }
+});
 
     // A. Base Layers
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { zIndex: 0 }).addTo(map);
@@ -481,47 +483,12 @@ function initRadarWidget() {
 }
 
 // --- 3. THE RAINVIEWER ENGINE (single-layer, low-request) ---
-window.radarFrames = window.radarFrames || [];
-window.radarTileLayer = window.radarTileLayer || null;
-window.currentFrameIndex = window.currentFrameIndex || 0;
-
-window._radarLastApiFetchMs = window._radarLastApiFetchMs || 0;
-window._radarNextAllowedFetchMs = window._radarNextAllowedFetchMs || 0;
+//window._radarLastApiFetchMs = window._radarLastApiFetchMs || 0;
+//window._radarNextAllowedFetchMs = window._radarNextAllowedFetchMs || 0;
 
 const RADAR_CACHE_KEY = "rv_weather_maps_json_v2";
 const RADAR_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (match your interval)
 const MIN_FETCH_GAP_MS = 60 * 1000;       // safety guard if something calls it too often
-
-function buildRadarTileUrl(host, path, ts) {
-  // FORCE: Universal Blue (2), 512px, maxZoom 7 per RainViewer docs
-  // URL format: {host}{path}/{size}/{z}/{x}/{y}/{color}/{options}.png
-  // options: smooth_snow -> "1_1" (your choice)
-  return `${host}${path}/512/{z}/{x}/{y}/2/1_1.png`;
-}
-
-function readRadarCache() {
-  try {
-    const raw = localStorage.getItem(RADAR_CACHE_KEY);
-    if (!raw) return null;
-    const obj = JSON.parse(raw);
-    if (!obj || !obj.savedAt || !obj.data) return null;
-    if ((Date.now() - obj.savedAt) > RADAR_CACHE_TTL_MS) return null;
-    return obj.data;
-  } catch {
-    return null;
-  }
-}
-
-function writeRadarCache(data) {
-  try {
-    localStorage.setItem(RADAR_CACHE_KEY, JSON.stringify({
-      savedAt: Date.now(),
-      data
-    }));
-  } catch {
-    // ignore quota errors
-  }
-}
 
 async function refreshRadarBuffer() {
   try {
@@ -546,26 +513,19 @@ async function refreshRadarBuffer() {
 
     const lat = window.MAP_CENTER_LAT;
     const lon = window.MAP_CENTER_LON;
-    const z = window.RADAR_ZOOM;
+    const z = window.RADAR_FETCH_ZOOM;
 
-    window.radarFrames = past.map(f => {
-      const url = `${host}${f.path}/512/${z}/${lat}/${lon}/2/1_1.png`; // 1 image per frame
-      return {
-        time: f.time,
-        label: new Date(f.time * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-        url
-      };
-    });
+    // Store frames (data only)
+    window.radarFrames = past.map(f => ({
+      time: f.time,
+      label: new Date(f.time * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+      // 1 image per frame, always zoom 7:
+      url: `${host}${f.path}/512/${z}/${lat}/${lon}/2/1_1.png`
+    }));
 
-    // Lock map to marina + max zoom 7 (Jan 2026 change)
-    if (window.radarMapInstance) {
-      window.radarMapInstance.setView([lat, lon], z);
-      window.radarMapInstance.setMaxZoom(7);
-    }
-
-    // Create overlay once, reuse it
+    
+    // Create overlay once, fit it to CURRENT map view (zoom 10)
     if (!window.radarImageOverlay) {
-      // Use current map bounds as the image bounds (since we keep center+zoom fixed)
       const bounds = window.radarMapInstance.getBounds();
       window.radarImageOverlay = L.imageOverlay(window.radarFrames[0].url, bounds, {
         opacity: 0.8,
@@ -585,21 +545,26 @@ async function refreshRadarBuffer() {
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
   if (!window.radarFrames || window.radarFrames.length === 0) return;
-  if (!window.radarImageOverlay) return;
+  if (!window.radarImageOverlay || !window.radarMapInstance) return;
 
   const frame = window.radarFrames[window.currentFrameIndex];
   if (!frame) return;
 
   window.radarImageOverlay.setUrl(frame.url);
 
-  const timeLabel = document.getElementById("radar-time");
-  if (timeLabel) timeLabel.textContent = frame.label;
+  // Keep overlay aligned to whatever zoom (10) / bounds user is seeing
+  window.radarImageOverlay.setBounds(window.radarMapInstance.getBounds());
+
+  const t = document.getElementById("radar-time");
+  if (t) t.textContent = frame.label;
 }
 
 
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
-    const speed = parseInt(document.getElementById('radar-speed-select')?.value || 500);
+    const speedRaw = parseInt(document.getElementById('radar-speed-select')?.value || 1000);
+    const speed = Math.max(700, speedRaw); // 700ms floor
+
     
     window.radarAnimationTimer = setInterval(() => {
         if (window.radarFrames.length > 1) {
