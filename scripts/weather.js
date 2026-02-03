@@ -470,13 +470,27 @@ function initRadarWidget() {
 
 // --- 3. THE RAINVIEWER ENGINE (Updated 2026) ---
 async function refreshRadarBuffer() {
-    try {
-        // Fetch the 12 most recent valid timestamps
+    const CACHE_KEY = 'radar_json_cache';
+    const CACHE_TIME = 10 * 60 * 1000; // 10 minutes
+    const now = Date.now();
+    
+    let data;
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cacheTs = localStorage.getItem(CACHE_KEY + '_ts');
+
+    if (cached && cacheTs && (now - cacheTs < CACHE_TIME)) {
+        // Use the saved data instead of hitting the API
+        data = JSON.parse(cached);
+    } else {
+        // Only fetch if the cache is old or missing
         const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-        const data = await response.json();
-        // Use the host provided by the API to avoid broken hardcoded links
-        const host = data.host; 
-        const timestamps = data.radar.past; // Specifically grab the 'past' array
+        data = await response.json();
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        localStorage.setItem(CACHE_KEY + '_ts', now);
+    }
+    
+    const host = data.host;
+    const timestamps = data.radar.past; // Specifically grab the 'past' array
 
         // Clear existing buffer and layers
         if (window.radarBuffer) {
