@@ -492,64 +492,65 @@ async function refreshRadarBuffer() {
     const host = data.host;
     const timestamps = data.radar.past; // Specifically grab the 'past' array
 
-        // Clear existing buffer and layers
-        if (window.radarBuffer) {
-            window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
-        }
-        window.radarBuffer = [];
+        // Clear existing buffer and physically remove layers from map
+    if (window.radarBuffer) {
+        window.radarBuffer.forEach(layer => {
+            if (window.radarMapInstance.hasLayer(layer)) {
+                window.radarMapInstance.removeLayer(layer);
+            }
+        });
+    }
+    window.radarBuffer = [];
 
         // Build the new buffer (Last 12 frames)
-        timestamps.slice(-12).forEach((frame, index) => {
-            const ts = frame.time;
-            const layer = L.tileLayer(`${host}${frame.path}/512/{z}/{x}/{y}/1/1_1.webp`, {
-                opacity: 0,
-                zIndex: 40,
-                attribution: 'RainViewer',
-                loading: 'lazy', // This tells the browser not to rush all 48 tiles at once
-                updateWhenIdle: true, // Only fetch when map is quiet
-                keepBuffer: 0        // Don't keep hidden tiles in memory
-                updateInterval: 2000       // Limits how fast tiles can update
-            });
-
-            // Make the VERY LAST frame (the current one) load immediately
-            if (index === 11) {
-                layer.setOpacity(1); 
-            }
-             
-            const dateObj = new Date(ts * 1000);
-            layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            
-            layer.addTo(window.radarMapInstance);
-            window.radarBuffer.push(layer);
+    timestamps.slice(-12).forEach((frame, index) => {
+        const ts = frame.time;
+        // Create the layer but DO NOT .addTo(map) yet!
+        const layer = L.tileLayer(`${host}${frame.path}/512/{z}/{x}/{y}/1/1_1.webp`, {
+            opacity: 0,
+            zIndex: 40,
+            attribution: 'RainViewer',
+            updateWhenIdle: true,
+            keepBuffer: 0
         });
-
-        // Show the latest frame
-        window.currentFrameIndex = window.radarBuffer.length - 1;
-        updateRadarDisplay();
+         
+        const dateObj = new Date(ts * 1000);
+        layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         
-        // Auto-start animation if it's not already running
-        if (!window.radarAnimationTimer) {
-            startAnimationLoop();
-        }           
+        // We only push to the buffer; we do NOT add to map here (Prevents 429s)
+        window.radarBuffer.push(layer);
+    });
 
-   // } catch (err) {
-   //     console.error("RainViewer Radar Error:", err);
-   // }
+
+        // Initialize state
+    window.currentFrameIndex = window.radarBuffer.length - 1;
+    updateRadarDisplay();
+    
+    if (!window.radarAnimationTimer) {
+        startAnimationLoop();
+    }           
 }
 
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
     if (!window.radarBuffer || window.radarBuffer.length === 0) return;
     
-    // Smooth transition: get reference to old layer before changing index
-    const oldLayer = window.radarBuffer.find(l => l.options.opacity > 0);
     const newLayer = window.radarBuffer[window.currentFrameIndex];
 
     if (newLayer) {
-        newLayer.setOpacity(0.8);
-        if (oldLayer && oldLayer !== newLayer) {
-            oldLayer.setOpacity(0);
+        // 1. Remove all other layers from the map to stop hidden downloads
+        window.radarBuffer.forEach(l => {
+            if (l !== newLayer && window.radarMapInstance.hasLayer(l)) {
+                window.radarMapInstance.removeLayer(l);
+                l.setOpacity(0);
+            }
+        });
+
+        // 2. Add and show ONLY the new layer
+        if (!window.radarMapInstance.hasLayer(newLayer)) {
+            newLayer.addTo(window.radarMapInstance);
         }
+        newLayer.setOpacity(0.8);
         
         const timeLabel = document.getElementById('radar-time');
         if (timeLabel) timeLabel.textContent = newLayer.timestampLabel;
@@ -559,13 +560,11 @@ function updateRadarDisplay() {
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
     
-    // Get speed, but enforce a 600ms minimum to prevent 429 "bursts"
     let speed = parseInt(document.getElementById('radar-speed-select')?.value || 1000);
     if (speed < 600) speed = 600; 
     
     window.radarAnimationTimer = setInterval(() => {
-        // Use window.radarLayers if that's your global name!
-        const layers = window.radarLayers || window.radarBuffer;
+        const layers = window.radarBuffer; // Cleaned up to use your buffer
         if (layers && layers.length > 1) {
             window.currentFrameIndex = (window.currentFrameIndex + 1) % layers.length;
             updateRadarDisplay();
