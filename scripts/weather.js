@@ -472,7 +472,7 @@ function initRadarWidget() {
 async function refreshRadarBuffer() {
     try {
         // Fetch the 12 most recent valid timestamps
-        const response = await fetch('https://api.rainviewer.com/public/maps.json');
+        const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
         const data = await response.json();
         const timestamps = data.slice(-12); 
         
