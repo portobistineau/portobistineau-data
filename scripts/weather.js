@@ -522,11 +522,11 @@ async function refreshRadarBuffer() {
         // Auto-start animation if it's not already running
         if (!window.radarAnimationTimer) {
             startAnimationLoop();
-        
+        }           
 
-    } catch (err) {
-        console.error("RainViewer Radar Error:", err);
-    }
+   // } catch (err) {
+   //     console.error("RainViewer Radar Error:", err);
+   // }
 }
 
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
