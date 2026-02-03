@@ -499,15 +499,23 @@ async function refreshRadarBuffer() {
         window.radarBuffer = [];
 
         // Build the new buffer (Last 12 frames)
-        timestamps.slice(-12).forEach((frame) => {
+        timestamps.slice(-12).forEach((frame, index) => {
             const ts = frame.time;
-            // Palette 2 is high-contrast; '1_1' = smoothed + snow display
-            const layer = L.tileLayer(`${host}${frame.path}/512/{z}/{x}/{y}/2/1_1.png`, {
+            const layer = L.tileLayer(`${host}${frame.path}/512/{z}/{x}/{y}/1/1_1.webp`, {
                 opacity: 0,
                 zIndex: 40,
-                attribution: 'RainViewer'
+                attribution: 'RainViewer',
+                loading: 'lazy', // This tells the browser not to rush all 48 tiles at once
+                updateWhenIdle: true, // Only fetch when map is quiet
+                keepBuffer: 0        // Don't keep hidden tiles in memory
+                maxNativeZoom: 7
             });
-            
+
+            // Make the VERY LAST frame (the current one) load immediately
+            if (index === 11) {
+                layer.setOpacity(1); 
+            }
+             
             const dateObj = new Date(ts * 1000);
             layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
             
@@ -551,12 +559,15 @@ function updateRadarDisplay() {
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
     
-    // Default to 500ms if select is missing
-    const speed = parseInt(document.getElementById('radar-speed-select')?.value || 500);
+    // Get speed, but enforce a 600ms minimum to prevent 429 "bursts"
+    let speed = parseInt(document.getElementById('radar-speed-select')?.value || 1000);
+    if (speed < 600) speed = 600; 
     
     window.radarAnimationTimer = setInterval(() => {
-        if (window.radarBuffer.length > 1) {
-            window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarBuffer.length;
+        // Use window.radarLayers if that's your global name!
+        const layers = window.radarLayers || window.radarBuffer;
+        if (layers && layers.length > 1) {
+            window.currentFrameIndex = (window.currentFrameIndex + 1) % layers.length;
             updateRadarDisplay();
         }
     }, speed);
