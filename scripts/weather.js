@@ -471,41 +471,38 @@ function initRadarWidget() {
 // --- 3. THE RAINVIEWER ENGINE (Updated 2026) ---
 async function refreshRadarBuffer() {
     try {
-        // Fetch the 12 most recent valid timestamps
-        const response = await fetch('https://api.rainviewer.com/public/maps.json');
+        const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
         const data = await response.json();
-        const timestamps = data.slice(-12); 
         
-        // Remove old layers from the map to keep it clean
+        // 2026 FIX: Filter out the gaps. Only take frames that actually exist.
+        const pastFrames = data.radar.past.filter(f => f.time > 0);
+        
+        // Clear old layers
         window.radarBuffer.forEach(layer => window.radarMapInstance.removeLayer(layer));
         window.radarBuffer = [];
 
-        // Build the new buffer
-        timestamps.forEach((ts) => {
-            // Using v2 API with high-contrast colors (palette 2)
-            const layer = L.tileLayer(`${RAINVIEWER_BASE}/v2/radar/${ts}/512/{z}/{x}/{y}/2/1_1.png`, {
+        pastFrames.forEach((frame) => {
+            const ts = frame.time;
+            // FORCE: Universal Blue (2), 512px, Zoom 7 cap
+            const radarUrl = `https://tilecache.rainviewer.com/v2/radar/${ts}/512/{z}/{x}/{y}/2/1_1.png`;
+            
+            const layer = L.tileLayer(radarUrl, {
                 opacity: 0,
-                zIndex: 40
+                zIndex: 40,
+                maxZoom: 7 
             });
             
-            const dateObj = new Date(ts * 1000);
-            layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            
+            layer.timestampLabel = new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
             layer.addTo(window.radarMapInstance);
             window.radarBuffer.push(layer);
         });
 
-        // Show the latest frame
+        // If data is missing (like right now), jump to the very last valid frame
         window.currentFrameIndex = window.radarBuffer.length - 1;
         updateRadarDisplay();
         
-        // Auto-start animation if it's not already running
-        if (!window.radarAnimationTimer) {
-            startAnimationLoop();
-        }
-
     } catch (err) {
-        console.error("RainViewer Radar Error:", err);
+        document.getElementById('radar-time').textContent = "Server Busy";
     }
 }
 
