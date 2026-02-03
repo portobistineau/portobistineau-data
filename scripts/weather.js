@@ -492,37 +492,23 @@ async function refreshRadarBuffer() {
     const host = data.host;
     const timestamps = data.radar.past; // Specifically grab the 'past' array
 
-        // Clear existing buffer and physically remove layers from map
-    if (window.radarBuffer) {
-        window.radarBuffer.forEach(layer => {
-            if (window.radarMapInstance.hasLayer(layer)) {
-                window.radarMapInstance.removeLayer(layer);
-            }
-        });
-    }
-    window.radarBuffer = [];
-
-        // Build the new buffer (Last 12 frames)
-    timestamps.slice(-12).forEach((frame, index) => {
-        const ts = frame.time;
-        // Create the layer but DO NOT .addTo(map) yet!
-        const layer = L.tileLayer(`${host}${frame.path}/512/{z}/{x}/{y}/1/1_1.webp`, {
-            opacity: 0,
-            zIndex: 40,
-            attribution: 'RainViewer',
-            updateWhenIdle: true,
-            keepBuffer: 0
-        });
-         
-        const dateObj = new Date(ts * 1000);
-        layer.timestampLabel = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        
-        // We only push to the buffer; we do NOT add to map here (Prevents 429s)
-        window.radarBuffer.push(layer);
+// 1. Build a simple list of strings (No layers created yet)
+    window.radarBuffer = timestamps.slice(-12).map(frame => {
+        return {
+            url: `${host}${frame.path}/512/{z}/{x}/{y}/1/1_1.webp`,
+            label: new Date(frame.time * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        };
     });
 
+    // 2. Create the SINGLE layer if it doesn't exist
+    if (!window.activeRadarLayer) {
+        window.activeRadarLayer = L.tileLayer('', {
+            opacity: 0.8,
+            zIndex: 40,
+            attribution: 'RainViewer'
+        }).addTo(window.radarMapInstance);
+    }
 
-        // Initialize state
     window.currentFrameIndex = window.radarBuffer.length - 1;
     updateRadarDisplay();
     
@@ -533,40 +519,27 @@ async function refreshRadarBuffer() {
 
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
-    if (!window.radarBuffer || window.radarBuffer.length === 0) return;
+    if (!window.radarBuffer || !window.activeRadarLayer) return;
     
-    const newLayer = window.radarBuffer[window.currentFrameIndex];
+    const frame = window.radarBuffer[window.currentFrameIndex];
 
-    if (newLayer) {
-        // 1. Remove all other layers from the map to stop hidden downloads
-        window.radarBuffer.forEach(l => {
-            if (l !== newLayer && window.radarMapInstance.hasLayer(l)) {
-                window.radarMapInstance.removeLayer(l);
-                l.setOpacity(0);
-            }
-        });
-
-        // 2. Add and show ONLY the new layer
-        if (!window.radarMapInstance.hasLayer(newLayer)) {
-            newLayer.addTo(window.radarMapInstance);
-        }
-        newLayer.setOpacity(0.8);
-        
-        const timeLabel = document.getElementById('radar-time');
-        if (timeLabel) timeLabel.textContent = newLayer.timestampLabel;
-    }
+    // Change the URL of the EXISTING layer instead of adding/removing layers
+    window.activeRadarLayer.setUrl(frame.url);
+    
+    const timeLabel = document.getElementById('radar-time');
+    if (timeLabel) timeLabel.textContent = frame.label;
 }
 
 function startAnimationLoop() {
     if (window.radarAnimationTimer) clearInterval(window.radarAnimationTimer);
     
+    // Force a slower speed. 1500ms is much safer for your IP.
     let speed = parseInt(document.getElementById('radar-speed-select')?.value || 1000);
-    if (speed < 600) speed = 600; 
+    if (speed < 1000) speed = 1500; 
     
     window.radarAnimationTimer = setInterval(() => {
-        const layers = window.radarBuffer; // Cleaned up to use your buffer
-        if (layers && layers.length > 1) {
-            window.currentFrameIndex = (window.currentFrameIndex + 1) % layers.length;
+        if (window.radarBuffer && window.radarBuffer.length > 1) {
+            window.currentFrameIndex = (window.currentFrameIndex + 1) % window.radarBuffer.length;
             updateRadarDisplay();
         }
     }, speed);
