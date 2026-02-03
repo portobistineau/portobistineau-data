@@ -9,7 +9,20 @@ window.radarAnimationTimer = null;
     
 // Globals for Radar Control
 window.currentFrameIndex = 0; 
-window.radarLayers = [];
+// Globals for Radar Control
+window.currentFrameIndex = 0;
+
+// ⚠️ REMOVE this (it causes tile spam if used)
+// window.radarLayers = [];
+
+// ✅ NEW radar globals (single-image engine)
+window.radarFrames = [];
+window.radarImageOverlay = null;
+
+// Marina lock (center + zoom)
+window.MAP_CENTER_LAT = 32.4066;
+window.MAP_CENTER_LON = -93.3906;
+window.RADAR_ZOOM = 7;
     
 async function updateWeather() {
     
@@ -512,63 +525,54 @@ function writeRadarCache(data) {
 
 async function refreshRadarBuffer() {
   try {
-    const now = Date.now();
+    const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", { cache: "no-store" });
 
-    // Hard guard: don’t allow repeated calls (prevents accidental spam from other code paths)
-    if (now < window._radarNextAllowedFetchMs) return;
-    if ((now - window._radarLastApiFetchMs) < MIN_FETCH_GAP_MS) return;
-
-    // Try cache first
-    let data = readRadarCache();
-
-    if (!data) {
-      window._radarLastApiFetchMs = now;
-
-      const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {
-        cache: "no-store"
-      });
-
-      // Backoff on rate-limit
-      if (response.status === 429) {
-        // wait 10 minutes before trying again
-        window._radarNextAllowedFetchMs = now + (10 * 60 * 1000);
-        const t = document.getElementById("radar-time");
-        if (t) t.textContent = "Rate limited";
-        return;
-      }
-
-      data = await response.json();
-      writeRadarCache(data);
+    if (response.status === 429) {
+      const t = document.getElementById("radar-time");
+      if (t) t.textContent = "Rate limited";
+      return;
     }
+
+    const data = await response.json();
 
     const host = data.host || "https://tilecache.rainviewer.com";
     const past = (data?.radar?.past || []).filter(f => f && f.time && f.path);
 
-    // If RainViewer returns nothing, don’t destroy the current working layer
     if (!past.length) {
       const t = document.getElementById("radar-time");
       if (t) t.textContent = "No frames";
       return;
     }
 
-    // Store frames (not Leaflet layers)
-    window.radarFrames = past.map(f => ({
-      time: f.time,
-      path: f.path,
-      label: new Date(f.time * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-      url: buildRadarTileUrl(host, f.path, f.time)
-    }));
+    const lat = window.MAP_CENTER_LAT;
+    const lon = window.MAP_CENTER_LON;
+    const z = window.RADAR_ZOOM;
 
-    // Ensure a single tile layer exists
-    if (!window.radarTileLayer) {
-      window.radarTileLayer = L.tileLayer(window.radarFrames[0].url, {
+    window.radarFrames = past.map(f => {
+      const url = `${host}${f.path}/512/${z}/${lat}/${lon}/2/1_1.png`; // 1 image per frame
+      return {
+        time: f.time,
+        label: new Date(f.time * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+        url
+      };
+    });
+
+    // Lock map to marina + max zoom 7 (Jan 2026 change)
+    if (window.radarMapInstance) {
+      window.radarMapInstance.setView([lat, lon], z);
+      window.radarMapInstance.setMaxZoom(7);
+    }
+
+    // Create overlay once, reuse it
+    if (!window.radarImageOverlay) {
+      // Use current map bounds as the image bounds (since we keep center+zoom fixed)
+      const bounds = window.radarMapInstance.getBounds();
+      window.radarImageOverlay = L.imageOverlay(window.radarFrames[0].url, bounds, {
         opacity: 0.8,
-        zIndex: 40,
-        maxZoom: 7
+        zIndex: 40
       }).addTo(window.radarMapInstance);
     }
 
-    // Start on last (freshest) frame
     window.currentFrameIndex = window.radarFrames.length - 1;
     updateRadarDisplay();
 
@@ -581,13 +585,12 @@ async function refreshRadarBuffer() {
 // --- 4. DISPLAY & ANIMATION CONTROLS ---
 function updateRadarDisplay() {
   if (!window.radarFrames || window.radarFrames.length === 0) return;
-  if (!window.radarTileLayer) return;
+  if (!window.radarImageOverlay) return;
 
   const frame = window.radarFrames[window.currentFrameIndex];
   if (!frame) return;
 
-  // Swap URL on the ONE layer (this is the key to avoiding tile spam)
-  window.radarTileLayer.setUrl(frame.url);
+  window.radarImageOverlay.setUrl(frame.url);
 
   const timeLabel = document.getElementById("radar-time");
   if (timeLabel) timeLabel.textContent = frame.label;
