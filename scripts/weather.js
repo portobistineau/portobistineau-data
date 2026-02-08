@@ -56,9 +56,14 @@ async function updateWeather() {
     };
     window.lastWeatherData = data;
     // --- RENDER CURRENT ---
-    const p = data.obs;
-    const currentTempC = p.temperature.value;
-    const currentTemp = Math.round(currentTempC * 1.8 + 32);
+const p = data.obs;
+const currentTempC = p.temperature?.value;
+
+const currentTemp =
+  (currentTempC == null)
+    ? (closestHourly?.temperature ?? '—')
+    : Math.round(currentTempC * 1.8 + 32);
+
 
     // Determine Feels Like: use windChill if available, then heatIndex, otherwise actual temp
     let feelsLikeC = currentTempC;
