@@ -57,6 +57,10 @@ async function updateWeather() {
     window.lastWeatherData = data;
     // --- RENDER CURRENT ---
 const p = data.obs;
+    const nowDate = now.getTime();
+    const closestHourly = data.hourly.periods.reduce((a,b) =>
+      Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+    );
 const currentTempC = p.temperature?.value;
 
 const currentTemp =
@@ -83,10 +87,10 @@ const currentTemp =
       else trend = '(falling)';
     }
     const timeStr = new Date(p.timestamp).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-    const nowDate = now.getTime();
-    const closestHourly = data.hourly.periods.reduce((a,b) =>
-      Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
-    );
+ //   const nowDate = now.getTime();
+ //   const closestHourly = data.hourly.periods.reduce((a,b) =>
+ //     Math.abs(new Date(b.startTime) - nowDate) < Math.abs(new Date(a.startTime) - nowDate) ? b : a
+ //   );
     const currentIcon = closestHourly?.icon?.replace('large','medium') || '';
     const currentForecast = closestHourly?.shortForecast || '';
         // Use actual observed wind from KSHV station
