@@ -70,13 +70,19 @@ const currentTemp =
 
 
     // Determine Feels Like: use windChill if available, then heatIndex, otherwise actual temp
-    let feelsLikeC = currentTempC;
-    if (p.windChill?.value !== null) {
-        feelsLikeC = p.windChill.value;
-    } else if (p.heatIndex?.value !== null) {
-        feelsLikeC = p.heatIndex.value;
-    }
-    const feels = Math.round(feelsLikeC * 1.8 + 32);
+let feelsLikeC = currentTempC;
+
+if (p.windChill?.value != null) {
+    feelsLikeC = p.windChill.value;
+} else if (p.heatIndex?.value != null) {
+    feelsLikeC = p.heatIndex.value;
+}
+
+const feels =
+  (feelsLikeC == null)
+    ? currentTemp
+    : Math.round(feelsLikeC * 1.8 + 32);
+
     const pressure = (p.barometricPressure.value / 3386.39).toFixed(2);
     let trend = '';
     const change = p.pressureChange?.value;
