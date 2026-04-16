@@ -656,6 +656,20 @@ footer p a {
 }
 
 /* =============================================
+  MOBILE BANNER SPACING
+  ============================================= */
+
+.mobile-banner {
+    margin: 20px auto;
+    max-width: 1200px;
+}
+
+.mobile-banner img {
+    width: 100%;
+    height: auto;
+}
+
+/* =============================================
   10. MEDIA QUERIES
   ============================================= */
 @media (max-width: 768px) {
