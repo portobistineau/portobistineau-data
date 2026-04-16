@@ -629,16 +629,18 @@ footer p a {
 .side-banner {
     position: fixed;
     top: 220px;
+    bottom: 20px;   /* THIS is the fix */
     width: calc((100vw - 1000px) / 2);
     z-index: 100;
     display: flex;
     justify-content: center;
+    align-items: center; /* center vertically */
 }
 
 .side-banner img {
-    width: 100%;
+    max-height: 100%;
+    width: calc(100% - 20px); /* 10px gap on each side */
     height: auto;
-    max-width: none;
 }
 
 .side-banner.left {
