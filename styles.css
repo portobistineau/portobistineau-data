@@ -623,6 +623,39 @@ footer p a {
 }
 
 /* =============================================
+  SIDE BANNERS (DESKTOP ONLY)
+  ============================================= */
+
+.side-banner {
+    position: fixed;
+    top: 220px; /* below your header */
+    width: 160px;
+    z-index: 100;
+}
+
+.side-banner img {
+    width: 100%;
+    height: auto;
+}
+
+/* Left */
+.side-banner.left {
+    left: 10px;
+}
+
+/* Right */
+.side-banner.right {
+    right: 10px;
+}
+
+/* Hide on mobile */
+@media (max-width: 768px) {
+    .side-banner {
+        display: none;
+    }
+}
+
+/* =============================================
   10. MEDIA QUERIES
   ============================================= */
 @media (max-width: 768px) {
