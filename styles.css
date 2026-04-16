@@ -599,6 +599,30 @@ footer p a {
 }
 
 /* =============================================
+  MOBILE vs DESKTOP BANNERS
+  ============================================= */
+
+/* Default (desktop) */
+.desktop-banner {
+    display: block;
+}
+
+.mobile-banner {
+    display: none;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .desktop-banner {
+        display: none;
+    }
+
+    .mobile-banner {
+        display: block;
+    }
+}
+
+/* =============================================
   10. MEDIA QUERIES
   ============================================= */
 @media (max-width: 768px) {
