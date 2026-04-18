@@ -608,19 +608,11 @@ footer p a {
 }
 
 .mobile-banner {
-    display: none;
+    display: block;
 }
 
 /* Mobile */
-@media (max-width: 768px) {
-    .desktop-banner {
-        display: none;
-    }
 
-    .mobile-banner {
-        display: block;
-    }
-}
 
 /* =============================================
   SIDE BANNERS (DESKTOP ONLY)
@@ -683,11 +675,7 @@ footer p a {
 }
 
 /* Hide on desktop */
-@media (min-width: 769px) {
-    .ad-disclaimer {
-        display: none;
-    }
-}
+
 /* =============================================
   10. MEDIA QUERIES
   ============================================= */
