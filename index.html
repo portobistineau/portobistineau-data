@@ -12,6 +12,7 @@
 </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   
   <link rel="stylesheet" href="styles.css"> 
   
@@ -61,6 +62,31 @@
   <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0"></script>
 </head>
 <body>
+  
+  <!-- LEFT SIDE BANNER -->
+<div class="side-banner left">
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
+     target="_blank"
+     onclick="gtag('event','click',{
+       event_category:'outbound',
+       event_label:'lurenet_left'
+     });">
+    <img src="images/banners/left_banner.png" alt="LureNet ad left">
+  </a>
+</div>
+
+<!-- RIGHT SIDE BANNER -->
+<div class="side-banner right">
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
+     target="_blank"
+     onclick="gtag('event','click',{
+       event_category:'outbound',
+       event_label:'lurenet_right'
+     });">
+    <img src="images/banners/right_banner.png" alt="LureNet ad right">
+  </a>
+</div>
+  
   <div class="container">
     <div class="banner">
       <img src="Banner2.jpg" alt="Port O Bistineau Marina" class="banner-img" id="banner">
@@ -102,6 +128,17 @@
       </p>
     </div>
 
+    <div class="mobile-banner">
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
+     target="_blank"
+     onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_1'});">
+    <img src="images/banners/mobile_banner_1.png" alt="LureNet mobile ad 1">
+  </a>
+      <p class="ad-disclaimer">
+  *Affiliate link. We may earn a commission from purchases.
+</p>
+</div>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -196,6 +233,17 @@
   </p>
 </div>
 
+    <div class="mobile-banner">
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
+     target="_blank"
+     onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_2'});">
+    <img src="images/banners/mobile_banner_2.png" alt="LureNet mobile ad 2">
+  </a>
+      <p class="ad-disclaimer">
+  *Affiliate link. We may earn a commission from purchases.
+</p>
+</div>
+    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
 <script src="scripts/solunar.js"></script>
 
@@ -239,7 +287,17 @@
   </div>
 </div>
 
-
+<div class="mobile-banner">
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
+     target="_blank"
+     onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_3'});">
+    <img src="images/banners/mobile_banner_3.png" alt="LureNet mobile ad 3">
+  </a>
+      <p class="ad-disclaimer">
+  *Affiliate link. We may earn a commission from purchases.
+</p>
+</div>
+    
     <div class="section">
       <h2>Tournament Schedule</h2>
       <div class="calendar-wrapper">
@@ -301,6 +359,17 @@
       </div>
     </div>
 
+    <div class="mobile-banner">
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
+     target="_blank"
+     onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_4'});">
+    <img src="images/banners/mobile_banner_4.png" alt="LureNet mobile ad 4">
+  </a>
+      <p class="ad-disclaimer">
+  *Affiliate link. We may earn a commission from purchases.
+</p>
+</div>
+    
     <div class="section">
       <h2>Location Map</h2>
       <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4084.590!2d-93.34883!3d32.4619!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDI3JzQyLjgiTiA5M8KwMjAnNTIuNSciVw!5e0!3m2!1sen!2sus!4v1690000000000" allowfullscreen="" loading="lazy"></iframe>
@@ -373,6 +442,9 @@
         </a> 
         for live lake conditions, fishing reports, and tournament news!
       </p>
+      <p class="ad-disclaimer">
+  *This site contains affiliate links. We may earn a commission from purchases made through these links.
+</p>
       <p class="footer-copyright">
         © 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
       </p>
@@ -380,6 +452,8 @@
   </div>
 </body>
 </html>
+
+
 
 
 
