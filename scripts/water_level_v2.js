@@ -140,17 +140,25 @@ if (forecast.length > 0) {
         const change = forecastPeakPoint.level - currentMSL;
         const changeText = change >= 0 ? `+${change.toFixed(2)}` : change.toFixed(2);
 
-        forecastSummary = `
-            <br>
-            <span style="font-weight: normal; color: #6f42c1; font-size: 13px;">
-                Forecast peak: ${forecastPeakPoint.level.toFixed(2)} ft MSL (${changeText} ft)
-                ${formatTime(forecastPeakPoint.time)}
-            </span>
-        `;
+        const arrow = change >= 0 ? "▲" : "▼";
+
+forecastSummary = `
+    <br>
+    <span style="font-weight:600; color:#6f42c1;">
+        Forecast Crest:
+    </span>
+    <span style="color:#6f42c1;">
+        ${forecastPeakPoint.level.toFixed(2)} ft MSL
+    </span>
+    <br>
+    <span style="font-size:13px; color:#6f42c1;">
+        ${arrow} ${changeText} ft by ${formatTime(forecastPeakPoint.time)}
+    </span>
+`;
     }
 
     currentDiv.innerHTML = `
-        <span>Current Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
+        <span>Current Lake Level: <strong>${currentMSL.toFixed(2)} ft MSL</strong></span><br>
         <span style="font-weight: normal; color: #666; font-size: 13px;">
             Last reading: ${formatTime(lastObserved.time, true)}
         </span>
