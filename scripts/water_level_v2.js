@@ -249,7 +249,7 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             yMin: NORMAL_POOL,
                             yMax: NORMAL_POOL,
                             borderColor: '#16a34a',
-                            borderWidth: 1
+                            borderWidth: 1.5
                         }
                     }
                 }
