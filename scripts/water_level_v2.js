@@ -18,21 +18,28 @@ function formatTime(dt, includeMinute = false) {
     });
 }
 
-function createTickCallback(lastTimeMs) {
-    const INTERVAL_MS = 12 * 60 * 60 * 1000;
-    const TOLERANCE_MS = 15 * 60 * 1000;
+function createTickCallback() {
+    const DESIRED_TICKS = 8;
 
     return function(value, index, ticks) {
-        const labelTime = new Date(this.getLabelForValue(value)).getTime();
-        const isLastTick = index === ticks.length - 1;
+        if (!ticks || ticks.length === 0) return null;
 
-        if (isLastTick) return formatTime(labelTime);
+        const spacing = Math.max(1, Math.round(ticks.length / DESIRED_TICKS));
+        const isFirst = index === 0;
+        const isLast = index === ticks.length - 1;
+        const isRegularTick = index % spacing === 0;
 
-        const diff = Math.abs(lastTimeMs - labelTime);
-        const numIntervals = Math.round(diff / INTERVAL_MS);
-        const deviation = Math.abs(diff - (numIntervals * INTERVAL_MS));
+        if (!isFirst && !isLast && !isRegularTick) return null;
 
-        return deviation < TOLERANCE_MS ? formatTime(labelTime) : null;
+        const labelTime = new Date(this.getLabelForValue(value));
+
+        return labelTime.toLocaleString('en-US', {
+            timeZone: 'America/Chicago',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            hour12: true
+        });
     };
 }
 
@@ -183,7 +190,7 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                         maxRotation: 45,
                         minRotation: 45,
                         autoSkip: false,
-                        callback: createTickCallback(lastTimeMs)
+                        callback: createTickCallback()
                     }
                 }
             },
@@ -202,7 +209,7 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             yMax: NORMAL_POOL,
                             borderColor: '#28a745',
                             borderWidth: 3,
-                            borderDash: [6, 6]
+                            borderDash: [4, 3]
                         }
                     }
                 }
