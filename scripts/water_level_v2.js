@@ -56,9 +56,17 @@ async function loadNoaaGraph() {
     const observedRaw = data?.observed?.data || [];
     const forecastRaw = data?.forecast?.data || [];
 
+    // NOAA returns much more history than we want.
+// Keep only the last 5 days so forecast takes up more of the graph.
+const cutoffMs = Date.now() - (5 * 24 * 60 * 60 * 1000);
+
     const observed = observedRaw
-        .filter(p => p.validTime && typeof p.primary === 'number')
-        .map(p => ({ time: p.validTime, level: p.primary }));
+    .filter(p =>
+        p.validTime &&
+        typeof p.primary === 'number' &&
+        new Date(p.validTime).getTime() >= cutoffMs
+    )
+    .map(p => ({ time: p.validTime, level: p.primary }));
 
     const forecast = forecastRaw
         .filter(p => p.validTime && typeof p.primary === 'number')
