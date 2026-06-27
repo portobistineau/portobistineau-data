@@ -8,14 +8,19 @@ const currentDiv = document.getElementById('current-level');
 const canvas = document.getElementById('water-chart');
 
 function formatTime(dt, includeMinute = false) {
-    return new Date(dt).toLocaleString('en-US', {
+    const opts = {
         timeZone: 'America/Chicago',
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
-        minute: includeMinute ? 'numeric' : undefined,
         hour12: true
-    });
+    };
+
+    if (includeMinute) {
+        opts.minute = 'numeric';
+    }
+
+    return new Date(dt).toLocaleString('en-US', opts);
 }
 
 function createTickCallback() {
