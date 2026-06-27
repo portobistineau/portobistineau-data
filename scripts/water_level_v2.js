@@ -138,6 +138,7 @@ if (forecast.length > 0) {
 }
 
 function renderChart(labels, observedData, forecastData, lastTimeMs, lastObservedIndex) {
+        const dividerLabel = labels[lastObservedIndex];
     if (window.waterChart) window.waterChart.destroy();
 
     window.waterChart = new Chart(canvas.getContext('2d'), {
@@ -203,15 +204,35 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                 },
                 annotation: {
                     annotations: {
-                        poolLine: {
-                            type: 'line',
-                            yMin: NORMAL_POOL,
-                            yMax: NORMAL_POOL,
-                            borderColor: '#28a745',
-                            borderWidth: 3,
-                            borderDash: [4, 3]
-                        }
-                    }
+    forecastDivider: {
+        type: 'line',
+        xMin: dividerLabel,
+        xMax: dividerLabel,
+        borderColor: 'rgba(0, 0, 0, 0.25)',
+        borderWidth: 1,
+        borderDash: [4, 4],
+        label: {
+            display: true,
+            content: 'Forecast',
+            position: 'start',
+            backgroundColor: 'rgba(255,255,255,0.85)',
+            color: '#6f42c1',
+            font: {
+                size: 11,
+                style: 'italic'
+            }
+        }
+    },
+
+    poolLine: {
+        type: 'line',
+        yMin: NORMAL_POOL,
+        yMax: NORMAL_POOL,
+        borderColor: '#28a745',
+        borderWidth: 3,
+        borderDash: [6, 6]
+    }
+}
                 }
             },
             animation: { duration: 1000 }
