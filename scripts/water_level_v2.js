@@ -19,7 +19,7 @@ function formatTime(dt, includeMinute = false) {
 }
 
 function createTickCallback() {
-    const DESIRED_TICKS = 8;
+    const DESIRED_TICKS = 12;
 
     return function(value, index, ticks) {
         if (!ticks || ticks.length === 0) return null;
