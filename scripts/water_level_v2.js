@@ -161,7 +161,8 @@ if (forecast.length > 0) {
 }
 
 function renderChart(labels, observedData, forecastData, lastTimeMs, lastObservedIndex) {
-        const dividerLabel = labels[lastObservedIndex];
+    const dividerLabel = labels[lastObservedIndex];
+
     if (window.waterChart) window.waterChart.destroy();
 
     window.waterChart = new Chart(canvas.getContext('2d'), {
@@ -186,7 +187,7 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                     borderColor: '#6f42c1',
                     backgroundColor: 'rgba(111, 66, 193, 0.08)',
                     borderWidth: 2,
-                    borderDash: [6, 6],
+                    borderDash: [4, 3],
                     fill: false,
                     tension: 0.1,
                     pointRadius: 0,
@@ -227,25 +228,22 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                 },
                 annotation: {
                     annotations: {
-    forecastDivider: {
-        type: 'line',
-        xMin: dividerLabel,
-        xMax: dividerLabel,
-        borderColor: 'rgba(0, 0, 0, 0.25)',
-        borderWidth: 1,
-        borderDash: [4, 4],
-        }
-    },
-
-    poolLine: {
-    type: 'line',
-    yMin: NORMAL_POOL,
-    yMax: NORMAL_POOL,
-    borderColor: '#16a34a',
-    borderWidth: 2,
-    borderDash: []
-}
-}
+                        forecastDivider: {
+                            type: 'line',
+                            xMin: dividerLabel,
+                            xMax: dividerLabel,
+                            borderColor: 'rgba(0, 0, 0, 0.25)',
+                            borderWidth: 1,
+                            borderDash: [4, 4]
+                        },
+                        poolLine: {
+                            type: 'line',
+                            yMin: NORMAL_POOL,
+                            yMax: NORMAL_POOL,
+                            borderColor: '#16a34a',
+                            borderWidth: 2
+                        }
+                    }
                 }
             },
             animation: { duration: 1000 }
