@@ -25,22 +25,40 @@ function createTickCallback() {
         if (!ticks || ticks.length === 0) return null;
 
         const spacing = Math.max(1, Math.round(ticks.length / DESIRED_TICKS));
+
         const isFirst = index === 0;
-        const isLast = index === ticks.length - 1;
         const isRegularTick = index % spacing === 0;
+        const isLast = index === ticks.length - 1;
 
-        if (!isFirst && !isLast && !isRegularTick) return null;
+        // Show regular ticks and first tick
+        if (isFirst || isRegularTick) {
+            return formatAxisLabel(this.getLabelForValue(value));
+        }
 
-        const labelTime = new Date(this.getLabelForValue(value));
+        // Only show last tick if it is not too close to the previous regular tick
+        if (isLast) {
+            const previousRegularIndex = Math.floor(index / spacing) * spacing;
+            const distanceFromPreviousRegular = index - previousRegularIndex;
 
-        return labelTime.toLocaleString('en-US', {
-            timeZone: 'America/Chicago',
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            hour12: true
-        });
+            if (distanceFromPreviousRegular >= Math.ceil(spacing * 0.75)) {
+                return formatAxisLabel(this.getLabelForValue(value));
+            }
+        }
+
+        return null;
     };
+}
+
+function formatAxisLabel(labelValue) {
+    const labelTime = new Date(labelValue);
+
+    return labelTime.toLocaleString('en-US', {
+        timeZone: 'America/Chicago',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        hour12: true
+    });
 }
 
 async function loadWaterGraph() {
@@ -211,27 +229,17 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
         borderColor: 'rgba(0, 0, 0, 0.25)',
         borderWidth: 1,
         borderDash: [4, 4],
-        label: {
-            display: true,
-            content: 'Forecast',
-            position: 'start',
-            backgroundColor: 'rgba(255,255,255,0.85)',
-            color: '#6f42c1',
-            font: {
-                size: 11,
-                style: 'italic'
-            }
         }
     },
 
     poolLine: {
-        type: 'line',
-        yMin: NORMAL_POOL,
-        yMax: NORMAL_POOL,
-        borderColor: '#28a745',
-        borderWidth: 3,
-        borderDash: [6, 6]
-    }
+    type: 'line',
+    yMin: NORMAL_POOL,
+    yMax: NORMAL_POOL,
+    borderColor: '#16a34a',
+    borderWidth: 2,
+    borderDash: []
+}
 }
                 }
             },
