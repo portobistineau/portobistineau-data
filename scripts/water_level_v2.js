@@ -236,6 +236,41 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                 },
                 annotation: {
                     annotations: {
+                        majorBand: {
+                            type: 'box',
+                            yMin: 145,
+                            yMax: 150,
+                            backgroundColor: 'rgba(220, 38, 38, 0.08)',
+                            borderWidth: 0
+                        },
+                        moderateBand: {
+                            type: 'box',
+                            yMin: 144,
+                            yMax: 145,
+                            backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                            borderWidth: 0
+                        },
+                        minorBand: {
+                            type: 'box',
+                            yMin: 142.5,
+                            yMax: 144,
+                            backgroundColor: 'rgba(251, 146, 60, 0.07)',
+                            borderWidth: 0
+                        },
+                        actionBand: {
+                            type: 'box',
+                            yMin: 142,
+                            yMax: 142.5,
+                            backgroundColor: 'rgba(250, 204, 21, 0.10)',
+                            borderWidth: 0
+                        },
+                        normalBand: {
+                            type: 'box',
+                            yMin: 141,
+                            yMax: 142,
+                            backgroundColor: 'rgba(34, 197, 94, 0.04)',
+                            borderWidth: 0
+                        },
                         forecastDivider: {
                             type: 'line',
                             xMin: dividerLabel,
