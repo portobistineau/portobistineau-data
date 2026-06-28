@@ -240,7 +240,6 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             type: 'box',
                             yMin: 145,
                             yMax: 150,
-                            xMin: dividerLabel,
                             backgroundColor: 'rgba(220, 38, 38, 0.18)',
                             borderWidth: 0
                         },
@@ -248,7 +247,6 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             type: 'box',
                             yMin: 144,
                             yMax: 145,
-                            xMin: dividerLabel,
                             backgroundColor: 'rgba(249, 115, 22, 0.16)',
                             borderWidth: 0
                         },
@@ -256,7 +254,6 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             type: 'box',
                             yMin: 142.5,
                             yMax: 144,
-                            xMin: dividerLabel,
                             backgroundColor: 'rgba(251, 146, 60, 0.12)',
                             borderWidth: 0
                         },
@@ -264,7 +261,6 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             type: 'box',
                             yMin: 142,
                             yMax: 142.5,
-                            xMin: dividerLabel,
                             backgroundColor: 'rgba(250, 204, 21, 0.15)',
                             borderWidth: 0
                         },
