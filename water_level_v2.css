@@ -36,26 +36,41 @@
 @media (max-width: 768px) {
 
     .water-level-info {
-        flex-direction: column-reverse;
-        align-items: center;
-        gap: 18px;
-    }
-
-    #current-level {
-        width: 100%;
-        text-align: center;
-        line-height: 1.45;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
     }
 
     .normal-pool-block {
-        justify-content: center;
-        width: 100%;
-        text-align: center;
+        flex: 1;
+        justify-content: flex-start;
+        align-items: center;
+        font-size: 0.90rem;
+    }
+
+    .normal-pool-text {
+        font-size: 0.90rem;
+        line-height: 1.25;
+    }
+
+    #current-level {
+        flex: 1;
+        text-align: right;
+        font-size: 0.90rem;
+        line-height: 1.30;
+    }
+
+    #current-level strong {
+        font-size: 1.05rem;
     }
 
     .gauge-links {
-        line-height: 1.8;
+        display: block;
         text-align: center;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-top: 12px;
     }
 
 }
