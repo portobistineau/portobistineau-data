@@ -1,1 +1,61 @@
+/* ==========================================================
+   Lake Bistineau Water Level Widget (V2)
+   ========================================================== */
 
+/* ---------- Desktop ---------- */
+
+.water-level-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-top: 18px;
+}
+
+.normal-pool-block {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#current-level {
+    flex: 1;
+    text-align: right;
+}
+
+.gauge-links {
+    display: block;
+    margin-top: 14px;
+    text-align: center;
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 768px) {
+
+    .water-level-info {
+        flex-direction: column-reverse;
+        align-items: center;
+        gap: 18px;
+    }
+
+    #current-level {
+        width: 100%;
+        text-align: center;
+        line-height: 1.45;
+    }
+
+    .normal-pool-block {
+        justify-content: center;
+        width: 100%;
+        text-align: center;
+    }
+
+    .gauge-links {
+        line-height: 1.8;
+        text-align: center;
+    }
+
+}
