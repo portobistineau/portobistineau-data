@@ -116,10 +116,19 @@ if (forecast.length > 0) {
         }
     });
 
-    const observedData = labels.map(label => {
-        const p = observed.find(x => x.time === label);
-        return p ? p.level : null;
-    });
+    let lastObservedLevel = null;
+
+const observedData = labels.map(label => {
+    const p = observed.find(x => x.time === label);
+
+    if (p) {
+        lastObservedLevel = p.level;
+        return p.level;
+    }
+
+    // Continue the blue line/fill at the last observed elevation
+    return lastObservedLevel;
+});
 
     const forecastData = labels.map(label => {
         const p = forecast.find(x => x.time === label);
