@@ -275,8 +275,42 @@
       <small class="gauge-links">
         <a href="https://water.noaa.gov/gauges/07349250" target="_blank">NOAA Gauge</a> | 
         <a href="https://waterdata.usgs.gov/nwis/uv?site_no=07349250" target="_blank">USGS Data</a> | 
-        <a href="#" onclick="alert('MSL means Mean Sea Level. Lake Bistineau’s normal pool is approximately 141 feet above mean sea level.'); return false;">What is MSL?</a>
+        <a href="#" id="msl-info-link">What is MSL?</a>
       </small>
+
+      <div id="msl-popup" class="msl-popup">
+  <div class="msl-popup-content">
+    <button id="msl-popup-close" class="msl-popup-close" aria-label="Close">&times;</button>
+    <h3>What is MSL?</h3>
+    <p><strong>MSL</strong> stands for <strong>Mean Sea Level</strong>.</p>
+    <p>Lake Bistineau’s normal pool is approximately <strong>141.0 feet above mean sea level</strong>.</p>
+  </div>
+</div>
+
+      <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const link = document.getElementById('msl-info-link');
+    const popup = document.getElementById('msl-popup');
+    const close = document.getElementById('msl-popup-close');
+
+    if (!link || !popup || !close) return;
+
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      popup.style.display = 'flex';
+    });
+
+    close.addEventListener('click', function () {
+      popup.style.display = 'none';
+    });
+
+    popup.addEventListener('click', function (e) {
+      if (e.target === popup) {
+        popup.style.display = 'none';
+      }
+    });
+  });
+</script>
       
       <script src="scripts/water_level_v2.js"></script>
     </div>
