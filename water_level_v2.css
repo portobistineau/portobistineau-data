@@ -12,11 +12,66 @@
     margin-top: 18px;
 }
 
-.normal-pool-block {
+.stage-legend {
     flex: 1;
+    text-align: left;
+    font-size: 0.90rem;
+    line-height: 1.45;
+    font-weight: 600;
+}
+
+.stage-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.stage-swatch {
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.stage-row.normal {
+    color: #16a34a;
+}
+
+.stage-row.action {
+    color: #ca8a04;
+}
+
+.stage-row.minor {
+    color: #f97316;
+}
+
+.stage-row.moderate {
+    color: #ec4899;
+}
+
+.stage-row.major {
+    color: #dc2626;
+}
+
+.stage-row.normal .stage-swatch {
+    background: #16a34a;
+}
+
+.stage-row.action .stage-swatch {
+    background: #facc15;
+}
+
+.stage-row.minor .stage-swatch {
+    background: #f97316;
+}
+
+.stage-row.moderate .stage-swatch {
+    background: #ec4899;
+}
+
+.stage-row.major .stage-swatch {
+    background: #dc2626;
 }
 
 #current-level {
@@ -35,15 +90,26 @@
 
 @media (max-width: 768px) {
 
-   #water-chart {
-    max-height: 260px !important;
-}
+    #water-chart {
+        max-height: 260px !important;
+    }
 
     .water-level-info {
         flex-direction: column-reverse;
         align-items: center;
         gap: 10px;
         margin-top: 10px;
+    }
+
+    .stage-legend {
+        width: 100%;
+        text-align: center;
+        font-size: 0.82rem;
+        line-height: 1.35;
+    }
+
+    .stage-row {
+        justify-content: center;
     }
 
     #current-level {
@@ -55,21 +121,6 @@
 
     #current-level strong {
         font-size: 1rem;
-    }
-
-    .normal-pool-block {
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.86rem;
-    line-height: 1.2;
-}
-
-    .normal-pool-text {
-        display: inline;
-        font-size: 0.86rem;
-        line-height: 1.2;
     }
 
     .gauge-links {
