@@ -15,6 +15,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
   
   <link rel="stylesheet" href="styles.css"> 
+  <link rel="stylesheet" href="water_level_v2.css">
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
@@ -65,7 +66,7 @@
   
   <!-- LEFT SIDE BANNER -->
 <div class="side-banner left">
-  <a href="https://www.lurenet.com/?_source=portobistineau&_medium=banner&_campaign=lurenet_ads"
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
      target="_blank"
      onclick="gtag('event','click',{
        event_category:'outbound',
@@ -77,7 +78,7 @@
 
 <!-- RIGHT SIDE BANNER -->
 <div class="side-banner right">
-  <a href="https://www.lurenet.com/?_source=portobistineau&_medium=banner&_campaign=lurenet_ads"
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
      target="_blank"
      onclick="gtag('event','click',{
        event_category:'outbound',
@@ -129,7 +130,7 @@
     </div>
 
     <div class="mobile-banner">
-  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_content=mobile_1&utm_medium=banner&utm_campaign=lurenet_ads"
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
      target="_blank"
      onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_1'});">
     <img src="images/banners/mobile_banner_1.png" alt="LureNet mobile ad 1">
@@ -234,7 +235,7 @@
 </div>
 
     <div class="mobile-banner">
-  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_content=mobile_2&utm_medium=banner&utm_campaign=lurenet_ads"
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
      target="_blank"
      onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_2'});">
     <img src="images/banners/mobile_banner_2.png" alt="LureNet mobile ad 2">
@@ -250,7 +251,7 @@
     
     <div class="section">
       <h2>Lake Bistineau Water Level (MSL Elevation)</h2>
-      <p class="subheading-attestation">Data from waterservices.usgs.gov.</p>
+      <p class="subheading-attestation">Water level observations and forecasts courtesy of NOAA. USGS used automatically if NOAA is unavailable.</p>
 
       
       <canvas id="water-chart" width="100%" height="300" style="max-height:300px;"></canvas>
@@ -259,21 +260,59 @@
       <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
       
       <div class="water-level-info">
-        <div class="normal-pool-block">
-          <div class="normal-pool-indicator"></div>
-          <span class="normal-pool-text">Normal Pool: 141 ft MSL</span>
-        </div>
-        <div id="current-level" id="current-level-wrapper">
+        <div class="stage-legend">
+  <div class="stage-row normal"><span class="stage-swatch"></span><span>Normal Pool Stage: 141.0 ft</span></div>
+  <div class="stage-row action"><span class="stage-swatch"></span><span>Action Stage: 142.0 ft</span></div>
+  <div class="stage-row minor"><span class="stage-swatch"></span><span>Minor Flooding: 142.5 ft</span></div>
+  <div class="stage-row moderate"><span class="stage-swatch"></span><span>Moderate Flooding: 144.0 ft</span></div>
+  <div class="stage-row major"><span class="stage-swatch"></span><span>Major Flooding: 145.0 ft</span></div>
+</div>
+        <div id="current-level">
           <p>Loading current level...</p>
         </div>
       </div>
 
       <small class="gauge-links">
         <a href="https://water.noaa.gov/gauges/07349250" target="_blank">NOAA Gauge</a> | 
-        <a href="https://waterdata.usgs.gov/nwis/uv?site_no=07349250" target="_blank">USGS Data</a>
+        <a href="https://waterdata.usgs.gov/nwis/uv?site_no=07349250" target="_blank">USGS Data</a> | 
+        <a href="#" id="msl-info-link">What is MSL?</a>
       </small>
+
+      <div id="msl-popup" class="msl-popup">
+  <div class="msl-popup-content">
+    <button id="msl-popup-close" class="msl-popup-close" aria-label="Close">&times;</button>
+    <h3>What is MSL?</h3>
+    <p><strong>MSL</strong> stands for <strong>Mean Sea Level</strong>, or the average height of the ocean's surface relative to land, calculated by averaging out short-term fluctuations like tides and waves over a long period.</p>
+    <p>Lake Bistineau’s normal pool elevation is approximately <strong>141.0 feet above mean sea level</strong>.</p>
+  </div>
+</div>
+
+      <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const link = document.getElementById('msl-info-link');
+    const popup = document.getElementById('msl-popup');
+    const close = document.getElementById('msl-popup-close');
+
+    if (!link || !popup || !close) return;
+
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      popup.style.display = 'flex';
+    });
+
+    close.addEventListener('click', function () {
+      popup.style.display = 'none';
+    });
+
+    popup.addEventListener('click', function (e) {
+      if (e.target === popup) {
+        popup.style.display = 'none';
+      }
+    });
+  });
+</script>
       
-      <script src="scripts/water_level.js"></script>
+      <script src="scripts/water_level_v2.js"></script>
     </div>
     
 <div class="video-card">
@@ -288,7 +327,7 @@
 </div>
 
 <div class="mobile-banner">
-  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_content=mobile_3&utm_medium=banner&utm_campaign=lurenet_ads"
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
      target="_blank"
      onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_3'});">
     <img src="images/banners/mobile_banner_3.png" alt="LureNet mobile ad 3">
@@ -360,7 +399,7 @@
     </div>
 
     <div class="mobile-banner">
-  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_content=mobile_4&utm_medium=banner&utm_campaign=lurenet_ads"
+  <a href="https://www.lurenet.com/?utm_source=portobistineau&utm_medium=banner&utm_campaign=lurenet_ads"
      target="_blank"
      onclick="gtag('event','click',{event_category:'outbound',event_label:'lurenet_mobile_4'});">
     <img src="images/banners/mobile_banner_4.png" alt="LureNet mobile ad 4">
@@ -452,21 +491,4 @@
   </div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
