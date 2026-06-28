@@ -249,28 +249,28 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
                             type: 'box',
                             yMin: 145,
                             yMax: 150,
-                            backgroundColor: 'rgba(220, 38, 38, 0.18)',
+                            backgroundColor: 'rgba(244, 67, 54, 0.18)',
                             borderWidth: 0
                         },
                         moderateBand: {
                             type: 'box',
                             yMin: 144,
                             yMax: 145,
-                            backgroundColor: 'rgba(249, 115, 22, 0.16)',
+                            backgroundColor: 'rgba(255, 152, 0, 0.16)',
                             borderWidth: 0
                         },
                         minorBand: {
                             type: 'box',
                             yMin: 142.5,
                             yMax: 144,
-                            backgroundColor: 'rgba(251, 146, 60, 0.12)',
+                            backgroundColor: 'rgba(255, 193, 7, 0.12)',
                             borderWidth: 0
                         },
                         actionBand: {
                             type: 'box',
                             yMin: 142,
                             yMax: 142.5,
-                            backgroundColor: 'rgba(250, 204, 21, 0.15)',
+                            backgroundColor: 'rgba(255, 235, 59, 0.15)',
                             borderWidth: 0
                         },
                         normalBand: {
