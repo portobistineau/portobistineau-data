@@ -66,6 +66,22 @@ function formatAxisLabel(labelValue) {
     });
 }
 
+function getStageInfo(level) {
+    if (level >= 145) {
+        return { name: 'Major Flooding Expected', color: '#dc2626', weight: 800 };
+    }
+    if (level >= 144) {
+        return { name: 'Moderate Flooding Expected', color: '#ec4899', weight: 700 };
+    }
+    if (level >= 142.5) {
+        return { name: 'Minor Flooding Expected', color: '#f97316', weight: 650 };
+    }
+    if (level >= 142) {
+        return { name: 'Action Stage Expected', color: '#ca8a04', weight: 600 };
+    }
+    return { name: 'Below Action Stage', color: '#6f42c1', weight: 600 };
+}
+
 async function loadWaterGraph() {
     canvas.style.display = 'block';
     currentDiv.innerHTML = '<p>Loading current level...</p>';
@@ -151,17 +167,23 @@ const observedData = labels.map(label => {
 
         const arrow = change >= 0 ? "▲" : "▼";
 
+const stageInfo = getStageInfo(forecastPeakPoint.level);
+
 forecastSummary = `
     <br>
-    <span style="font-weight:600; color:#6f42c1;">
+    <span style="font-weight:${stageInfo.weight}; color:${stageInfo.color};">
         Forecast Crest:
     </span>
-    <span style="color:#6f42c1;">
+    <span style="color:${stageInfo.color}; font-weight:${stageInfo.weight};">
         ${forecastPeakPoint.level.toFixed(2)} ft MSL
     </span>
     <br>
-    <span style="font-size:13px; color:#6f42c1;">
+    <span style="font-size:13px; color:${stageInfo.color}; font-weight:${stageInfo.weight};">
         ${arrow} ${changeText} ft by ${formatTime(forecastPeakPoint.time)}
+    </span>
+    <br>
+    <span style="font-size:13px; color:${stageInfo.color}; font-weight:${stageInfo.weight};">
+        ${stageInfo.name}
     </span>
 `;
     }
