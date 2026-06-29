@@ -132,27 +132,22 @@ if (forecast.length > 0) {
         }
     });
 
-    let lastObservedLevel = null;
-
-const observedData = labels.map(label => {
+    const observedData = labels.map(label => {
     const p = observed.find(x => x.time === label);
-
-    if (p) {
-        lastObservedLevel = p.level;
-        return p.level;
-    }
-
-    // Continue the blue line/fill at the last observed elevation
-    return lastObservedLevel;
+    return p ? p.level : null;
 });
 
-    const forecastData = labels.map(label => {
-        const p = forecast.find(x => x.time === label);
-        return p ? p.level : null;
-    });
+const waterFillData = labels.map(() => currentMSL);
 
-    // Connect forecast visually from the latest observed point
-    forecastData[observed.length - 1] = currentMSL;
+    const forecastData = labels.map((label, index) => {
+    if (index === observed.length - 1) return currentMSL;
+
+    const labelTime = new Date(label).getTime();
+    if (labelTime <= lastTimeMs) return null;
+
+    const p = forecast.find(x => x.time === label);
+    return p ? p.level : null;
+});
 
     const forecastLevels = forecast.map(p => p.level);
     const forecastPeak = forecastLevels.length ? Math.max(...forecastLevels) : null;
@@ -196,10 +191,10 @@ forecastSummary = `
         ${forecastSummary}
     `;
 
-    renderChart(labels, observedData, forecastData, lastTimeMs, observed.length - 1);
+    renderChart(labels, observedData, forecastData, waterFillData, lastTimeMs, observed.length - 1);
 }
 
-function renderChart(labels, observedData, forecastData, lastTimeMs, lastObservedIndex) {
+function renderChart(labels, observedData, forecastData, waterFillData, lastTimeMs, lastObservedIndex) {
     const dividerLabel = labels[lastObservedIndex];
 
     if (window.waterChart) window.waterChart.destroy();
@@ -209,6 +204,16 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
         data: {
             labels,
             datasets: [
+                {
+                    label: 'Water Fill',
+                    data: waterFillData,
+                    borderColor: 'transparent',
+                    backgroundColor: 'rgba(30, 144, 255, 0.1)',
+                    borderWidth: 0,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 0
+                },
                 {
                     label: 'Observed Elevation (ft MSL)',
                     data: observedData,
@@ -324,11 +329,11 @@ function renderChart(labels, observedData, forecastData, lastTimeMs, lastObserve
         }
     });
 
-    window.waterChart.data.datasets[0].pointBackgroundColor = Array(labels.length).fill('transparent');
-    window.waterChart.data.datasets[0].pointBackgroundColor[lastObservedIndex] = '#ff0000';
+    window.waterChart.data.datasets[1].pointBackgroundColor = Array(labels.length).fill('transparent');
+    window.waterChart.data.datasets[1].pointBackgroundColor[lastObservedIndex] = '#ff0000';
 
-    window.waterChart.data.datasets[0].pointRadius = Array(labels.length).fill(0);
-    window.waterChart.data.datasets[0].pointRadius[lastObservedIndex] = 6;
+    window.waterChart.data.datasets[1].pointRadius = Array(labels.length).fill(0);
+    window.waterChart.data.datasets[1].pointRadius[lastObservedIndex] = 6;
 
     window.waterChart.update();
 }
