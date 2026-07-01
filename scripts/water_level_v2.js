@@ -122,6 +122,8 @@ if (forecast.length > 0) {
 
     const lastObserved = observed[observed.length - 1];
     const currentMSL = lastObserved.level;
+    const yMin = Math.floor(currentMSL - 4);
+    const yMax = yMin + 10;
     const lastTimeMs = new Date(lastObserved.time).getTime();
 
     const labels = observed.map(p => p.time);
@@ -191,10 +193,10 @@ forecastSummary = `
         ${forecastSummary}
     `;
 
-    renderChart(labels, observedData, forecastData, waterFillData, lastTimeMs, observed.length - 1);
+    renderChart(labels, observedData, forecastData, waterFillData, lastTimeMs, observed.length - 1, yMin, yMax);
 }
 
-function renderChart(labels, observedData, forecastData, waterFillData, lastTimeMs, lastObservedIndex) {
+function renderChart(labels, observedData, forecastData, waterFillData, lastTimeMs, lastObservedIndex, yMin, yMax) {
     const dividerLabel = labels[lastObservedIndex];
 
     if (window.waterChart) window.waterChart.destroy();
@@ -246,8 +248,8 @@ function renderChart(labels, observedData, forecastData, waterFillData, lastTime
             scales: {
                 y: {
                     beginAtZero: false,
-                    suggestedMin: 135,
-                    suggestedMax: 145,
+                    suggestedMin: yMin,
+                    suggestedMax: yMax,
                     title: { display: true, text: 'Elevation (ft above MSL)' },
                     grid: { color: 'rgba(0,0,0,0.1)' }
                 },
