@@ -6,38 +6,7 @@
     --calendar-border: #d5d9df;
     --calendar-soft-bg: #f7f9fb;
     --calendar-heading: #1f2937;
-    --calendar-accent: #1e6fa8;
-}
-
-.lake-calendar-toolbar {
-    display: grid;
-    grid-template-columns: 48px 1fr 48px;
-    align-items: center;
-    gap: 12px;
-    margin: 18px 0 12px;
-}
-
-.lake-calendar-toolbar h3 {
-    margin: 0;
-    text-align: center;
-    color: var(--calendar-heading);
-    font-size: 1.3rem;
-}
-
-.lake-calendar-toolbar button {
-    border: 1px solid #b9c1ca;
-    background: #ffffff;
-    border-radius: 7px;
-    min-height: 40px;
-    font-size: 1.7rem;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.lake-calendar-toolbar button:hover,
-.lake-calendar-toolbar button:focus-visible {
-    background: #edf5fa;
-    border-color: var(--calendar-accent);
+    --calendar-accent: #005f8f;
 }
 
 .lake-calendar-layout {
@@ -45,6 +14,46 @@
     grid-template-columns: minmax(0, 2.1fr) minmax(260px, 0.9fr);
     gap: 20px;
     align-items: start;
+    margin-top: 14px;
+}
+
+.lake-calendar-main {
+    min-width: 0;
+}
+
+.lake-calendar-toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin: 0 0 14px;
+}
+
+.lake-calendar-toolbar h3 {
+    min-width: 210px;
+    margin: 0;
+    text-align: center;
+    color: var(--calendar-heading);
+    font-size: 2rem;
+    line-height: 1.1;
+}
+
+.lake-calendar-toolbar button {
+    width: 44px;
+    min-width: 44px;
+    height: 42px;
+    border: 1px solid #b9c1ca;
+    border-radius: 7px;
+    background: #ffffff;
+    font-size: 1.7rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.lake-calendar-toolbar button:hover,
+.lake-calendar-toolbar button:focus-visible {
+    border-color: var(--calendar-accent);
+    background: #edf5fa;
 }
 
 .lake-calendar-grid {
@@ -57,22 +66,24 @@
 
 .lake-calendar-weekday {
     padding: 9px 4px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.82rem;
-    color: #374151;
-    background: #edf1f5;
     border-right: 1px solid var(--calendar-border);
     border-bottom: 1px solid var(--calendar-border);
+    background: #edf1f5;
+    color: #374151;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 700;
 }
 
 .lake-calendar-day {
+    display: flex;
+    flex-direction: column;
     min-height: 112px;
     padding: 6px;
     overflow: hidden;
-    background: #ffffff;
     border-right: 1px solid var(--calendar-border);
     border-bottom: 1px solid var(--calendar-border);
+    background: #ffffff;
 }
 
 .lake-calendar-day-empty {
@@ -80,10 +91,11 @@
 }
 
 .lake-calendar-day-number {
+    flex: 0 0 auto;
     margin-bottom: 5px;
-    font-weight: 700;
-    font-size: 0.84rem;
     color: #374151;
+    font-size: 0.84rem;
+    font-weight: 700;
 }
 
 .lake-calendar-today {
@@ -94,6 +106,7 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    align-self: flex-start;
     min-width: 25px;
     height: 25px;
     border-radius: 50%;
@@ -101,10 +114,9 @@
     color: #ffffff;
 }
 
-.lake-calendar-event,
-.lake-calendar-more {
+.lake-calendar-event {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     margin: 3px 0 0;
     padding: 4px 5px;
@@ -114,34 +126,37 @@
     color: #17324a;
     text-align: left;
     font-family: inherit;
-    font-size: 0.7rem;
-    line-height: 1.15;
+    font-size: 0.69rem;
+    line-height: 1.18;
     cursor: pointer;
 }
 
 .lake-calendar-event:hover,
-.lake-calendar-event:focus-visible,
-.lake-calendar-more:hover,
-.lake-calendar-more:focus-visible {
-    outline: 2px solid #1e6fa8;
+.lake-calendar-event:focus-visible {
+    outline: 2px solid var(--calendar-accent);
     outline-offset: 1px;
 }
 
 .lake-event-icon {
     flex: 0 0 auto;
-    margin-right: 3px;
+    margin-right: 4px;
 }
 
 .lake-event-button-title {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
-.lake-calendar-more {
-    justify-content: center;
-    background: #eeeeee;
-    color: #4b5563;
+.lake-calendar-holiday {
+    margin-top: auto;
+    padding-top: 5px;
+    color: #6b7280;
+    text-align: center;
+    font-size: 0.61rem;
+    font-style: italic;
+    line-height: 1.12;
 }
 
 .lake-event-list-panel {
@@ -154,8 +169,8 @@
 .lake-event-list-panel h3 {
     margin: 0;
     padding: 12px 14px;
-    color: #ffffff;
     background: var(--calendar-accent);
+    color: #ffffff;
     font-size: 1rem;
 }
 
@@ -172,11 +187,18 @@
     padding: 11px;
     border: 0;
     border-bottom: 1px solid var(--calendar-border);
-    background: #ffffff;
     color: #202832;
     text-align: left;
     font-family: inherit;
     cursor: pointer;
+}
+
+.lake-event-list-item:nth-child(odd) {
+    background: #ffffff;
+}
+
+.lake-event-list-item:nth-child(even) {
+    background: #edf6fb;
 }
 
 .lake-event-list-item:last-child {
@@ -185,7 +207,7 @@
 
 .lake-event-list-item:hover,
 .lake-event-list-item:focus-visible {
-    background: #edf6fb;
+    background: #dceef8;
     outline: none;
 }
 
@@ -239,12 +261,24 @@
 }
 
 .lake-calendar-contact {
-    margin-top: 20px;
+    margin-top: 22px;
     text-align: center;
 }
 
-.lake-calendar-contact p {
-    line-height: 1.45;
+.lake-calendar-contact-title {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.lake-calendar-contact-text {
+    margin: 5px 0 0;
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+.lake-calendar-contact .tournament-schedule-btn {
+    display: inline-block;
+    margin-top: 15px;
 }
 
 .lake-calendar-missing {
@@ -308,7 +342,7 @@
     overflow: hidden;
 }
 
-/* Event-type accents */
+/* Event type accents */
 
 [data-event-type="tournament"] {
     border-left: 4px solid #2f78b7;
@@ -348,8 +382,24 @@
         display: block;
     }
 
+    .lake-calendar-toolbar {
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .lake-calendar-toolbar h3 {
+        min-width: 170px;
+        font-size: 1.55rem;
+    }
+
+    .lake-calendar-toolbar button {
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+    }
+
     .lake-calendar-day {
-        min-height: 70px;
+        min-height: 88px;
         padding: 3px;
     }
 
@@ -364,25 +414,20 @@
     }
 
     .lake-calendar-event {
-        justify-content: center;
-        min-height: 22px;
-        padding: 2px;
-        font-size: 0;
+        padding: 3px;
+        font-size: 0.55rem;
+        line-height: 1.08;
     }
 
-    .lake-calendar-event .lake-event-icon {
-        margin: 0;
-        font-size: 0.82rem;
-    }
-
-    .lake-calendar-event .lake-event-button-title {
-        display: none;
-    }
-
-    .lake-calendar-more {
-        min-height: 20px;
-        padding: 2px;
+    .lake-event-icon {
+        margin-right: 2px;
         font-size: 0.62rem;
+    }
+
+    .lake-calendar-holiday {
+        padding-top: 3px;
+        font-size: 0.48rem;
+        line-height: 1.05;
     }
 
     .lake-event-list-panel {
@@ -393,17 +438,16 @@
         max-height: none;
     }
 
-    .lake-calendar-toolbar {
-        grid-template-columns: 42px 1fr 42px;
-        gap: 8px;
-    }
-
-    .lake-calendar-toolbar h3 {
-        font-size: 1.08rem;
-    }
-
     .lake-calendar-contact {
-        margin-top: 18px;
+        margin-top: 20px;
+    }
+
+    .lake-calendar-contact-title {
+        font-size: 0.98rem;
+    }
+
+    .lake-calendar-contact-text {
+        font-size: 0.84rem;
     }
 
     .event-popup-content {
