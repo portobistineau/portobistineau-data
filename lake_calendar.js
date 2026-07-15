@@ -334,27 +334,27 @@
     }
 
     function createCalendarEventButton(event) {
-        const typeInfo = getTypeInfo(event.type);
-        const button = document.createElement('button');
+    const button = document.createElement('button');
+    const calendarTitle = event.calendarTitle || event.title;
 
-        button.type = 'button';
-        button.className = 'lake-calendar-event';
-        button.dataset.eventType = event.type || 'general';
-        button.title = event.title;
+    button.type = 'button';
+    button.className = 'lake-calendar-event';
+    button.dataset.eventType = event.type || 'general';
+    button.title = event.title;
 
-        button.innerHTML = `
-            <span class="lake-event-button-title">
-                ${event.title}
-            </span>
-        `;
+    button.innerHTML = `
+        <span class="lake-event-button-title">
+            ${calendarTitle}
+        </span>
+    `;
 
-        button.addEventListener(
-            'click',
-            () => openEventPopup(event)
-        );
+    button.addEventListener(
+        'click',
+        () => openEventPopup(event)
+    );
 
-        return button;
-    }
+    return button;
+}
 
     function renderCalendar() {
         const monthEvents = getMonthEvents();
