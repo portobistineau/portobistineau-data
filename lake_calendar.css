@@ -6,7 +6,7 @@
     --calendar-border: #d5d9df;
     --calendar-soft-bg: #f7f9fb;
     --calendar-heading: #1f2937;
-    --calendar-accent: #005f8f;
+    --calendar-accent: #005b8f;
 }
 
 .lake-calendar-layout {
@@ -145,8 +145,10 @@
 .lake-event-button-title {
     display: block;
     min-width: 0;
-    overflow-wrap: anywhere;
     white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
 }
 
 .lake-calendar-holiday {
@@ -342,6 +344,11 @@
     overflow: hidden;
 }
 
+.lake-event-list-panel h3,
+.lake-calendar-contact .tournament-schedule-btn {
+    background-color: var(--calendar-accent);
+}
+
 /* Event type accents */
 
 [data-event-type="tournament"] {
@@ -414,15 +421,20 @@
     }
 
     .lake-calendar-event {
-        padding: 3px;
-        font-size: 0.55rem;
-        line-height: 1.08;
-    }
+    padding: 3px;
+    font-size: 0.52rem;
+    line-height: 1.12;
+}
 
-    .lake-event-icon {
-        margin-right: 2px;
-        font-size: 0.62rem;
-    }
+.lake-event-icon {
+    margin-right: 2px;
+    font-size: 0.62rem;
+}
+
+.lake-event-button-title {
+    word-break: normal;
+    overflow-wrap: break-word;
+}
 
     .lake-calendar-holiday {
         padding-top: 3px;
