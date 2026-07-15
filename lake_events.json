@@ -1,1 +1,32 @@
-
+[
+  {
+    "id": "example-tournament",
+    "title": "Example Bass Tournament",
+    "date": "2026-07-18",
+    "time": "6:00 AM",
+    "endTime": "2:00 PM",
+    "type": "tournament",
+    "location": "Port O’ Bistineau",
+    "description": "Example tournament entry for testing the custom calendar."
+  },
+  {
+    "id": "example-drawdown",
+    "title": "Example Lake Drawdown Begins",
+    "date": "2026-07-27",
+    "time": "",
+    "endTime": "",
+    "type": "drawdown",
+    "location": "Lake Bistineau",
+    "description": "Example drawdown entry for testing. Replace this with the official date and details."
+  },
+  {
+    "id": "example-parade",
+    "title": "Example Boat Parade",
+    "date": "2026-08-08",
+    "time": "2:00 PM",
+    "endTime": "",
+    "type": "boat-parade",
+    "location": "Lake Bistineau",
+    "description": "Example community event for testing the calendar."
+  }
+]
