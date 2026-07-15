@@ -7,7 +7,8 @@
     "endTime": "2:00 PM",
     "type": "tournament",
     "location": "Port O’ Bistineau",
-    "description": "Example tournament entry for testing the custom calendar."
+    "description": "Example tournament entry for testing the custom calendar.",
+    "calendarTitle": "Bass Tournament"
   },
   {
     "id": "example-drawdown",
@@ -17,7 +18,19 @@
     "endTime": "",
     "type": "drawdown",
     "location": "Lake Bistineau",
-    "description": "Example drawdown entry for testing. Replace this with the official date and details."
+    "description": "Example drawdown entry for testing. Replace this with the official date and details.",
+    "calendarTitle": "Lake Drawdown"
+  },
+  {
+    "id": "example-drawdown-meeting",
+    "calendarTitle": "Public Meeting",
+    "title": "Public Information Meeting About the Lake Drawdown",
+    "date": "2026-07-27",
+    "time": "6:00 PM",
+    "endTime": "7:30 PM",
+    "type": "meeting",
+    "location": "Webster Parish Library",
+    "description": "Example second event on the same date for testing how multiple calendar entries display."
   },
   {
     "id": "example-parade",
@@ -27,6 +40,62 @@
     "endTime": "",
     "type": "boat-parade",
     "location": "Lake Bistineau",
-    "description": "Example community event for testing the calendar."
+    "description": "Example community event for testing the calendar.",
+    "calendarTitle": "Boat Parade"
+  },
+  {
+    "id": "september-fall-bass-tournament",
+    "calendarTitle": "Fall Bass Tournament",
+    "title": "Lake Bistineau Fall Bass Tournament",
+    "date": "2026-09-12",
+    "time": "6:30 AM",
+    "endTime": "2:00 PM",
+    "type": "tournament",
+    "location": "Port O’ Bistineau",
+    "description": "Example September tournament entry for testing the calendar."
+  },
+  {
+    "id": "september-lake-cleanup",
+    "calendarTitle": "Lake Cleanup",
+    "title": "Community Lake Bistineau Cleanup Day",
+    "date": "2026-09-26",
+    "time": "8:00 AM",
+    "endTime": "12:00 PM",
+    "type": "cleanup",
+    "location": "Port O’ Bistineau",
+    "description": "Example volunteer cleanup event for testing the calendar."
+  },
+  {
+    "id": "october-boating-meeting",
+    "calendarTitle": "Boating Meeting",
+    "title": "Lake Bistineau Boating and Safety Meeting",
+    "date": "2026-10-03",
+    "time": "6:00 PM",
+    "endTime": "7:30 PM",
+    "type": "meeting",
+    "location": "Port O’ Bistineau",
+    "description": "Example public meeting entry for testing the calendar."
+  },
+  {
+    "id": "october-crappie-tournament",
+    "calendarTitle": "Crappie Tournament",
+    "title": "Lake Bistineau Fall Crappie Tournament",
+    "date": "2026-10-17",
+    "time": "7:00 AM",
+    "endTime": "1:00 PM",
+    "type": "tournament",
+    "location": "Port O’ Bistineau",
+    "description": "Example October fishing tournament entry for testing the calendar."
+  },
+  {
+    "id": "october-halloween-boat-parade",
+    "calendarTitle": "Halloween Parade",
+    "title": "Lake Bistineau Halloween Boat Parade",
+    "date": "2026-10-31",
+    "time": "5:30 PM",
+    "endTime": "",
+    "type": "boat-parade",
+    "location": "Lake Bistineau",
+    "description": "Example seasonal boat parade entry for testing the calendar."
   }
 ]
