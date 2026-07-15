@@ -16,6 +16,7 @@
   
   <link rel="stylesheet" href="styles.css"> 
   <link rel="stylesheet" href="water_level_v2.css">
+  <link rel="stylesheet" href="lake_calendar.css">
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
@@ -117,7 +118,7 @@
 
     <div class="youtube-cta-box">
       <p class="youtube-cta-title">
-        Weekly Fishing Reports, Live Lake Conditions & Tournament Updates
+        Weekly Fishing Reports, Live Lake Conditions &  Updates
       </p>
       <a href="https://www.youtube.com/@PortOBistineau?sub_confirmation=1"
         target="_blank"
@@ -337,28 +338,62 @@
 </p>
 </div>
     
-    <div class="section">
-      <h2>Tournament Schedule</h2>
-      <div class="calendar-wrapper">
-        <iframe 
-          src="https://calendar.google.com/calendar/embed?src=a3ac3e31957eebb61f0a38db32b5f80b160a9c881d2897507ae0edd4552c633c%40group.calendar.google.com&ctz=America%2FChicago"
-          class="calendar-iframe"
-          frameborder="0" 
-          scrolling="no">
-        </iframe>
-      </div>
+    <div class="section lake-calendar-section">
+  <h2>Lake Events Calendar</h2>
 
-      <div class="tournament-btn-wrapper">
-        <a href="mailto:portobistineau@gmail.com?subject=Tournament%20Schedule%20Request&body=Hi,%0A%0AI'd%20like%20to%20schedule%20a%20tournament%20on%20[DATE].%0A%0ADetails:%0A-%20Expected%20boats:%0A-%20Launch%20location:%0A-%20Weigh-in%20location:%0A%0AThanks!" 
-          class="tournament-schedule-btn">
-          Schedule a Tournament (Email Us)
-        </a>
-      </div>
+  <p class="subheading-attestation">
+    Fishing tournaments, boat parades, drawdowns, closures, and other events on Lake Bistineau.
+  </p>
 
-      <small class="tournament-note">
-        Know of a tournament? <a href="mailto:portobistineau@gmail.com">Let us know</a> to avoid conflicts!
-      </small>
+  <div class="lake-calendar-toolbar">
+    <button type="button" id="calendar-prev" aria-label="Previous month">‹</button>
+    <h3 id="calendar-month-title">Loading…</h3>
+    <button type="button" id="calendar-next" aria-label="Next month">›</button>
+  </div>
+
+  <div class="lake-calendar-layout">
+    <div id="lake-calendar-grid" class="lake-calendar-grid"></div>
+
+    <aside class="lake-event-list-panel">
+      <h3>Events This Month</h3>
+      <div id="lake-event-list" class="lake-event-list"></div>
+    </aside>
+  </div>
+
+  <div class="lake-calendar-contact">
+    <p>
+      <strong>Planning an organized event at Port O’ Bistineau?</strong><br>
+      Please contact us before announcing registration, weigh-in, launching, or other organized activities at the marina so we can help avoid scheduling and parking conflicts.
+    </p>
+
+    <a
+      class="tournament-schedule-btn"
+      href="mailto:portobistineau@gmail.com?subject=Port%20O%27%20Bistineau%20Event%20Coordination&body=Hi,%0A%0AI%20am%20planning%20an%20event%20at%20Port%20O%27%20Bistineau.%0A%0AEvent%20name:%0ADate:%0AExpected%20attendance%20or%20boats:%0ARegistration%20location:%0AWeigh-in%20or%20activity%20location:%0AOther%20details:%0A"
+    >
+      Coordinate Marina Use
+    </a>
+
+    <p class="lake-calendar-missing">
+      Know of a Lake Bistineau event that is missing?
+      <a href="mailto:portobistineau@gmail.com?subject=Lake%20Bistineau%20Event%20for%20Calendar">
+        Let us know.
+      </a>
+    </p>
+  </div>
+
+  <div id="event-popup" class="event-popup" aria-hidden="true">
+    <div class="event-popup-content" role="dialog" aria-modal="true" aria-labelledby="event-popup-title">
+      <button type="button" id="event-popup-close" class="event-popup-close" aria-label="Close">&times;</button>
+
+      <h3 id="event-popup-title"></h3>
+      <p id="event-popup-date"></p>
+      <p id="event-popup-location"></p>
+      <p id="event-popup-description"></p>
     </div>
+  </div>
+
+  <script src="lake_calendar.js"></script>
+</div>
 
    <div class="section">
       <h2>Live Views & Social Feed</h2>
