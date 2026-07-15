@@ -343,10 +343,6 @@
         button.title = event.title;
 
         button.innerHTML = `
-            <span class="lake-event-icon" aria-hidden="true">
-                ${typeInfo.icon}
-            </span>
-
             <span class="lake-event-button-title">
                 ${event.title}
             </span>
@@ -504,10 +500,6 @@
 
                 <span class="lake-event-list-details">
                     <span class="lake-event-list-title">
-                        <span aria-hidden="true">
-                            ${typeInfo.icon}
-                        </span>
-
                         ${event.title}
                     </span>
 
