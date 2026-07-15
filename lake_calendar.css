@@ -137,11 +137,6 @@
     outline-offset: 1px;
 }
 
-.lake-event-icon {
-    flex: 0 0 auto;
-    margin-right: 4px;
-}
-
 .lake-event-button-title {
     display: block;
     min-width: 0;
@@ -422,13 +417,8 @@
 
     .lake-calendar-event {
     padding: 3px;
-    font-size: 0.52rem;
+    font-size: 0.55rem;
     line-height: 1.12;
-}
-
-.lake-event-icon {
-    margin-right: 2px;
-    font-size: 0.62rem;
 }
 
 .lake-event-button-title {
