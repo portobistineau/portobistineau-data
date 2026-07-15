@@ -455,4 +455,10 @@
     .event-popup-content {
         padding: 22px 20px;
     }
+
+   .lake-calendar-missing a {
+    display: block;
+    margin-top: 4px;
+    white-space: nowrap;
+}
 }
