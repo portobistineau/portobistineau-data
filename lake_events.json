@@ -19,7 +19,7 @@
     "type": "drawdown",
     "location": "Lake Bistineau",
     "description": "Example drawdown entry for testing. Replace this with the official date and details.",
-    "calendarTitle": "Lake Drawdown"
+    "calendarTitle": "Lake Draw<wbr>down"
   },
   {
     "id": "example-drawdown-meeting",
@@ -89,7 +89,7 @@
   },
   {
     "id": "october-halloween-boat-parade",
-    "calendarTitle": "Halloween Parade",
+    "calendarTitle": "Hallow<wbr>een Parade",
     "title": "Lake Bistineau Halloween Boat Parade",
     "date": "2026-10-31",
     "time": "5:30 PM",
