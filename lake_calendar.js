@@ -283,25 +283,51 @@
     }
 
     function formatEventDate(event) {
-        const eventDate = parseLocalDate(event.date);
 
-        const dateText = eventDate.toLocaleDateString('en-US', {
+    const startDate = parseLocalDate(event.date);
+
+    if (event.endDate) {
+
+        const endDate = parseLocalDate(event.endDate);
+
+        const startText = startDate.toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long',
             day: 'numeric',
             year: 'numeric'
         });
 
-        if (!event.time) {
-            return dateText;
+        const endText = endDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        if (event.time && event.endTime) {
+            return `${startText} – ${endText} • ${event.time}–${event.endTime}`;
         }
 
-        if (event.endTime) {
-            return `${dateText} • ${event.time}–${event.endTime}`;
-        }
-
-        return `${dateText} • ${event.time}`;
+        return `${startText} – ${endText}`;
     }
+
+    const dateText = startDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    });
+
+    if (!event.time) {
+        return dateText;
+    }
+
+    if (event.endTime) {
+        return `${dateText} • ${event.time}–${event.endTime}`;
+    }
+
+    return `${dateText} • ${event.time}`;
+}
 
     function openEventPopup(event) {
         const typeInfo = getTypeInfo(event.type);
@@ -454,8 +480,21 @@ if (event.source) {
             dayCell.appendChild(dayNumber);
 
             const eventsForDay = monthEvents.filter(event => {
-                return parseLocalDate(event.date).getDate() === day;
-            });
+
+    const startDate = parseLocalDate(event.date);
+    const endDate = event.endDate
+        ? parseLocalDate(event.endDate)
+        : startDate;
+
+    const currentDate = new Date(displayedYear, displayedMonth, day);
+
+    currentDate.setHours(0,0,0,0);
+    startDate.setHours(0,0,0,0);
+    endDate.setHours(0,0,0,0);
+
+    return currentDate >= startDate &&
+           currentDate <= endDate;
+});
 
             eventsForDay.forEach(event => {
                 dayCell.appendChild(
