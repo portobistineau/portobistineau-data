@@ -1,33 +1,33 @@
 [
   {
-  "calendarTitle": "Draw<wbr>down Begins",
-  "title": "Lake Bistineau Drawdown Begins",
-  "date": "2026-08-12",
-  "type": "drawdown",
-  "location": "Lake Bistineau",
-  "description": "LDWF begins the annual drawdown by opening the water control structure.",
-  "source": "https://www.wlf.louisiana.gov/news/ldwf-schedules-drawdown-for-lake-bistineau-2026"
-}
+    "calendarTitle": "Draw<wbr>down Begins",
+    "title": "Lake Bistineau Drawdown Begins",
+    "date": "2026-08-12",
+    "type": "drawdown",
+    "location": "Lake Bistineau",
+    "description": "LDWF begins the annual drawdown by opening the water control structure.",
+    "source": "https://www.wlf.louisiana.gov/news/ldwf-schedules-drawdown-for-lake-bistineau-2026"
+  },
   {
-  "id": "2026-08-15-bayou-state-bass-club-tournament",
-  "calendarTitle": "Bass Tournament",
-  "title": "Bayou State Bass Club Tournament",
-  "date": "2026-08-15",
-  "endDate": "2026-08-16",
-  "time": "",
-  "endTime": "",
-  "type": "tournament",
-  "location": "Lake Bistineau",
-  "description": "Two-day bass tournament. Times and additional details have not been confirmed.",
-  "source": "https://www.facebook.com/groups/2503433113311242/permalink/4266725883648614"
-}
+    "id": "2026-08-15-bayou-state-bass-club-tournament",
+    "calendarTitle": "Bass Tournament",
+    "title": "Bayou State Bass Club Tournament",
+    "date": "2026-08-15",
+    "endDate": "2026-08-16",
+    "time": "",
+    "endTime": "",
+    "type": "tournament",
+    "location": "Lake Bistineau",
+    "description": "Two-day bass tournament. Times and additional details have not been confirmed.",
+    "source": "https://www.facebook.com/groups/2503433113311242/permalink/4266725883648614"
+  },
   {
-  "calendarTitle": "Draw<wbr>down Ends",
-  "title": "Lake Bistineau Drawdown Ends",
-  "date": "2026-11-30",
-  "type": "drawdown",
-  "location": "Lake Bistineau",
-  "description": "Tentative date for completion of the annual Lake Bistineau drawdown.",
-  "source": "https://www.wlf.louisiana.gov/news/ldwf-schedules-drawdown-for-lake-bistineau-2026"
-}
+    "calendarTitle": "Draw<wbr>down Ends",
+    "title": "Lake Bistineau Drawdown Ends",
+    "date": "2026-11-30",
+    "type": "drawdown",
+    "location": "Lake Bistineau",
+    "description": "Tentative date for completion of the annual Lake Bistineau drawdown.",
+    "source": "https://www.wlf.louisiana.gov/news/ldwf-schedules-drawdown-for-lake-bistineau-2026"
+  }
 ]
