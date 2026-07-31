@@ -306,7 +306,7 @@
     function openEventPopup(event) {
         const typeInfo = getTypeInfo(event.type);
 
-        popupTitle.textContent = `${typeInfo.icon} ${event.title}`;
+        popupTitle.textContent = event.title;
         popupDate.textContent = formatEventDate(event);
 
         if (event.location) {
@@ -318,7 +318,29 @@
         }
 
         popupDescription.textContent =
-            event.description || 'No additional details are available.';
+    event.description || 'No additional details are available.';
+
+if (event.source) {
+    popupDescription.appendChild(document.createElement('br'));
+    popupDescription.appendChild(document.createElement('br'));
+
+    const sourceLink = document.createElement('a');
+    sourceLink.href = event.source;
+    sourceLink.target = '_blank';
+    sourceLink.rel = 'noopener noreferrer';
+
+    if (event.source.includes("facebook.com")) {
+        sourceLink.textContent = "View on Facebook";
+    } else if (event.source.includes("wlf.louisiana.gov")) {
+        sourceLink.textContent = "View LDWF Announcement";
+    } else {
+        sourceLink.textContent = "View Original Event";
+    }
+
+    sourceLink.className = "lake-event-source";
+
+    popupDescription.appendChild(sourceLink);
+}
 
         popup.style.display = 'flex';
         popup.setAttribute('aria-hidden', 'false');
