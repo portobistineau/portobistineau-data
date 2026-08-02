@@ -1,34 +1,4 @@
 {
-    "2026-07-30": {
-        "date": "2026-07-30",
-        "major_1_utc": "2026-07-30T06:52:27.617643Z",
-        "major_2_utc": "2026-07-30T19:14:57.732638Z",
-        "minor_1_utc": "2026-07-30T12:18:21.827625Z",
-        "minor_2_utc": "2026-07-31T02:03:10.803153Z",
-        "moon_rise_utc": "2026-07-31T02:03:10.803153Z",
-        "moon_set_utc": "2026-07-30T12:18:21.827625Z",
-        "moon_overhead_utc": "2026-07-30T06:52:27.617643Z",
-        "moon_underfoot_utc": "2026-07-30T19:14:57.732638Z",
-        "phase_moment_utc": null,
-        "phase_moment_type": null,
-        "moon_illum": 99.19,
-        "moon_age": 16.095
-    },
-    "2026-07-31": {
-        "date": "2026-07-31",
-        "major_1_utc": "2026-07-31T07:37:02.161119Z",
-        "major_2_utc": "2026-07-31T19:58:46.410341Z",
-        "minor_1_utc": "2026-07-31T13:17:48.285888Z",
-        "minor_2_utc": "2026-08-01T02:31:15.524222Z",
-        "moon_rise_utc": "2026-08-01T02:31:15.524222Z",
-        "moon_set_utc": "2026-07-31T13:17:48.285888Z",
-        "moon_overhead_utc": "2026-07-31T07:37:02.161119Z",
-        "moon_underfoot_utc": "2026-07-31T19:58:46.410341Z",
-        "phase_moment_utc": null,
-        "phase_moment_type": null,
-        "moon_illum": 96.459,
-        "moon_age": 17.095
-    },
     "2026-08-01": {
         "date": "2026-08-01",
         "major_1_utc": "2026-08-01T08:20:17.100207Z",
@@ -2713,5 +2683,35 @@
         "phase_moment_type": null,
         "moon_illum": 79.291,
         "moon_age": 18.911
+    },
+    "2027-01-27": {
+        "date": "2027-01-27",
+        "major_1_utc": "2027-01-27T10:29:19.609605Z",
+        "major_2_utc": "2027-01-27T22:52:18.015232Z",
+        "minor_1_utc": "2027-01-27T16:12:35.940801Z",
+        "minor_2_utc": "2027-01-28T05:40:40.012475Z",
+        "moon_rise_utc": "2027-01-28T05:40:40.012475Z",
+        "moon_set_utc": "2027-01-27T16:12:35.940801Z",
+        "moon_overhead_utc": "2027-01-27T10:29:19.609605Z",
+        "moon_underfoot_utc": "2027-01-27T22:52:18.015232Z",
+        "phase_moment_utc": null,
+        "phase_moment_type": null,
+        "moon_illum": 69.799,
+        "moon_age": 19.911
+    },
+    "2027-01-28": {
+        "date": "2027-01-28",
+        "major_1_utc": "2027-01-28T11:15:22.568567Z",
+        "major_2_utc": "2027-01-28T23:38:39.966095Z",
+        "minor_1_utc": "2027-01-28T16:43:21.042980Z",
+        "minor_2_utc": null,
+        "moon_rise_utc": "2027-01-29T06:42:10.617292Z",
+        "moon_set_utc": "2027-01-28T16:43:21.042980Z",
+        "moon_overhead_utc": "2027-01-28T11:15:22.568567Z",
+        "moon_underfoot_utc": "2027-01-28T23:38:39.966095Z",
+        "phase_moment_utc": null,
+        "phase_moment_type": null,
+        "moon_illum": 59.758,
+        "moon_age": 20.911
     }
 }
