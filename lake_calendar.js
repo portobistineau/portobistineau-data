@@ -1,5 +1,6 @@
 (() => {
     const UPCOMING_EVENT_COUNT = 4;
+    const UPCOMING_MONTH_LIMIT = 6;
 
     const monthTitle = document.getElementById('calendar-month-title');
     const calendarGrid = document.getElementById('lake-calendar-grid');
@@ -230,7 +231,19 @@
 
     function getFutureEvents() {
         return events
-            .filter(event => parseLocalDate(event.date) >= today)
+            .filter(event => {
+
+    const eventDate = parseLocalDate(event.date);
+
+    if (eventDate < today) {
+        return false;
+    }
+
+    const limit = new Date(today);
+    limit.setMonth(limit.getMonth() + UPCOMING_MONTH_LIMIT);
+
+    return eventDate <= limit;
+})
             .sort(sortEvents);
     }
 
@@ -555,7 +568,11 @@ if (event.source) {
                     </span>
 
                     <span class="lake-event-list-day">
-                        ${eventDate.getDate()}
+                        ${
+event.endDate
+    ? `${eventDate.getDate()}–${parseLocalDate(event.endDate).getDate()}`
+    : eventDate.getDate()
+}
                     </span>
                 </span>
 
