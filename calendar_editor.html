@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lake Events Editor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #111820;
+      color: #eef4f8;
+    }
+
+    .editor-shell {
+      width: min(1180px, calc(100% - 24px));
+      margin: 24px auto;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    .panel {
+      background: #1b2732;
+      border: 1px solid #415362;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+    }
+
+    .status {
+      min-height: 1.4em;
+      margin: 0 0 14px;
+      color: #b9d8ea;
+    }
+
+    .status.error {
+      color: #ffb6b6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-weight: 700;
+    }
+
+    .hint {
+      color: #a8bac7;
+      font-size: .88rem;
+      font-weight: 400;
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #607789;
+      border-radius: 7px;
+      background: #0f171e;
+      color: #fff;
+      padding: 10px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button, .file-label {
+      border: 1px solid #6f8ba0;
+      border-radius: 7px;
+      background: #253a4a;
+      color: white;
+      padding: 9px 14px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    button:hover, .file-label:hover {
+      background: #315168;
+    }
+
+    button.primary {
+      background: #14577a;
+    }
+
+    button.danger {
+      background: #6a2c2c;
+    }
+
+    button.secondary {
+      background: #38434c;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .event-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      background: #111b23;
+      border: 1px solid #3d5262;
+      border-radius: 9px;
+      padding: 12px;
+    }
+
+    .event-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .event-meta {
+      color: #b6c7d3;
+      font-size: .92rem;
+    }
+
+    .event-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .empty {
+      color: #b6c7d3;
+      font-style: italic;
+    }
+
+    @media (max-width: 720px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .event-card {
+        grid-template-columns: 1fr;
+      }
+
+      .event-actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="editor-shell">
+    <section class="panel">
+      <h1>Lake Events Editor</h1>
+      <p>
+        This page edits events in your browser. It does not change GitHub directly.
+        When finished, download the updated <strong>lake_events.json</strong> and replace
+        the existing file in GitHub.
+      </p>
+
+      <div class="button-row">
+        <button type="button" id="load-current">Load Current lake_events.json</button>
+        <label class="file-label" for="load-file">Open JSON File</label>
+        <input type="file" id="load-file" accept=".json,application/json">
+        <button type="button" id="download-backup" class="secondary">Download Timestamped Backup</button>
+        <button type="button" id="download-json" class="primary">Download Updated lake_events.json</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 id="form-heading">Add Event</h2>
+      <p id="status" class="status"></p>
+
+      <form id="event-form">
+        <div class="grid">
+          <div class="field full">
+            <label for="title">Full event title</label>
+            <input id="title" required placeholder="Bayou State Bass Club Tournament">
+          </div>
+
+          <div class="field full">
+            <label for="calendar-title">
+              Short calendar title
+              <span class="hint">Use | to suggest a mobile wrap point, such as Draw|down.</span>
+            </label>
+            <input id="calendar-title" required placeholder="Bass Tournament">
+          </div>
+
+          <div class="field">
+            <label for="date">Start date</label>
+            <input id="date" type="date" required>
+          </div>
+
+          <div class="field">
+            <label for="end-date">End date <span class="hint">(blank for one day)</span></label>
+            <input id="end-date" type="date">
+          </div>
+
+          <div class="field">
+            <label for="time">Start time <span class="hint">(optional; do not guess)</span></label>
+            <input id="time" type="time">
+          </div>
+
+          <div class="field">
+            <label for="end-time">End time <span class="hint">(optional)</span></label>
+            <input id="end-time" type="time">
+          </div>
+
+          <div class="field">
+            <label for="type">Event type</label>
+            <select id="type"></select>
+            <input
+              id="custom-type"
+              placeholder="New type, such as poker-run"
+              hidden
+            >
+            <span class="hint">
+              Choose “Add another type…” to create one. Custom types use the
+              general event styling until matching CSS is added.
+            </span>
+          </div>
+
+          <div class="field">
+            <label for="location">Location <span class="hint">(optional)</span></label>
+            <input id="location" placeholder="Lake Bistineau">
+          </div>
+
+          <div class="field full">
+            <label for="description">Description <span class="hint">(optional)</span></label>
+            <textarea id="description" placeholder="Only enter details you know are accurate."></textarea>
+          </div>
+
+          <div class="field full">
+            <label for="source">Original post or source link <span class="hint">(optional)</span></label>
+            <input id="source" type="url" placeholder="https://www.facebook.com/...">
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="submit" class="primary" id="save-event">Add Event</button>
+          <button type="button" class="secondary" id="cancel-edit" hidden>Cancel Edit</button>
+          <button type="reset" class="secondary" id="clear-form">Clear Form</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Current Events</h2>
+      <div id="event-list" class="event-list"></div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const form = document.getElementById('event-form');
+      const list = document.getElementById('event-list');
+      const status = document.getElementById('status');
+      const formHeading = document.getElementById('form-heading');
+      const saveButton = document.getElementById('save-event');
+      const cancelButton = document.getElementById('cancel-edit');
+      const loadCurrentButton = document.getElementById('load-current');
+      const loadFileInput = document.getElementById('load-file');
+      const downloadButton = document.getElementById('download-json');
+      const backupButton = document.getElementById('download-backup');
+
+      const fields = {
+        title: document.getElementById('title'),
+        calendarTitle: document.getElementById('calendar-title'),
+        date: document.getElementById('date'),
+        endDate: document.getElementById('end-date'),
+        time: document.getElementById('time'),
+        endTime: document.getElementById('end-time'),
+        type: document.getElementById('type'),
+        customType: document.getElementById('custom-type'),
+        location: document.getElementById('location'),
+        description: document.getElementById('description'),
+        source: document.getElementById('source')
+      };
+
+      let events = [];
+      let editingId = null;
+
+      const builtInTypes = {
+        tournament: 'Fishing Tournament',
+        drawdown: 'Drawdown',
+        'boat-parade': 'Boat Parade',
+        closure: 'Closure',
+        cleanup: 'Lake Cleanup',
+        holiday: 'Holiday Event',
+        meeting: 'Meeting',
+        general: 'Lake Event'
+      };
+
+      function typeLabel(type) {
+        if (builtInTypes[type]) {
+          return builtInTypes[type];
+        }
+
+        return String(type || 'general')
+          .split('-')
+          .filter(Boolean)
+          .map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+          )
+          .join(' ');
+      }
+
+      function normalizeType(value) {
+        return String(value || '')
+          .trim()
+          .toLowerCase()
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      }
+
+      function refreshTypeOptions(selectedType = 'tournament') {
+        const knownTypes = new Set(Object.keys(builtInTypes));
+
+        events.forEach(event => {
+          if (event.type) {
+            knownTypes.add(event.type);
+          }
+        });
+
+        if (selectedType) {
+          knownTypes.add(selectedType);
+        }
+
+        fields.type.innerHTML = '';
+
+        [...knownTypes]
+          .sort((a, b) =>
+            typeLabel(a).localeCompare(typeLabel(b))
+          )
+          .forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = typeLabel(type);
+            fields.type.appendChild(option);
+          });
+
+        const otherOption = document.createElement('option');
+        otherOption.value = '__custom__';
+        otherOption.textContent = 'Add another type…';
+        fields.type.appendChild(otherOption);
+
+        if (knownTypes.has(selectedType)) {
+          fields.type.value = selectedType;
+          fields.customType.hidden = true;
+          fields.customType.value = '';
+        } else {
+          fields.type.value = '__custom__';
+          fields.customType.hidden = false;
+          fields.customType.value = selectedType || '';
+        }
+      }
+
+      function setStatus(message, isError = false) {
+        status.textContent = message;
+        status.classList.toggle('error', isError);
+      }
+
+      function normalizeCalendarTitle(value) {
+        return value.replace(/\|/g, '<wbr>').trim();
+      }
+
+      function editorCalendarTitle(value) {
+        return (value || '').replace(/<wbr\s*\/?>/gi, '|');
+      }
+
+      function slugify(value) {
+        return value
+          .toLowerCase()
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 70);
+      }
+
+      function makeUniqueId(date, title, excludedId = null) {
+        const base = `${date}-${slugify(title)}` || `event-${Date.now()}`;
+        let candidate = base;
+        let number = 2;
+
+        const used = new Set(
+          events
+            .filter(event => event.id !== excludedId)
+            .map(event => event.id)
+        );
+
+        while (used.has(candidate)) {
+          candidate = `${base}-${number}`;
+          number += 1;
+        }
+
+        return candidate;
+      }
+
+      function timeToDisplay(value) {
+        if (!value) return '';
+
+        const [hoursText, minutes] = value.split(':');
+        const hours = Number(hoursText);
+        const suffix = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours % 12 || 12;
+
+        return `${displayHour}:${minutes} ${suffix}`;
+      }
+
+      function displayToTime(value) {
+        if (!value) return '';
+
+        const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!match) return '';
+
+        let hours = Number(match[1]);
+        const minutes = match[2];
+        const suffix = match[3].toUpperCase();
+
+        if (suffix === 'AM' && hours === 12) hours = 0;
+        if (suffix === 'PM' && hours !== 12) hours += 12;
+
+        return `${String(hours).padStart(2, '0')}:${minutes}`;
+      }
+
+      function sortEvents() {
+        events.sort((a, b) =>
+          (a.date || '').localeCompare(b.date || '') ||
+          (a.time || '').localeCompare(b.time || '') ||
+          (a.title || '').localeCompare(b.title || '')
+        );
+      }
+
+      function resetForm() {
+        form.reset();
+        refreshTypeOptions('tournament');
+        editingId = null;
+        formHeading.textContent = 'Add Event';
+        saveButton.textContent = 'Add Event';
+        cancelButton.hidden = true;
+      }
+
+      function getFormEvent() {
+        const title = fields.title.value.trim();
+        const date = fields.date.value;
+        const endDate = fields.endDate.value;
+
+        if (!title || !date) {
+          throw new Error('Full title and start date are required.');
+        }
+
+        if (endDate && endDate < date) {
+          throw new Error('End date cannot be before the start date.');
+        }
+
+        const source = fields.source.value.trim();
+
+        if (source && !/^https?:\/\//i.test(source)) {
+          throw new Error('The source link must begin with http:// or https://.');
+        }
+
+        const selectedType =
+          fields.type.value === '__custom__'
+            ? normalizeType(fields.customType.value)
+            : fields.type.value;
+
+        if (!selectedType) {
+          throw new Error('Enter a name for the new event type.');
+        }
+
+        const existing =
+          editingId
+            ? events.find(event => event.id === editingId)
+            : null;
+
+        const event = {
+          id:
+            existing?.id ||
+            makeUniqueId(date, title),
+          calendarTitle:
+            normalizeCalendarTitle(
+              fields.calendarTitle.value.trim() || title
+            ),
+          title,
+          date,
+          time: timeToDisplay(fields.time.value),
+          endTime: timeToDisplay(fields.endTime.value),
+          type: selectedType || 'general',
+          location: fields.location.value.trim(),
+          description: fields.description.value.trim()
+        };
+
+        if (endDate && endDate !== date) {
+          event.endDate = endDate;
+        }
+
+        if (source) {
+          event.source = source;
+        }
+
+        return event;
+      }
+
+      function renderEvents() {
+        sortEvents();
+
+        const currentType =
+          fields.type.value === '__custom__'
+            ? normalizeType(fields.customType.value)
+            : fields.type.value;
+
+        refreshTypeOptions(currentType || 'tournament');
+        list.innerHTML = '';
+
+        if (!events.length) {
+          list.innerHTML =
+            '<p class="empty">No events loaded yet.</p>';
+          return;
+        }
+
+        events.forEach(event => {
+          const card = document.createElement('article');
+          card.className = 'event-card';
+
+          const information = document.createElement('div');
+          const title = document.createElement('div');
+          const meta = document.createElement('div');
+
+          title.className = 'event-title';
+          title.textContent = event.title;
+
+          meta.className = 'event-meta';
+          meta.textContent = [
+            event.endDate
+              ? `${event.date} through ${event.endDate}`
+              : event.date,
+            event.time || 'Time not listed',
+            event.location || 'Location not listed'
+          ].join(' • ');
+
+          information.append(title, meta);
+
+          const actions = document.createElement('div');
+          actions.className = 'event-actions';
+
+          const edit = document.createElement('button');
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click', () => editEvent(event.id));
+
+          const duplicate = document.createElement('button');
+          duplicate.type = 'button';
+          duplicate.textContent = 'Duplicate';
+          duplicate.addEventListener('click', () => duplicateEvent(event.id));
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'danger';
+          remove.textContent = 'Delete';
+          remove.addEventListener('click', () => deleteEvent(event.id));
+
+          actions.append(edit, duplicate, remove);
+          card.append(information, actions);
+          list.appendChild(card);
+        });
+      }
+
+      function editEvent(id) {
+        const event = events.find(item => item.id === id);
+        if (!event) return;
+
+        editingId = id;
+        fields.title.value = event.title || '';
+        fields.calendarTitle.value =
+          editorCalendarTitle(event.calendarTitle || event.title);
+        fields.date.value = event.date || '';
+        fields.endDate.value = event.endDate || '';
+        fields.time.value = displayToTime(event.time);
+        fields.endTime.value = displayToTime(event.endTime);
+        refreshTypeOptions(event.type || 'general');
+        fields.location.value = event.location || '';
+        fields.description.value = event.description || '';
+        fields.source.value = event.source || '';
+
+        formHeading.textContent = 'Edit Event';
+        saveButton.textContent = 'Save Changes';
+        cancelButton.hidden = false;
+        setStatus(`Editing: ${event.title}`);
+        window.scrollTo({ top: formHeading.offsetTop - 16, behavior: 'smooth' });
+      }
+
+      function duplicateEvent(id) {
+        const source = events.find(item => item.id === id);
+        if (!source) return;
+
+        const copy = {
+          ...source,
+          id: makeUniqueId(source.date, `${source.title} copy`)
+        };
+
+        copy.title = `${source.title} Copy`;
+        events.push(copy);
+        renderEvents();
+        editEvent(copy.id);
+        setStatus('Duplicate created. Change its title or date, then save.');
+      }
+
+      function deleteEvent(id) {
+        const event = events.find(item => item.id === id);
+        if (!event) return;
+
+        if (!confirm(`Delete "${event.title}"?`)) return;
+
+        events = events.filter(item => item.id !== id);
+
+        if (editingId === id) {
+          resetForm();
+        }
+
+        renderEvents();
+        setStatus('Event deleted from the editor. Download the JSON to make the change permanent.');
+      }
+
+      function validateLoadedEvents(data) {
+        if (!Array.isArray(data)) {
+          throw new Error('The JSON file must contain an array of events.');
+        }
+
+        const usedIds = new Set();
+
+        return data
+          .filter(event => event && event.title && event.date)
+          .map(event => {
+            const copy = { ...event };
+
+            if (!copy.id || usedIds.has(copy.id)) {
+              copy.id = makeUniqueId(copy.date, copy.title);
+            }
+
+            usedIds.add(copy.id);
+            return copy;
+          });
+      }
+
+      async function loadCurrentFile() {
+        try {
+          setStatus('Loading lake_events.json…');
+          const response = await fetch('lake_events.json', { cache: 'no-store' });
+
+          if (!response.ok) {
+            throw new Error(`The server returned ${response.status}.`);
+          }
+
+          events = validateLoadedEvents(await response.json());
+          resetForm();
+          renderEvents();
+          setStatus(`Loaded ${events.length} event${events.length === 1 ? '' : 's'}.`);
+        } catch (error) {
+          setStatus(
+            `Could not load automatically: ${error.message} Use "Open JSON File" instead.`,
+            true
+          );
+        }
+      }
+
+      function loadChosenFile(file) {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          try {
+            events = validateLoadedEvents(JSON.parse(reader.result));
+            resetForm();
+            renderEvents();
+            setStatus(`Loaded ${events.length} event${events.length === 1 ? '' : 's'} from ${file.name}.`);
+          } catch (error) {
+            setStatus(`Could not read that file: ${error.message}`, true);
+          }
+        };
+
+        reader.readAsText(file);
+      }
+
+      function jsonText() {
+        sortEvents();
+        return `${JSON.stringify(events, null, 2)}\n`;
+      }
+
+      function downloadFile(filename, contents) {
+        const blob = new Blob([contents], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function timestamp() {
+        const now = new Date();
+        const pad = value => String(value).padStart(2, '0');
+
+        return [
+          now.getFullYear(),
+          pad(now.getMonth() + 1),
+          pad(now.getDate()),
+          '_',
+          pad(now.getHours()),
+          pad(now.getMinutes())
+        ].join('');
+      }
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+
+        try {
+          const savedEvent = getFormEvent();
+
+          if (editingId) {
+            const index = events.findIndex(item => item.id === editingId);
+
+            if (index >= 0) {
+              events[index] = savedEvent;
+            }
+          } else {
+            events.push(savedEvent);
+          }
+
+          const message =
+            editingId
+              ? 'Event updated in the editor.'
+              : 'Event added to the editor.';
+
+          resetForm();
+          renderEvents();
+          setStatus(`${message} Download lake_events.json when finished.`);
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      });
+
+      cancelButton.addEventListener('click', () => {
+        resetForm();
+        setStatus('Edit cancelled.');
+      });
+
+      form.addEventListener('reset', () => {
+        setTimeout(() => {
+          if (!editingId) {
+            fields.type.value = 'tournament';
+          }
+        });
+      });
+
+      fields.type.addEventListener('change', () => {
+        const addingCustom =
+          fields.type.value === '__custom__';
+
+        fields.customType.hidden = !addingCustom;
+
+        if (addingCustom) {
+          fields.customType.focus();
+        } else {
+          fields.customType.value = '';
+        }
+      });
+
+      loadCurrentButton.addEventListener('click', loadCurrentFile);
+
+      loadFileInput.addEventListener('change', () => {
+        const file = loadFileInput.files?.[0];
+
+        if (file) {
+          loadChosenFile(file);
+        }
+
+        loadFileInput.value = '';
+      });
+
+      downloadButton.addEventListener('click', () => {
+        downloadFile('lake_events.json', jsonText());
+        setStatus('Downloaded the updated lake_events.json.');
+      });
+
+      backupButton.addEventListener('click', () => {
+        downloadFile(
+          `lake_events_${timestamp()}.json`,
+          jsonText()
+        );
+        setStatus('Downloaded a timestamped backup.');
+      });
+
+      refreshTypeOptions('tournament');
+      renderEvents();
+      loadCurrentFile();
+    })();
+  </script>
+</body>
+</html>
