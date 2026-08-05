@@ -570,7 +570,7 @@ if (event.source) {
                     <span class="lake-event-list-day">
                         ${
 event.endDate
-    ? `${eventDate.getDate()}–${parseLocalDate(event.endDate).getDate()}`
+    ? `${eventDate.getDate()}/${parseLocalDate(event.endDate).getDate()}`
     : eventDate.getDate()
 }
                     </span>
