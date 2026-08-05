@@ -527,10 +527,18 @@
   *This site contains affiliate links. We may earn a commission from purchases made through these links.
 </p>
       <p class="footer-copyright">
-        © 2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
-      </p>
+  <span id="calendar-admin">©</span>
+  2025 Port O Bistineau Marina | GPS: 32.4619, -93.34883
+</p>
     </footer>
   </div>
+  const admin = document.getElementById("calendar-admin");
+
+if (admin) {
+    admin.addEventListener("dblclick", () => {
+        window.open("calendar_editor.html", "_blank");
+    });
+}
 </body>
 </html>
 
