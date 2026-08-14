@@ -1,34 +1,4 @@
 {
-    "2026-08-11": {
-        "date": "2026-08-11",
-        "major_1_utc": "2026-08-11T17:25:50.906390Z",
-        "major_2_utc": null,
-        "minor_1_utc": "2026-08-11T10:08:25.152162Z",
-        "minor_2_utc": "2026-08-12T00:33:52.515200Z",
-        "moon_rise_utc": "2026-08-11T10:08:25.152162Z",
-        "moon_set_utc": "2026-08-12T00:33:52.515200Z",
-        "moon_overhead_utc": "2026-08-11T17:25:50.906390Z",
-        "moon_underfoot_utc": null,
-        "phase_moment_utc": null,
-        "phase_moment_type": null,
-        "moon_illum": 2.189,
-        "moon_age": 28.095
-    },
-    "2026-08-12": {
-        "date": "2026-08-12",
-        "major_1_utc": "2026-08-12T05:54:06.856533Z",
-        "major_2_utc": "2026-08-12T18:21:10.061204Z",
-        "minor_1_utc": "2026-08-12T11:21:21.975607Z",
-        "minor_2_utc": "2026-08-13T01:10:57.480947Z",
-        "moon_rise_utc": "2026-08-12T11:21:21.975607Z",
-        "moon_set_utc": "2026-08-13T01:10:57.480947Z",
-        "moon_overhead_utc": "2026-08-12T18:21:10.061204Z",
-        "moon_underfoot_utc": "2026-08-12T05:54:06.856533Z",
-        "phase_moment_utc": "2026-08-12T17:36:39.177926Z",
-        "phase_moment_type": "New Moon",
-        "moon_illum": 0.088,
-        "moon_age": 29.095
-    },
     "2026-08-13": {
         "date": "2026-08-13",
         "major_1_utc": "2026-08-13T06:47:05.312867Z",
@@ -42,7 +12,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.798,
-        "moon_age": 0.564
+        "moon_age": 0.766
     },
     "2026-08-14": {
         "date": "2026-08-14",
@@ -57,7 +27,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 4.124,
-        "moon_age": 1.564
+        "moon_age": 1.766
     },
     "2026-08-15": {
         "date": "2026-08-15",
@@ -72,7 +42,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 9.678,
-        "moon_age": 2.564
+        "moon_age": 2.766
     },
     "2026-08-16": {
         "date": "2026-08-16",
@@ -87,7 +57,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 16.97,
-        "moon_age": 3.564
+        "moon_age": 3.766
     },
     "2026-08-17": {
         "date": "2026-08-17",
@@ -102,7 +72,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 25.488,
-        "moon_age": 4.564
+        "moon_age": 4.766
     },
     "2026-08-18": {
         "date": "2026-08-18",
@@ -117,7 +87,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 34.757,
-        "moon_age": 5.564
+        "moon_age": 5.766
     },
     "2026-08-19": {
         "date": "2026-08-19",
@@ -132,7 +102,7 @@
         "phase_moment_utc": "2026-08-20T02:46:16.389725Z",
         "phase_moment_type": "First Quarter",
         "moon_illum": 44.372,
-        "moon_age": 6.564
+        "moon_age": 6.766
     },
     "2026-08-20": {
         "date": "2026-08-20",
@@ -147,7 +117,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 53.996,
-        "moon_age": 7.564
+        "moon_age": 7.766
     },
     "2026-08-21": {
         "date": "2026-08-21",
@@ -162,7 +132,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 63.348,
-        "moon_age": 8.564
+        "moon_age": 8.766
     },
     "2026-08-22": {
         "date": "2026-08-22",
@@ -177,7 +147,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 72.174,
-        "moon_age": 9.564
+        "moon_age": 9.766
     },
     "2026-08-23": {
         "date": "2026-08-23",
@@ -192,7 +162,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 80.229,
-        "moon_age": 10.564
+        "moon_age": 10.766
     },
     "2026-08-24": {
         "date": "2026-08-24",
@@ -207,7 +177,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 87.259,
-        "moon_age": 11.564
+        "moon_age": 11.766
     },
     "2026-08-25": {
         "date": "2026-08-25",
@@ -222,7 +192,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 92.997,
-        "moon_age": 12.564
+        "moon_age": 12.766
     },
     "2026-08-26": {
         "date": "2026-08-26",
@@ -237,7 +207,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 97.174,
-        "moon_age": 13.564
+        "moon_age": 13.766
     },
     "2026-08-27": {
         "date": "2026-08-27",
@@ -252,7 +222,7 @@
         "phase_moment_utc": "2026-08-28T04:18:26.631022Z",
         "phase_moment_type": "Full Moon",
         "moon_illum": 99.537,
-        "moon_age": 14.564
+        "moon_age": 14.766
     },
     "2026-08-28": {
         "date": "2026-08-28",
@@ -267,7 +237,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 99.877,
-        "moon_age": 15.564
+        "moon_age": 15.766
     },
     "2026-08-29": {
         "date": "2026-08-29",
@@ -282,7 +252,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 98.057,
-        "moon_age": 16.564
+        "moon_age": 16.766
     },
     "2026-08-30": {
         "date": "2026-08-30",
@@ -297,7 +267,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 94.039,
-        "moon_age": 17.564
+        "moon_age": 17.766
     },
     "2026-08-31": {
         "date": "2026-08-31",
@@ -312,7 +282,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 87.904,
-        "moon_age": 18.564
+        "moon_age": 18.766
     },
     "2026-09-01": {
         "date": "2026-09-01",
@@ -327,7 +297,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 79.859,
-        "moon_age": 19.564
+        "moon_age": 19.766
     },
     "2026-09-02": {
         "date": "2026-09-02",
@@ -342,7 +312,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 70.23,
-        "moon_age": 20.564
+        "moon_age": 20.766
     },
     "2026-09-03": {
         "date": "2026-09-03",
@@ -357,7 +327,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 59.46,
-        "moon_age": 21.564
+        "moon_age": 21.766
     },
     "2026-09-04": {
         "date": "2026-09-04",
@@ -372,7 +342,7 @@
         "phase_moment_utc": "2026-09-04T07:51:08.878204Z",
         "phase_moment_type": "Last Quarter",
         "moon_illum": 48.081,
-        "moon_age": 22.564
+        "moon_age": 22.766
     },
     "2026-09-05": {
         "date": "2026-09-05",
@@ -387,7 +357,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 36.7,
-        "moon_age": 23.564
+        "moon_age": 23.766
     },
     "2026-09-06": {
         "date": "2026-09-06",
@@ -402,7 +372,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 25.956,
-        "moon_age": 24.564
+        "moon_age": 24.766
     },
     "2026-09-07": {
         "date": "2026-09-07",
@@ -417,7 +387,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 16.48,
-        "moon_age": 25.564
+        "moon_age": 25.766
     },
     "2026-09-08": {
         "date": "2026-09-08",
@@ -432,7 +402,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 8.828,
-        "moon_age": 26.564
+        "moon_age": 26.766
     },
     "2026-09-09": {
         "date": "2026-09-09",
@@ -447,7 +417,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 3.428,
-        "moon_age": 27.564
+        "moon_age": 27.766
     },
     "2026-09-10": {
         "date": "2026-09-10",
@@ -462,7 +432,7 @@
         "phase_moment_utc": "2026-09-11T03:26:55.060474Z",
         "phase_moment_type": "New Moon",
         "moon_illum": 0.531,
-        "moon_age": 28.564
+        "moon_age": 28.766
     },
     "2026-09-11": {
         "date": "2026-09-11",
@@ -477,7 +447,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.191,
-        "moon_age": 0.034
+        "moon_age": 0.236
     },
     "2026-09-12": {
         "date": "2026-09-12",
@@ -492,7 +462,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 2.28,
-        "moon_age": 1.034
+        "moon_age": 1.236
     },
     "2026-09-13": {
         "date": "2026-09-13",
@@ -507,7 +477,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 6.523,
-        "moon_age": 2.034
+        "moon_age": 2.236
     },
     "2026-09-14": {
         "date": "2026-09-14",
@@ -522,7 +492,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 12.556,
-        "moon_age": 3.034
+        "moon_age": 3.236
     },
     "2026-09-15": {
         "date": "2026-09-15",
@@ -537,7 +507,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 19.98,
-        "moon_age": 4.034
+        "moon_age": 4.236
     },
     "2026-09-16": {
         "date": "2026-09-16",
@@ -552,7 +522,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 28.402,
-        "moon_age": 5.034
+        "moon_age": 5.236
     },
     "2026-09-17": {
         "date": "2026-09-17",
@@ -567,7 +537,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 37.465,
-        "moon_age": 6.034
+        "moon_age": 6.236
     },
     "2026-09-18": {
         "date": "2026-09-18",
@@ -582,7 +552,7 @@
         "phase_moment_utc": "2026-09-18T20:43:41.796593Z",
         "phase_moment_type": "First Quarter",
         "moon_illum": 46.853,
-        "moon_age": 7.034
+        "moon_age": 7.236
     },
     "2026-09-19": {
         "date": "2026-09-19",
@@ -597,7 +567,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 56.289,
-        "moon_age": 8.034
+        "moon_age": 8.236
     },
     "2026-09-20": {
         "date": "2026-09-20",
@@ -612,7 +582,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 65.514,
-        "moon_age": 9.034
+        "moon_age": 9.236
     },
     "2026-09-21": {
         "date": "2026-09-21",
@@ -627,7 +597,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 74.266,
-        "moon_age": 10.034
+        "moon_age": 10.236
     },
     "2026-09-22": {
         "date": "2026-09-22",
@@ -642,7 +612,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 82.257,
-        "moon_age": 11.034
+        "moon_age": 11.236
     },
     "2026-09-23": {
         "date": "2026-09-23",
@@ -657,7 +627,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 89.167,
-        "moon_age": 12.034
+        "moon_age": 12.236
     },
     "2026-09-24": {
         "date": "2026-09-24",
@@ -672,7 +642,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 94.645,
-        "moon_age": 13.034
+        "moon_age": 13.236
     },
     "2026-09-25": {
         "date": "2026-09-25",
@@ -687,7 +657,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 98.331,
-        "moon_age": 14.034
+        "moon_age": 14.236
     },
     "2026-09-26": {
         "date": "2026-09-26",
@@ -702,7 +672,7 @@
         "phase_moment_utc": "2026-09-26T16:48:57.958418Z",
         "phase_moment_type": "Full Moon",
         "moon_illum": 99.902,
-        "moon_age": 15.034
+        "moon_age": 15.236
     },
     "2026-09-27": {
         "date": "2026-09-27",
@@ -717,7 +687,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 99.121,
-        "moon_age": 16.034
+        "moon_age": 16.236
     },
     "2026-09-28": {
         "date": "2026-09-28",
@@ -732,7 +702,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 95.882,
-        "moon_age": 17.034
+        "moon_age": 17.236
     },
     "2026-09-29": {
         "date": "2026-09-29",
@@ -747,7 +717,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 90.248,
-        "moon_age": 18.034
+        "moon_age": 18.236
     },
     "2026-09-30": {
         "date": "2026-09-30",
@@ -762,7 +732,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 82.461,
-        "moon_age": 19.034
+        "moon_age": 19.236
     },
     "2026-10-01": {
         "date": "2026-10-01",
@@ -777,7 +747,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 72.92,
-        "moon_age": 20.034
+        "moon_age": 20.236
     },
     "2026-10-02": {
         "date": "2026-10-02",
@@ -792,7 +762,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 62.151,
-        "moon_age": 21.034
+        "moon_age": 21.236
     },
     "2026-10-03": {
         "date": "2026-10-03",
@@ -807,7 +777,7 @@
         "phase_moment_utc": "2026-10-03T13:24:58.242322Z",
         "phase_moment_type": "Last Quarter",
         "moon_illum": 50.761,
-        "moon_age": 22.034
+        "moon_age": 22.236
     },
     "2026-10-04": {
         "date": "2026-10-04",
@@ -822,7 +792,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 39.386,
-        "moon_age": 23.034
+        "moon_age": 23.236
     },
     "2026-10-05": {
         "date": "2026-10-05",
@@ -837,7 +807,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 28.642,
-        "moon_age": 24.034
+        "moon_age": 24.236
     },
     "2026-10-06": {
         "date": "2026-10-06",
@@ -852,7 +822,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 19.09,
-        "moon_age": 25.034
+        "moon_age": 25.236
     },
     "2026-10-07": {
         "date": "2026-10-07",
@@ -867,7 +837,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 11.189,
-        "moon_age": 26.034
+        "moon_age": 26.236
     },
     "2026-10-08": {
         "date": "2026-10-08",
@@ -882,7 +852,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 5.282,
-        "moon_age": 27.034
+        "moon_age": 27.236
     },
     "2026-10-09": {
         "date": "2026-10-09",
@@ -897,7 +867,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 1.574,
-        "moon_age": 28.034
+        "moon_age": 28.236
     },
     "2026-10-10": {
         "date": "2026-10-10",
@@ -912,7 +882,7 @@
         "phase_moment_utc": "2026-10-10T15:50:01.012834Z",
         "phase_moment_type": "New Moon",
         "moon_illum": 0.137,
-        "moon_age": 29.034
+        "moon_age": 29.236
     },
     "2026-10-11": {
         "date": "2026-10-11",
@@ -927,7 +897,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.915,
-        "moon_age": 0.503
+        "moon_age": 0.705
     },
     "2026-10-12": {
         "date": "2026-10-12",
@@ -942,7 +912,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 3.748,
-        "moon_age": 1.503
+        "moon_age": 1.705
     },
     "2026-10-13": {
         "date": "2026-10-13",
@@ -957,7 +927,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 8.396,
-        "moon_age": 2.503
+        "moon_age": 2.705
     },
     "2026-10-14": {
         "date": "2026-10-14",
@@ -972,7 +942,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 14.572,
-        "moon_age": 3.503
+        "moon_age": 3.705
     },
     "2026-10-15": {
         "date": "2026-10-15",
@@ -987,7 +957,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 21.968,
-        "moon_age": 4.503
+        "moon_age": 4.705
     },
     "2026-10-16": {
         "date": "2026-10-16",
@@ -1002,7 +972,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 30.285,
-        "moon_age": 5.503
+        "moon_age": 5.705
     },
     "2026-10-17": {
         "date": "2026-10-17",
@@ -1017,7 +987,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 39.243,
-        "moon_age": 6.503
+        "moon_age": 6.705
     },
     "2026-10-18": {
         "date": "2026-10-18",
@@ -1032,7 +1002,7 @@
         "phase_moment_utc": "2026-10-18T16:12:35.845812Z",
         "phase_moment_type": "First Quarter",
         "moon_illum": 48.584,
-        "moon_age": 7.503
+        "moon_age": 7.705
     },
     "2026-10-19": {
         "date": "2026-10-19",
@@ -1047,7 +1017,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 58.058,
-        "moon_age": 8.503
+        "moon_age": 8.705
     },
     "2026-10-20": {
         "date": "2026-10-20",
@@ -1062,7 +1032,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 67.398,
-        "moon_age": 9.503
+        "moon_age": 9.705
     },
     "2026-10-21": {
         "date": "2026-10-21",
@@ -1077,7 +1047,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 76.294,
-        "moon_age": 10.503
+        "moon_age": 10.705
     },
     "2026-10-22": {
         "date": "2026-10-22",
@@ -1092,7 +1062,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 84.373,
-        "moon_age": 11.503
+        "moon_age": 11.705
     },
     "2026-10-23": {
         "date": "2026-10-23",
@@ -1107,7 +1077,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 91.202,
-        "moon_age": 12.503
+        "moon_age": 12.705
     },
     "2026-10-24": {
         "date": "2026-10-24",
@@ -1122,7 +1092,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 96.312,
-        "moon_age": 13.503
+        "moon_age": 13.705
     },
     "2026-10-25": {
         "date": "2026-10-25",
@@ -1137,7 +1107,7 @@
         "phase_moment_utc": "2026-10-26T04:11:44.549793Z",
         "phase_moment_type": "Full Moon",
         "moon_illum": 99.26,
-        "moon_age": 14.503
+        "moon_age": 14.705
     },
     "2026-10-26": {
         "date": "2026-10-26",
@@ -1152,7 +1122,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 99.696,
-        "moon_age": 15.503
+        "moon_age": 15.705
     },
     "2026-10-27": {
         "date": "2026-10-27",
@@ -1167,7 +1137,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 97.436,
-        "moon_age": 16.503
+        "moon_age": 16.705
     },
     "2026-10-28": {
         "date": "2026-10-28",
@@ -1182,7 +1152,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 92.515,
-        "moon_age": 17.503
+        "moon_age": 17.705
     },
     "2026-10-29": {
         "date": "2026-10-29",
@@ -1197,7 +1167,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 85.196,
-        "moon_age": 18.503
+        "moon_age": 18.705
     },
     "2026-10-30": {
         "date": "2026-10-30",
@@ -1212,7 +1182,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 75.945,
-        "moon_age": 19.503
+        "moon_age": 19.705
     },
     "2026-10-31": {
         "date": "2026-10-31",
@@ -1227,7 +1197,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 65.365,
-        "moon_age": 20.503
+        "moon_age": 20.705
     },
     "2026-11-01": {
         "date": "2026-11-01",
@@ -1242,7 +1212,7 @@
         "phase_moment_utc": "2026-11-01T20:28:21.821093Z",
         "phase_moment_type": "Last Quarter",
         "moon_illum": 54.122,
-        "moon_age": 21.503
+        "moon_age": 21.705
     },
     "2026-11-02": {
         "date": "2026-11-02",
@@ -1257,7 +1227,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 42.871,
-        "moon_age": 22.503
+        "moon_age": 22.705
     },
     "2026-11-03": {
         "date": "2026-11-03",
@@ -1272,7 +1242,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 32.197,
-        "moon_age": 23.503
+        "moon_age": 23.705
     },
     "2026-11-04": {
         "date": "2026-11-04",
@@ -1287,7 +1257,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 22.585,
-        "moon_age": 24.503
+        "moon_age": 24.705
     },
     "2026-11-05": {
         "date": "2026-11-05",
@@ -1302,7 +1272,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 14.412,
-        "moon_age": 25.503
+        "moon_age": 25.705
     },
     "2026-11-06": {
         "date": "2026-11-06",
@@ -1317,7 +1287,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 7.951,
-        "moon_age": 26.503
+        "moon_age": 26.705
     },
     "2026-11-07": {
         "date": "2026-11-07",
@@ -1332,7 +1302,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 3.383,
-        "moon_age": 27.503
+        "moon_age": 27.705
     },
     "2026-11-08": {
         "date": "2026-11-08",
@@ -1347,7 +1317,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.803,
-        "moon_age": 28.503
+        "moon_age": 28.705
     },
     "2026-11-09": {
         "date": "2026-11-09",
@@ -1362,7 +1332,7 @@
         "phase_moment_utc": "2026-11-09T07:02:03.113023Z",
         "phase_moment_type": "New Moon",
         "moon_illum": 0.23,
-        "moon_age": 29.503
+        "moon_age": 0.174
     },
     "2026-11-10": {
         "date": "2026-11-10",
@@ -1377,7 +1347,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 1.604,
-        "moon_age": 0.972
+        "moon_age": 1.174
     },
     "2026-11-11": {
         "date": "2026-11-11",
@@ -1392,7 +1362,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 4.797,
-        "moon_age": 1.972
+        "moon_age": 2.174
     },
     "2026-11-12": {
         "date": "2026-11-12",
@@ -1407,7 +1377,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 9.622,
-        "moon_age": 2.972
+        "moon_age": 3.174
     },
     "2026-11-13": {
         "date": "2026-11-13",
@@ -1422,7 +1392,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 15.857,
-        "moon_age": 3.972
+        "moon_age": 4.174
     },
     "2026-11-14": {
         "date": "2026-11-14",
@@ -1437,7 +1407,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 23.269,
-        "moon_age": 4.972
+        "moon_age": 5.174
     },
     "2026-11-15": {
         "date": "2026-11-15",
@@ -1452,7 +1422,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 31.625,
-        "moon_age": 5.972
+        "moon_age": 6.174
     },
     "2026-11-16": {
         "date": "2026-11-16",
@@ -1467,7 +1437,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 40.701,
-        "moon_age": 6.972
+        "moon_age": 7.174
     },
     "2026-11-17": {
         "date": "2026-11-17",
@@ -1482,7 +1452,7 @@
         "phase_moment_utc": "2026-11-17T11:47:45.057412Z",
         "phase_moment_type": "First Quarter",
         "moon_illum": 50.263,
-        "moon_age": 7.972
+        "moon_age": 8.174
     },
     "2026-11-18": {
         "date": "2026-11-18",
@@ -1497,7 +1467,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 60.049,
-        "moon_age": 8.972
+        "moon_age": 9.174
     },
     "2026-11-19": {
         "date": "2026-11-19",
@@ -1512,7 +1482,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 69.732,
-        "moon_age": 9.972
+        "moon_age": 10.174
     },
     "2026-11-20": {
         "date": "2026-11-20",
@@ -1527,7 +1497,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 78.895,
-        "moon_age": 10.972
+        "moon_age": 11.174
     },
     "2026-11-21": {
         "date": "2026-11-21",
@@ -1542,7 +1512,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 87.035,
-        "moon_age": 11.972
+        "moon_age": 12.174
     },
     "2026-11-22": {
         "date": "2026-11-22",
@@ -1557,7 +1527,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 93.586,
-        "moon_age": 12.972
+        "moon_age": 13.174
     },
     "2026-11-23": {
         "date": "2026-11-23",
@@ -1572,7 +1542,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 97.99,
-        "moon_age": 13.972
+        "moon_age": 14.174
     },
     "2026-11-24": {
         "date": "2026-11-24",
@@ -1587,7 +1557,7 @@
         "phase_moment_utc": "2026-11-24T14:53:29.238868Z",
         "phase_moment_type": "Full Moon",
         "moon_illum": 99.79,
-        "moon_age": 14.972
+        "moon_age": 15.174
     },
     "2026-11-25": {
         "date": "2026-11-25",
@@ -1602,7 +1572,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 98.717,
-        "moon_age": 15.972
+        "moon_age": 16.174
     },
     "2026-11-26": {
         "date": "2026-11-26",
@@ -1617,7 +1587,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 94.762,
-        "moon_age": 16.972
+        "moon_age": 17.174
     },
     "2026-11-27": {
         "date": "2026-11-27",
@@ -1632,7 +1602,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 88.193,
-        "moon_age": 17.972
+        "moon_age": 18.174
     },
     "2026-11-28": {
         "date": "2026-11-28",
@@ -1647,7 +1617,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 79.513,
-        "moon_age": 18.972
+        "moon_age": 19.174
     },
     "2026-11-29": {
         "date": "2026-11-29",
@@ -1662,7 +1632,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 69.375,
-        "moon_age": 19.972
+        "moon_age": 20.174
     },
     "2026-11-30": {
         "date": "2026-11-30",
@@ -1677,7 +1647,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 58.476,
-        "moon_age": 20.972
+        "moon_age": 21.174
     },
     "2026-12-01": {
         "date": "2026-12-01",
@@ -1692,7 +1662,7 @@
         "phase_moment_utc": "2026-12-01T06:08:35.454067Z",
         "phase_moment_type": "Last Quarter",
         "moon_illum": 47.468,
-        "moon_age": 21.972
+        "moon_age": 22.174
     },
     "2026-12-02": {
         "date": "2026-12-02",
@@ -1707,7 +1677,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 36.901,
-        "moon_age": 22.972
+        "moon_age": 23.174
     },
     "2026-12-03": {
         "date": "2026-12-03",
@@ -1722,7 +1692,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 27.201,
-        "moon_age": 23.972
+        "moon_age": 24.174
     },
     "2026-12-04": {
         "date": "2026-12-04",
@@ -1737,7 +1707,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 18.691,
-        "moon_age": 24.972
+        "moon_age": 25.174
     },
     "2026-12-05": {
         "date": "2026-12-05",
@@ -1752,7 +1722,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 11.605,
-        "moon_age": 25.972
+        "moon_age": 26.174
     },
     "2026-12-06": {
         "date": "2026-12-06",
@@ -1767,7 +1737,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 6.123,
-        "moon_age": 26.972
+        "moon_age": 27.174
     },
     "2026-12-07": {
         "date": "2026-12-07",
@@ -1782,7 +1752,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 2.373,
-        "moon_age": 27.972
+        "moon_age": 28.174
     },
     "2026-12-08": {
         "date": "2026-12-08",
@@ -1797,7 +1767,7 @@
         "phase_moment_utc": "2026-12-09T00:51:46.745555Z",
         "phase_moment_type": "New Moon",
         "moon_illum": 0.437,
-        "moon_age": 28.972
+        "moon_age": 29.174
     },
     "2026-12-09": {
         "date": "2026-12-09",
@@ -1812,7 +1782,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.344,
-        "moon_age": 0.442
+        "moon_age": 0.644
     },
     "2026-12-10": {
         "date": "2026-12-10",
@@ -1827,7 +1797,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 2.057,
-        "moon_age": 1.442
+        "moon_age": 1.644
     },
     "2026-12-11": {
         "date": "2026-12-11",
@@ -1842,7 +1812,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 5.487,
-        "moon_age": 2.442
+        "moon_age": 2.644
     },
     "2026-12-12": {
         "date": "2026-12-12",
@@ -1857,7 +1827,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 10.494,
-        "moon_age": 3.442
+        "moon_age": 3.644
     },
     "2026-12-13": {
         "date": "2026-12-13",
@@ -1872,7 +1842,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 16.913,
-        "moon_age": 4.442
+        "moon_age": 4.644
     },
     "2026-12-14": {
         "date": "2026-12-14",
@@ -1887,7 +1857,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 24.564,
-        "moon_age": 5.442
+        "moon_age": 5.644
     },
     "2026-12-15": {
         "date": "2026-12-15",
@@ -1902,7 +1872,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 33.255,
-        "moon_age": 6.442
+        "moon_age": 6.644
     },
     "2026-12-16": {
         "date": "2026-12-16",
@@ -1917,7 +1887,7 @@
         "phase_moment_utc": "2026-12-17T05:42:36.246929Z",
         "phase_moment_type": "First Quarter",
         "moon_illum": 42.772,
-        "moon_age": 7.442
+        "moon_age": 7.644
     },
     "2026-12-17": {
         "date": "2026-12-17",
@@ -1932,7 +1902,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 52.853,
-        "moon_age": 8.442
+        "moon_age": 8.644
     },
     "2026-12-18": {
         "date": "2026-12-18",
@@ -1947,7 +1917,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 63.154,
-        "moon_age": 9.442
+        "moon_age": 9.644
     },
     "2026-12-19": {
         "date": "2026-12-19",
@@ -1962,7 +1932,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 73.228,
-        "moon_age": 10.442
+        "moon_age": 10.644
     },
     "2026-12-20": {
         "date": "2026-12-20",
@@ -1977,7 +1947,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 82.516,
-        "moon_age": 11.442
+        "moon_age": 11.644
     },
     "2026-12-21": {
         "date": "2026-12-21",
@@ -1992,7 +1962,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 90.383,
-        "moon_age": 12.442
+        "moon_age": 12.644
     },
     "2026-12-22": {
         "date": "2026-12-22",
@@ -2007,7 +1977,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 96.185,
-        "moon_age": 13.442
+        "moon_age": 13.644
     },
     "2026-12-23": {
         "date": "2026-12-23",
@@ -2022,7 +1992,7 @@
         "phase_moment_utc": "2026-12-24T01:28:09.426493Z",
         "phase_moment_type": "Full Moon",
         "moon_illum": 99.377,
-        "moon_age": 14.442
+        "moon_age": 14.644
     },
     "2026-12-24": {
         "date": "2026-12-24",
@@ -2037,7 +2007,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 99.618,
-        "moon_age": 15.442
+        "moon_age": 15.644
     },
     "2026-12-25": {
         "date": "2026-12-25",
@@ -2052,7 +2022,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 96.85,
-        "moon_age": 16.442
+        "moon_age": 16.644
     },
     "2026-12-26": {
         "date": "2026-12-26",
@@ -2067,7 +2037,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 91.321,
-        "moon_age": 17.442
+        "moon_age": 17.644
     },
     "2026-12-27": {
         "date": "2026-12-27",
@@ -2082,7 +2052,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 83.53,
-        "moon_age": 18.442
+        "moon_age": 18.644
     },
     "2026-12-28": {
         "date": "2026-12-28",
@@ -2097,7 +2067,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 74.131,
-        "moon_age": 19.442
+        "moon_age": 19.644
     },
     "2026-12-29": {
         "date": "2026-12-29",
@@ -2112,7 +2082,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 63.808,
-        "moon_age": 20.442
+        "moon_age": 20.644
     },
     "2026-12-30": {
         "date": "2026-12-30",
@@ -2127,7 +2097,7 @@
         "phase_moment_utc": "2026-12-30T18:59:25.997485Z",
         "phase_moment_type": "Last Quarter",
         "moon_illum": 53.19,
-        "moon_age": 21.442
+        "moon_age": 21.644
     },
     "2026-12-31": {
         "date": "2026-12-31",
@@ -2142,7 +2112,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 42.789,
-        "moon_age": 22.442
+        "moon_age": 22.644
     },
     "2027-01-01": {
         "date": "2027-01-01",
@@ -2157,7 +2127,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 32.997,
-        "moon_age": 23.442
+        "moon_age": 23.644
     },
     "2027-01-02": {
         "date": "2027-01-02",
@@ -2172,7 +2142,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 24.112,
-        "moon_age": 24.442
+        "moon_age": 24.644
     },
     "2027-01-03": {
         "date": "2027-01-03",
@@ -2187,7 +2157,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 16.363,
-        "moon_age": 25.442
+        "moon_age": 25.644
     },
     "2027-01-04": {
         "date": "2027-01-04",
@@ -2202,7 +2172,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 9.943,
-        "moon_age": 26.442
+        "moon_age": 26.644
     },
     "2027-01-05": {
         "date": "2027-01-05",
@@ -2217,7 +2187,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 5.02,
-        "moon_age": 27.442
+        "moon_age": 27.644
     },
     "2027-01-06": {
         "date": "2027-01-06",
@@ -2232,7 +2202,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 1.732,
-        "moon_age": 28.442
+        "moon_age": 28.644
     },
     "2027-01-07": {
         "date": "2027-01-07",
@@ -2247,7 +2217,7 @@
         "phase_moment_utc": "2027-01-07T20:24:18.661490Z",
         "phase_moment_type": "New Moon",
         "moon_illum": 0.183,
-        "moon_age": 29.442
+        "moon_age": 0.113
     },
     "2027-01-08": {
         "date": "2027-01-08",
@@ -2262,7 +2232,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.425,
-        "moon_age": 0.911
+        "moon_age": 1.113
     },
     "2027-01-09": {
         "date": "2027-01-09",
@@ -2277,7 +2247,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 2.457,
-        "moon_age": 1.911
+        "moon_age": 2.113
     },
     "2027-01-10": {
         "date": "2027-01-10",
@@ -2292,7 +2262,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 6.225,
-        "moon_age": 2.911
+        "moon_age": 3.113
     },
     "2027-01-11": {
         "date": "2027-01-11",
@@ -2307,7 +2277,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 11.632,
-        "moon_age": 3.911
+        "moon_age": 4.113
     },
     "2027-01-12": {
         "date": "2027-01-12",
@@ -2322,7 +2292,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 18.545,
-        "moon_age": 4.911
+        "moon_age": 5.113
     },
     "2027-01-13": {
         "date": "2027-01-13",
@@ -2337,7 +2307,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 26.799,
-        "moon_age": 5.911
+        "moon_age": 6.113
     },
     "2027-01-14": {
         "date": "2027-01-14",
@@ -2352,7 +2322,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 36.183,
-        "moon_age": 6.911
+        "moon_age": 7.113
     },
     "2027-01-15": {
         "date": "2027-01-15",
@@ -2367,7 +2337,7 @@
         "phase_moment_utc": "2027-01-15T20:34:27.500416Z",
         "phase_moment_type": "First Quarter",
         "moon_illum": 46.424,
-        "moon_age": 7.911
+        "moon_age": 8.113
     },
     "2027-01-16": {
         "date": "2027-01-16",
@@ -2382,7 +2352,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 57.157,
-        "moon_age": 8.911
+        "moon_age": 9.113
     },
     "2027-01-17": {
         "date": "2027-01-17",
@@ -2397,7 +2367,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 67.905,
-        "moon_age": 9.911
+        "moon_age": 10.113
     },
     "2027-01-18": {
         "date": "2027-01-18",
@@ -2412,7 +2382,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 78.076,
-        "moon_age": 10.911
+        "moon_age": 11.113
     },
     "2027-01-19": {
         "date": "2027-01-19",
@@ -2427,7 +2397,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 86.995,
-        "moon_age": 11.911
+        "moon_age": 12.113
     },
     "2027-01-20": {
         "date": "2027-01-20",
@@ -2442,7 +2412,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 93.976,
-        "moon_age": 12.911
+        "moon_age": 13.113
     },
     "2027-01-21": {
         "date": "2027-01-21",
@@ -2457,7 +2427,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 98.432,
-        "moon_age": 13.911
+        "moon_age": 14.113
     },
     "2027-01-22": {
         "date": "2027-01-22",
@@ -2472,7 +2442,7 @@
         "phase_moment_utc": "2027-01-22T12:17:18.258247Z",
         "phase_moment_type": "Full Moon",
         "moon_illum": 99.98,
-        "moon_age": 14.911
+        "moon_age": 15.113
     },
     "2027-01-23": {
         "date": "2027-01-23",
@@ -2487,7 +2457,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 98.523,
-        "moon_age": 15.911
+        "moon_age": 16.113
     },
     "2027-01-24": {
         "date": "2027-01-24",
@@ -2502,7 +2472,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 94.265,
-        "moon_age": 16.911
+        "moon_age": 17.113
     },
     "2027-01-25": {
         "date": "2027-01-25",
@@ -2517,7 +2487,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 87.655,
-        "moon_age": 17.911
+        "moon_age": 18.113
     },
     "2027-01-26": {
         "date": "2027-01-26",
@@ -2532,7 +2502,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 79.291,
-        "moon_age": 18.911
+        "moon_age": 19.113
     },
     "2027-01-27": {
         "date": "2027-01-27",
@@ -2547,7 +2517,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 69.799,
-        "moon_age": 19.911
+        "moon_age": 20.113
     },
     "2027-01-28": {
         "date": "2027-01-28",
@@ -2562,7 +2532,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 59.758,
-        "moon_age": 20.911
+        "moon_age": 21.113
     },
     "2027-01-29": {
         "date": "2027-01-29",
@@ -2577,7 +2547,7 @@
         "phase_moment_utc": "2027-01-29T10:55:24.403898Z",
         "phase_moment_type": "Last Quarter",
         "moon_illum": 49.644,
-        "moon_age": 21.911
+        "moon_age": 22.113
     },
     "2027-01-30": {
         "date": "2027-01-30",
@@ -2592,7 +2562,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 39.833,
-        "moon_age": 22.911
+        "moon_age": 23.113
     },
     "2027-01-31": {
         "date": "2027-01-31",
@@ -2607,7 +2577,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 30.616,
-        "moon_age": 23.911
+        "moon_age": 24.113
     },
     "2027-02-01": {
         "date": "2027-02-01",
@@ -2622,7 +2592,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 22.237,
-        "moon_age": 24.911
+        "moon_age": 25.113
     },
     "2027-02-02": {
         "date": "2027-02-02",
@@ -2637,7 +2607,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 14.91,
-        "moon_age": 25.911
+        "moon_age": 26.113
     },
     "2027-02-03": {
         "date": "2027-02-03",
@@ -2652,7 +2622,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 8.842,
-        "moon_age": 26.911
+        "moon_age": 27.113
     },
     "2027-02-04": {
         "date": "2027-02-04",
@@ -2667,7 +2637,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 4.227,
-        "moon_age": 27.911
+        "moon_age": 28.113
     },
     "2027-02-05": {
         "date": "2027-02-05",
@@ -2682,7 +2652,7 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 1.241,
-        "moon_age": 28.911
+        "moon_age": 29.113
     },
     "2027-02-06": {
         "date": "2027-02-06",
@@ -2697,7 +2667,7 @@
         "phase_moment_utc": "2027-02-06T15:56:02.501879Z",
         "phase_moment_type": "New Moon",
         "moon_illum": 0.024,
-        "moon_age": 0.381
+        "moon_age": 0.583
     },
     "2027-02-07": {
         "date": "2027-02-07",
@@ -2712,6 +2682,36 @@
         "phase_moment_utc": null,
         "phase_moment_type": null,
         "moon_illum": 0.67,
-        "moon_age": 1.381
+        "moon_age": 1.583
+    },
+    "2027-02-08": {
+        "date": "2027-02-08",
+        "major_1_utc": "2027-02-08T07:35:37.831206Z",
+        "major_2_utc": "2027-02-08T19:56:17.611692Z",
+        "minor_1_utc": "2027-02-08T14:01:19.824117Z",
+        "minor_2_utc": "2027-02-09T01:58:42.964357Z",
+        "moon_rise_utc": "2027-02-08T14:01:19.824117Z",
+        "moon_set_utc": "2027-02-09T01:58:42.964357Z",
+        "moon_overhead_utc": "2027-02-08T19:56:17.611692Z",
+        "moon_underfoot_utc": "2027-02-08T07:35:37.831206Z",
+        "phase_moment_utc": null,
+        "phase_moment_type": null,
+        "moon_illum": 3.211,
+        "moon_age": 2.583
+    },
+    "2027-02-09": {
+        "date": "2027-02-09",
+        "major_1_utc": "2027-02-09T08:16:56.118760Z",
+        "major_2_utc": "2027-02-09T20:37:41.283836Z",
+        "minor_1_utc": "2027-02-09T14:27:18.831723Z",
+        "minor_2_utc": "2027-02-10T02:56:03.309483Z",
+        "moon_rise_utc": "2027-02-09T14:27:18.831723Z",
+        "moon_set_utc": "2027-02-10T02:56:03.309483Z",
+        "moon_overhead_utc": "2027-02-09T20:37:41.283836Z",
+        "moon_underfoot_utc": "2027-02-09T08:16:56.118760Z",
+        "phase_moment_utc": null,
+        "phase_moment_type": null,
+        "moon_illum": 7.621,
+        "moon_age": 3.583
     }
 }
