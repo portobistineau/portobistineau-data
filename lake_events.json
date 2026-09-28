@@ -10,6 +10,18 @@
     "id": "2026-08-13-lake-bistineau-drawdown-begins-2"
   },
   {
+  "id": "2026-10-03-tournament",
+  "calendarTitle": "Bass Tournament",
+  "title": "Ultimate Bass Team Tournament of Champions",
+  "date": "2026-10-03",
+  "endDate": "2026-10-04",
+  "time": "",
+  "endTime": "",
+  "type": "tournament",
+  "location": "Lake Bistineau",
+  "description": "Two-day bass tournament."
+},
+  {
     "calendarTitle": "Draw<wbr>down Ends",
     "title": "Lake Bistineau Drawdown Ends",
     "date": "2026-11-30",
