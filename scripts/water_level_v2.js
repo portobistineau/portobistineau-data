@@ -105,11 +105,23 @@ async function loadNoaaGraph() {
     // NOAA returns much more history than we want.
 // Keep only the last 5 days so forecast takes up more of the graph.
 let observed = observedRaw
-    .filter(p => p.validTime && typeof p.primary === 'number')
+    .filter(p =>
+        p.validTime &&
+        typeof p.primary === 'number' &&
+        Number.isFinite(p.primary) &&
+        p.primary > 100 &&
+        p.primary < 200
+    )
     .map(p => ({ time: p.validTime, level: p.primary }));
 
 const forecast = forecastRaw
-    .filter(p => p.validTime && typeof p.primary === 'number')
+    .filter(p =>
+        p.validTime &&
+        typeof p.primary === 'number' &&
+        Number.isFinite(p.primary) &&
+        p.primary > 100 &&
+        p.primary < 200
+    )
     .map(p => ({ time: p.validTime, level: p.primary }));
 
 // Keep graph visually balanced: about 2/3 observed, 1/3 forecast
