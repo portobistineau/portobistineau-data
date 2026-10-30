@@ -22,6 +22,18 @@
   "description": "Two-day bass tournament."
 },
   {
+  "id": "2026-11-13-tournament",
+  "calendarTitle": "Crappie Tournament",
+  "title": "1st Annual Local Vendors Crappie Tournament of Minden",
+  "date": "2026-11-13",
+  "time": "7:00 AM",
+  "endTime": "3:00 PM",
+  "type": "tournament",
+  "location": "Lake Bistineau",
+  "description": "Crappie tournament.",
+  "source": "https://www.facebook.com/share/p/19kVosqNc5/"
+},
+  {
     "calendarTitle": "Draw<wbr>down Ends",
     "title": "Lake Bistineau Drawdown Ends",
     "date": "2026-11-30",
